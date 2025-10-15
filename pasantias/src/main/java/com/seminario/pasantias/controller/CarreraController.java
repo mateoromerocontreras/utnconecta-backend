@@ -13,6 +13,9 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/carreras")
+@CrossOrigin(origins = {"http://localhost:3000", "http://localhost:5173"}, 
+             methods = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE, RequestMethod.OPTIONS},
+             allowedHeaders = "*")
 public class CarreraController {
 
     @Autowired
@@ -54,6 +57,10 @@ public class CarreraController {
 
     @PostMapping("/updateCarrera")
     public GenericResponse updateCarrera(@RequestBody CarreraRequest request) {
+        System.out.println("=== DEBUG UPDATE CARRERA ===");
+        System.out.println("Request ID: " + request.getId());
+        System.out.println("Request Nombre: " + request.getNombre());
+        
         GenericResponse response = new GenericResponse();
         if (request.getId() == null || request.getNombre() == null || request.getNombre().isEmpty()) {
             response.setCode(-1);
@@ -62,10 +69,14 @@ public class CarreraController {
         }
         try {
             Carrera carrera = new Carrera(request.getId(), request.getNombre());
+            System.out.println("Carrera a actualizar: ID=" + carrera.getId() + ", Nombre=" + carrera.getNombre());
             carreraService.updateCarrera(carrera);
+            System.out.println("Carrera actualizada exitosamente");
             response.setCode(0);
             response.setMessage(null);
         } catch (Exception e) {
+            System.err.println("Error al actualizar carrera: " + e.getMessage());
+            e.printStackTrace();
             response.setCode(-1);
             response.setMessage(e.getMessage());
         }
@@ -89,5 +100,10 @@ public class CarreraController {
             response.setMessage(e.getMessage());
         }
         return response;
+    }
+
+    @GetMapping("/listarCarreras")
+    public List<Carrera> listarCarreras() {
+        return carreraService.getAllCarreras();
     }
 }

@@ -5,17 +5,16 @@
 
 /* Barra fija de búsqueda */
 .empresas-bar{
-  margin-top: 2cqb;
-  position: sticky; top: 0; z-index: 20;
-  background: rgba(255,255,255,.86);
-  backdrop-filter: saturate(150%) blur(6px);
-  
+  margin-top: 1.5rem;
+  padding: 0 0 0.6rem;
+  background: transparent;
 }
 .empresas-bar-inner{
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 12px;
-  padding: 14px 0;
+  padding: 0;
+  align-items: center;
 }
 
 /* Input de búsqueda */
@@ -29,12 +28,19 @@
   outline: none;
   background: var(--utn-sky);
   color: var(--text);
+  transition: all 0.2s ease;
 }
 .emp-search::placeholder{ color: var(--muted); }
 .emp-search:focus{
   border-color: var(--utn-blue);
   box-shadow: 0 0 0 3px rgba(34,100,178,.15);
   background:#fff;
+}
+
+.empresas-actions{
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
 }
 
 /* Contenido principal */
@@ -45,7 +51,7 @@
 /* Encabezado */
 .emp-head{
   display:flex; align-items:end; justify-content:space-between;
-  gap: 12px; margin-bottom: 18px;
+  gap: 12px; margin: 12px 0 18px;
 }
 .emp-head h1{
   margin:0; font-size: clamp(22px, 2.2vw, 28px);
@@ -158,6 +164,19 @@
   font-weight:600;
 }
 
+.emp-actions .btn.btn-icon{
+  flex: 0 0 44px;
+  padding: .7rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.emp-actions .btn-icon img{
+  width: 18px;
+  height: 18px;
+}
+
 /* Ver perfil → Naranja */
 .btn-ghost{
   background: #2264B2 !important;
@@ -193,8 +212,14 @@
 /* Variantes adicionales */
 .btn.sm{ padding:.55rem .9rem; font-size: .9rem; border-radius: 14px; }
 .btn-outline{
-  background:#fff; color: var(--utn-blue);
-  border:1px solid var(--utn-blue); border-radius: 14px;
+  background: transparent;
+  color: #667eea;
+  border: 2px solid #667eea;
+  border-radius: 14px;
+}
+.btn-outline:hover:not(:disabled){
+  background: #667eea;
+  color: #fff;
 }
 .btn-outline:disabled{
   opacity:.7; cursor:not-allowed; transform:none;
