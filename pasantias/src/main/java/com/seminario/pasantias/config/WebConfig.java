@@ -11,11 +11,15 @@ public class WebConfig {
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
             @Override
-            public void addCorsMappings(CorsRegistry registry) {
+            public void addCorsMappings(@org.springframework.lang.NonNull CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("http://localhost:3000", "http://localhost.localdomain:3000")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE")
-                        .allowedHeaders("*");
+                        .allowedOrigins("http://localhost:3000", "http://localhost.localdomain:3000",
+                        "http://localhost:5173", "http://localhost.localdomain:5173")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
+                        .allowedHeaders("*")
+                        .allowCredentials(true)
+                        .exposedHeaders("Authorization", "Content-Type", "Accept")
+                        .maxAge(3600);
             }
         };
     }

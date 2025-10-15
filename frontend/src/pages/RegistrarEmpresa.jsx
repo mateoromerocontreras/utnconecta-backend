@@ -1,5 +1,13 @@
-import React, { useState } from "react";
-import "../styles/empresa.css";
+import { useState } from "react";
+import "../styles/registrar-empresa.css";
+
+const API = (import.meta.env.VITE_API_URL || "http://localhost:8080").replace(/\/+$/, "");
+
+function getStoredItem(key) {
+  const persisted = localStorage.getItem(key);
+  if (persisted !== null) return persisted;
+  return sessionStorage.getItem(key);
+}
 
 export default function RegistrarEmpresa() {
   const [form, setForm] = useState({
@@ -42,9 +50,18 @@ export default function RegistrarEmpresa() {
       setSubmitting(true);
       setMessage("Enviando…"); setMessageType("info");
 
-      const res = await fetch("http://localhost:8080/empresas", {
+      // Obtener token de autenticación
+      const token = getStoredItem("authToken");
+      if (!token) {
+        throw new Error("No hay token de autenticación. Por favor, inicia sesión.");
+      }
+
+      const res = await fetch(`${API}/empresas`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify(payload)
       });
 

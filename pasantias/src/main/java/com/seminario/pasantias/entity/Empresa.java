@@ -3,6 +3,7 @@ package com.seminario.pasantias.entity;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import java.util.List;
 
 @Data
 @NoArgsConstructor
@@ -12,7 +13,8 @@ public class Empresa {
     private String nombre;
     private String ciudad;
     private String direccion;
-    private String emailContacto;
+    private String email;
     private String cuit;
     private String razonSocial;
+    private List<Contacto> contacto;
 }
