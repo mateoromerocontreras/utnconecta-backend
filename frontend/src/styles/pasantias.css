@@ -1,0 +1,112 @@
+:root{
+  --nav-h: 64px; /* alto del navbar */
+}
+
+/* Página Pasantías: layout base */
+.pasantias-page{
+  background: #fff;
+}
+
+/* ===== Barra sticky debajo del navbar ===== */
+.filters-bar{
+  position: sticky;
+  top: var(--nav-h);          /* justo debajo del navbar */
+  z-index: 30;                /* debajo del nav (que tenés en ~40) y por encima del contenido */
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 8px 24px rgba(0,0,0,.04);
+}
+
+/* Reusar SearchPanel abierto, pero con estilo de “barra” */
+.filters-bar .search-panel.inline{
+  max-height: none;           /* siempre visible */
+  padding: 10px 0;
+  margin-top: 0;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+/* Ajustes de la grilla del buscador en la barra */
+.filters-bar .search-grid{
+  grid-template-columns: 1fr 280px 220px 64px;
+  gap: 12px;
+}
+
+.filters-bar .search-grid input,
+.filters-bar .search-grid select{
+  height: 52px;
+  font-size: 15px;
+}
+
+.filters-bar .big{
+  height: 52px;
+  width: 64px;
+}
+
+/* ===== Contenido / resultados ===== */
+.results-wrap{
+  padding: 24px 0 40px;
+}
+
+.results-head{
+  display:flex; align-items:baseline; gap:12px; margin-bottom: 14px;
+}
+.results-head h1{
+  margin:0; font-size: 28px; color: var(--utn-blue);
+}
+.results-head .muted{
+  margin:0; color:#64748b; font-size:14px;
+}
+
+.results-grid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap:16px;
+}
+
+.job-card{
+  border:1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px;
+  box-shadow: 0 6px 16px rgba(0,0,0,.05);
+  background:#fff;
+}
+.job-card header{
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+}
+.job-card h3{
+  margin:0; font-size:16px; line-height:1.2; color:#0f172a;
+}
+.badge{
+  background: var(--utn-sky);
+  color: var(--utn-blue);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.job-card .meta{
+  margin:8px 0 0 0; color:#475569; font-size:14px;
+}
+.job-card footer{
+  margin-top:12px; display:flex; align-items:center; justify-content:space-between;
+}
+.job-card .time{ color:#64748b; font-size:12px; }
+.btn-ghost{
+  background: transparent;
+  color: var(--utn-blue);
+  border:1px solid var(--utn-blue);
+  border-radius: 10px;
+  padding: 6px 10px;
+  text-decoration:none; font-weight:600; font-size:14px;
+}
+
+.no-results{
+  grid-column: 1 / -1;
+  padding: 24px;
+  border:1px dashed var(--border);
+  border-radius: 12px;
+  text-align:center;
+  color:#64748b;
+}

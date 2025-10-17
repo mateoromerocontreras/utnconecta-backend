@@ -1,0 +1,50 @@
+:root{
+  --utn-blue:#2264B2;
+  --utn-orange:#FF6600;
+  --utn-sky:#EAF2FE;
+  --text:#1f2937;
+  --muted:#6b7280;
+  --border:#e5e7eb;
+  --radius:14px;
+}
+
+*{box-sizing:border-box}
+html,body,#root{height:100%}
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";
+  color:var(--text);
+  background:#fff;
+}
+.app{
+  min-height:100%; display:flex; flex-direction:column;
+}
+.main{
+  flex:1;
+}
+
+/* util */
+.container{
+  max-width:1200px; margin:0 auto; padding:0 16px;
+}
+.btn{
+  text-decoration: none;
+  background:var(--utn-orange);
+  color:#fff; border:none; border-radius:20px;
+  padding:.8rem 1.4rem; font-weight:600; cursor:pointer;
+}
+.btn:hover{
+  scale: 1.05;
+  transition: all 100ms;
+}
+.btn-register{
+  text-decoration: none;
+  background:#fff; color:var(--utn-blue);
+  padding:.8rem 1.4rem; font-weight:600;
+}
+.btn-register:hover{
+  background:var(--utn-blue); color:#fff;
+  scale: 1.05;
+  transition: all 100ms;
+  border-radius: 20px;
+}

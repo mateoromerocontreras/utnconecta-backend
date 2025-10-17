@@ -1,0 +1,153 @@
+.empresa-hero{
+  position:relative;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  flex-direction:column;
+  gap:28px;
+  padding:64px 16px;
+  min-height:calc(100vh - 140px);
+  background-color:#0f172a;
+  background-size:cover;
+  background-position:center;
+  color:#fff;
+}
+
+.empresa-hero::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:rgba(15,23,42,0.6);
+  backdrop-filter:blur(2px);
+}
+
+.empresa-card{
+  position:relative;
+  z-index:1;
+  width:min(680px, 100%);
+  padding:36px 32px;
+  border-radius:20px;
+  background:#fff;
+  color:#0f172a;
+  box-shadow:0 24px 48px rgba(15,23,42,0.2);
+}
+
+.empresa-title{
+  margin:0 0 28px;
+  font-size:clamp(26px, 3vw, 32px);
+  color:var(--utn-blue);
+  line-height:1.2;
+  text-align:left;
+}
+
+.empresa-grid{
+  display:grid;
+  gap:18px;
+  grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.empresa-grid input{
+  width:100%;
+  padding:14px 16px;
+  border-radius:14px;
+  border:1px solid var(--border);
+  font-size:15px;
+  background:#f8fafc;
+  transition:border-color .2s ease, box-shadow .2s ease;
+}
+
+.empresa-grid input:focus{
+  outline:none;
+  border-color:var(--utn-blue);
+  box-shadow:0 0 0 3px rgba(34, 100, 178, 0.18);
+  background:#fff;
+}
+
+.empresa-actions{
+  display:flex;
+  gap:12px;
+  grid-column:1 / -1;
+  margin-top:4px;
+}
+
+.empresa-actions .btn{
+  flex:1;
+  border-radius:14px;
+  padding:14px;
+  font-size:15px;
+  font-weight:700;
+}
+
+.empresa-actions .btn.registrar{
+  background:var(--utn-orange);
+  border:none;
+  color:#fff;
+}
+
+.empresa-actions .btn.cancelar{
+  background:#fff;
+  color:var(--utn-blue);
+  border:1px solid var(--utn-blue);
+}
+
+.empresa-actions .btn.cancelar:hover{
+  background:var(--utn-blue);
+  color:#fff;
+}
+
+.alert{
+  margin-top:24px;
+  padding:14px 16px;
+  border-radius:12px;
+  font-size:14px;
+  font-weight:600;
+}
+
+.alert-success{
+  background:#ecfdf5;
+  color:#047857;
+  border:1px solid #a7f3d0;
+}
+
+.alert-error{
+  background:#fef2f2;
+  color:#b91c1c;
+  border:1px solid #fecaca;
+}
+
+.alert-info{
+  background:#eff6ff;
+  color:var(--utn-blue);
+  border:1px solid #bfdbfe;
+}
+
+.empresa-legal{
+  margin:28px 0 0;
+  font-size:13px;
+  color:#475569;
+  line-height:1.5;
+}
+
+.empresa-cta{
+  position:relative;
+  z-index:1;
+  font-size:clamp(20px, 2.6vw, 26px);
+  font-weight:700;
+  text-align:center;
+  line-height:1.4;
+  max-width:580px;
+}
+
+@media (max-width: 720px){
+  .empresa-card{
+    padding:28px 22px;
+  }
+
+  .empresa-actions{
+    flex-direction:column;
+  }
+
+  .empresa-actions .btn{
+    width:100%;
+  }
+}
