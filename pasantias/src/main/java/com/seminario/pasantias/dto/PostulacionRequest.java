@@ -15,4 +15,6 @@ public class PostulacionRequest {
     private Integer estudianteId;
     //@NotNull(message = "El ID de la pasantía es obligatorio")
     //private Integer pasantiaId; // faltaria agregar lo de pasantia
+
+    
 }
