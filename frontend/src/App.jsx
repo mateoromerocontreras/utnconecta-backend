@@ -13,6 +13,7 @@ import CompletarPerfil from "./pages/CompletarPerfil.jsx";
 import Carreras from "./pages/Carreras.jsx";
 import RegistrarCarrera from "./pages/RegistrarCarrera.jsx";
 import Perfil from "./pages/Perfil.jsx";
+import ModificarPerfil from "./pages/ModificarPerfil.jsx";
 
 export default function App() {
   return (
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/registrar-carrera" element={<RegistrarCarrera />} />
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/perfil/completar" element={<CompletarPerfil />} />
+          <Route path="/perfil/modificar" element={<ModificarPerfil />} />
         </Routes>
       </main>
     </div>
