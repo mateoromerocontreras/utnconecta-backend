@@ -3,9 +3,12 @@ package com.seminario.pasantias.service;
 import com.seminario.pasantias.entity.Estudiante;
 import com.seminario.pasantias.entity.Usuario;
 import com.seminario.pasantias.dto.EstudianteUpdateRequest;
+import com.seminario.pasantias.dto.EstudianteUpdateProfileRequest;
+import com.seminario.pasantias.dto.EstudianteBasicResponse;
 import com.seminario.pasantias.persistence.EstudianteMapper;
 import com.seminario.pasantias.persistence.UsuarioMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,6 +23,9 @@ public class EstudianteService {
     
     @Autowired
     private UsuarioMapper usuarioMapper;
+    
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     public Optional<Estudiante> findById(Integer id) {
         return estudianteMapper.findById(id);
@@ -35,6 +41,10 @@ public class EstudianteService {
 
     public List<Estudiante> findAllActive() {
         return estudianteMapper.findAllActive();
+    }
+
+    public Optional<Estudiante> findByNombre(String nombre) {
+        return estudianteMapper.findByNombre(nombre);
     }
 
     public Estudiante createEstudiante(String email, Integer idUsuario) {
@@ -167,6 +177,106 @@ public class EstudianteService {
         } else {
             // Crear un nuevo perfil básico
             return createEstudiante(email, idUsuario);
+        }
+    }
+    
+    // Método para convertir Estudiante a EstudianteBasicResponse (sin datos sensibles)
+    private EstudianteBasicResponse toBasicResponse(Estudiante estudiante) {
+        return new EstudianteBasicResponse(
+            estudiante.getIdEstudiante(),
+            estudiante.getDni(),
+            estudiante.getApellido(),
+            estudiante.getNombre(),
+            estudiante.getEspecialidad(),
+            estudiante.getNroLegajo(),
+            estudiante.getCalle(),
+            estudiante.getNroCalle(),
+            estudiante.getBarrio(),
+            estudiante.getLocalidad(),
+            estudiante.getProvincia(),
+            estudiante.getEmail(),
+            estudiante.getTelCelular(),
+            estudiante.getTelFijo(),
+            estudiante.getActivo(),
+            estudiante.getFechaCreacion()
+        );
+    }
+    
+    // Método para obtener todos los estudiantes como respuesta básica
+    public List<EstudianteBasicResponse> getAllEstudiantesBasic() {
+        List<Estudiante> estudiantes = estudianteMapper.findAllActive();
+        return estudiantes.stream()
+                .map(this::toBasicResponse)
+                .collect(java.util.stream.Collectors.toList());
+    }
+    
+    // Método para buscar estudiante por nombre como respuesta básica
+    public Optional<EstudianteBasicResponse> getEstudianteByNombreBasic(String nombre) {
+        Optional<Estudiante> estudiante = estudianteMapper.findByNombre(nombre);
+        return estudiante.map(this::toBasicResponse);
+    }
+    
+    // Método para actualizar email y/o contraseña del estudiante
+    public void updateEstudianteProfile(String currentEmail, EstudianteUpdateProfileRequest request) {
+        // Buscar usuario por email actual
+        Optional<Usuario> usuarioOpt = usuarioMapper.findByEmail(currentEmail);
+        if (usuarioOpt.isEmpty()) {
+            throw new RuntimeException("Usuario no encontrado");
+        }
+        
+        Usuario usuario = usuarioOpt.get();
+        
+        // Verificar que es un estudiante
+        if (usuario.getRol() == null || !"ESTUDIANTE".equals(usuario.getRol().getNombre())) {
+            throw new RuntimeException("El usuario no es un estudiante");
+        }
+        
+        boolean needsUpdate = false;
+        
+        // Si se proporciona un nuevo email
+        if (request.getEmail() != null && !request.getEmail().trim().isEmpty()) {
+            String newEmail = request.getEmail().trim();
+            
+            // Verificar que el nuevo email no sea el mismo que el actual
+            if (!newEmail.equals(currentEmail)) {
+                // Verificar que no exista otro usuario con ese email
+                Optional<Usuario> existingUser = usuarioMapper.findByEmail(newEmail);
+                if (existingUser.isPresent()) {
+                    throw new RuntimeException("Ya existe un usuario con ese email");
+                }
+                
+                // Actualizar email en Usuario
+                usuario.setEmail(newEmail);
+                usuario.setUsername(newEmail); // Mantener consistencia
+                needsUpdate = true;
+                
+                // También actualizar el email en la tabla Estudiante
+                Optional<Estudiante> estudianteOpt = estudianteMapper.findByUsuarioId(usuario.getIdUsuario());
+                if (estudianteOpt.isPresent()) {
+                    Estudiante estudiante = estudianteOpt.get();
+                    estudiante.setEmail(newEmail);
+                    estudianteMapper.update(estudiante);
+                }
+            }
+        }
+        
+        // Si se proporciona una nueva contraseña
+        if (request.getPassword() != null && !request.getPassword().trim().isEmpty()) {
+            String newPassword = request.getPassword().trim();
+            
+            // Validación de seguridad de contraseña: al menos 8 caracteres, 1 minúscula y 1 número
+            if (!newPassword.matches("^(?=.*[a-z])(?=.*\\d).{8,}$")) {
+                throw new RuntimeException("La contraseña debe tener al menos 8 caracteres, una letra minúscula y un número");
+            }
+            
+            // Encriptar nueva contraseña
+            usuario.setPassword(passwordEncoder.encode(newPassword));
+            needsUpdate = true;
+        }
+        
+        // Actualizar usuario si hay cambios
+        if (needsUpdate) {
+            usuarioMapper.update(usuario);
         }
     }
 }

@@ -58,7 +58,7 @@ export default function Home() {
             <p>Accedé rápidamente a las herramientas de administración disponibles para vos.</p>
           </div>
           <div className="admin-home-grid">
-            <Link to="/registrarse" className="admin-home-card">
+            <Link to="/administrar-usuarios" className="admin-home-card">
               <span className="admin-home-icon" aria-hidden="true">
                 <img src="/icons/profile.svg" alt="" />
               </span>
