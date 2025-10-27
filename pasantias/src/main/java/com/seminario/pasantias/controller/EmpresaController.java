@@ -86,9 +86,9 @@ public class EmpresaController {
 			response.setMessage("La ciudad es obligatoria");
 			return response;
 		}
-		if (request.getDireccion() == null || request.getDireccion().isEmpty()) {
+		if (request.getCalle() == null || request.getCalle().isEmpty()) {
 			response.setCode(-1);
-			response.setMessage("La dirección es obligatoria");
+			response.setMessage("La calle es obligatoria");
 			return response;
 		}
 		if (request.getContacto() == null || request.getContacto().isEmpty()) {
@@ -119,8 +119,9 @@ public class EmpresaController {
 		
 		try {
 			Empresa empresa = new Empresa(null, request.getNombre(), request.getCiudad(), 
-				request.getDireccion(), request.getEmail(), request.getCuit(), 
-				request.getRazonSocial(), request.getContacto());
+				request.getCalle(), request.getNroCalle(), request.getPiso(), 
+				request.getDepartamento(), request.getBarrio(), request.getEmail(), 
+				request.getCuit(), request.getRazonSocial(), request.getContacto());
 			empresaService.createEmpresaWithContactos(empresa);
 			response.setCode(0);
 			response.setMessage(null);
@@ -133,17 +134,19 @@ public class EmpresaController {
 
 	@PostMapping
 	public void createEmpresa(@RequestBody EmpresaRequest request) {
-		Empresa empresa = new Empresa(null, request.getNombre(), 
-		request.getCiudad(), request.getDireccion(), request.getEmail(),
-		 request.getCuit(), request.getRazonSocial(), request.getContacto());
+		Empresa empresa = new Empresa(null, request.getNombre(), request.getCiudad(), 
+			request.getCalle(), request.getNroCalle(), request.getPiso(), 
+			request.getDepartamento(), request.getBarrio(), request.getEmail(),
+			request.getCuit(), request.getRazonSocial(), request.getContacto());
 		empresaService.createEmpresa(empresa);
 	}
 
 	@PutMapping("/{id}")
 	public void updateEmpresa(@PathVariable Integer id, @RequestBody EmpresaRequest request) {
 		Empresa empresa = new Empresa(id, request.getNombre(), request.getCiudad(), 
-		request.getDireccion(), request.getEmail(), request.getCuit(), 
-		request.getRazonSocial(), request.getContacto());
+			request.getCalle(), request.getNroCalle(), request.getPiso(), 
+			request.getDepartamento(), request.getBarrio(), request.getEmail(), 
+			request.getCuit(), request.getRazonSocial(), request.getContacto());
 		empresaService.updateEmpresa(empresa);
 	}
 

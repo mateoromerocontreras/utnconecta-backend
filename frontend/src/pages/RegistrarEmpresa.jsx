@@ -15,8 +15,16 @@ export default function RegistrarEmpresa() {
     razonSocial: "",
     cuit: "",
     ciudad: "",
-    direccion: "",
-    email: ""
+    calle: "",
+    nroCalle: "",
+    piso: "",
+    departamento: "",
+    barrio: "",
+    email: "",
+    contactoNombre: "",
+    contactoApellido: "",
+    contactoEmail: "",
+    contactoTelefono: ""
   });
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState(""); // "success" | "error" | "info"
@@ -30,20 +38,57 @@ export default function RegistrarEmpresa() {
   const onSubmit = async (e) => {
     e.preventDefault();
 
-    // Validadito rápido en front
-    if (!form.nombre || !form.ciudad || !form.direccion || !form.email) {
-      setMessage("⚠️ Completá los campos obligatorios.");
+    // Validación de campos obligatorios según el backend
+    if (!form.nombre) {
+      setMessage("⚠️ El nombre es obligatorio.");
+      setMessageType("error");
+      return;
+    }
+    if (!form.razonSocial) {
+      setMessage("⚠️ La razón social es obligatoria.");
+      setMessageType("error");
+      return;
+    }
+    if (!form.cuit) {
+      setMessage("⚠️ El CUIT es obligatorio.");
+      setMessageType("error");
+      return;
+    }
+    if (!form.ciudad) {
+      setMessage("⚠️ La ciudad es obligatoria.");
+      setMessageType("error");
+      return;
+    }
+    if (!form.calle) {
+      setMessage("⚠️ La calle es obligatoria.");
+      setMessageType("error");
+      return;
+    }
+    if (!form.contactoNombre || !form.contactoApellido || !form.contactoEmail) {
+      setMessage("⚠️ Los datos del contacto (nombre, apellido y email) son obligatorios.");
       setMessageType("error");
       return;
     }
 
     const payload = {
       nombre: form.nombre,
+      razonSocial: form.razonSocial,
+      cuit: form.cuit,
       ciudad: form.ciudad,
-      direccion: form.direccion,
-      emailContacto: form.email,
-      cuit: form.cuit || null,
-      razonSocial: form.razonSocial || null
+      calle: form.calle,
+      nroCalle: form.nroCalle ? parseInt(form.nroCalle) : null,
+      piso: form.piso || null,
+      departamento: form.departamento || null,
+      barrio: form.barrio || null,
+      email: form.email || null,
+      contacto: [
+        {
+          nombre: form.contactoNombre,
+          apellido: form.contactoApellido,
+          emailResponsable: form.contactoEmail,
+          telefonoResponsable: form.contactoTelefono || null
+        }
+      ]
     };
 
     try {
@@ -56,7 +101,7 @@ export default function RegistrarEmpresa() {
         throw new Error("No hay token de autenticación. Por favor, inicia sesión.");
       }
 
-      const res = await fetch(`${API}/empresas`, {
+      const res = await fetch(`${API}/empresas/crearEmpresa`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
@@ -66,14 +111,28 @@ export default function RegistrarEmpresa() {
       });
 
       if (res.ok) {
-  setMessage("✅ ¡Empresa registrada con éxito!");
-  setMessageType("success");
-  setForm({ nombre:"", razonSocial:"", cuit:"", ciudad:"", direccion:"", email:"" });
-  setTimeout(() => {
-    setMessage("");
-    setMessageType("");
-  }, 2000);
-        setForm({ nombre:"", razonSocial:"", cuit:"", ciudad:"", direccion:"", email:"" });
+        setMessage("✅ ¡Empresa registrada con éxito!");
+        setMessageType("success");
+        setForm({ 
+          nombre: "", 
+          razonSocial: "", 
+          cuit: "", 
+          ciudad: "", 
+          calle: "", 
+          nroCalle: "", 
+          piso: "", 
+          departamento: "", 
+          barrio: "", 
+          email: "",
+          contactoNombre: "",
+          contactoApellido: "",
+          contactoEmail: "",
+          contactoTelefono: ""
+        });
+        setTimeout(() => {
+          setMessage("");
+          setMessageType("");
+        }, 2000);
       } else if (res.status === 400) {
         const err = await res.text();
         setMessage(`⚠️ Datos inválidos. ${err || "Revisá el formulario."}`);
@@ -110,48 +169,111 @@ export default function RegistrarEmpresa() {
           <input
             type="text"
             name="nombre"
-            placeholder="Nombre de la empresa"
+            placeholder="Nombre de la empresa *"
             value={form.nombre}
             onChange={onChange}
             required
           />
           <input
             type="text"
-            name="ciudad"
-            placeholder="Ciudad"
-            value={form.ciudad}
-            onChange={onChange}
-            required
-          />
-          <input
-            type="text"
             name="razonSocial"
-            placeholder="Razón social (opcional)"
+            placeholder="Razón social *"
             value={form.razonSocial}
-            onChange={onChange}
-          />
-          <input
-            type="text"
-            name="direccion"
-            placeholder="Dirección"
-            value={form.direccion}
             onChange={onChange}
             required
           />
           <input
             type="text"
             name="cuit"
-            placeholder="CUIT"
+            placeholder="CUIT *"
             value={form.cuit}
+            onChange={onChange}
+            required
+          />
+          <input
+            type="text"
+            name="ciudad"
+            placeholder="Ciudad *"
+            value={form.ciudad}
+            onChange={onChange}
+            required
+          />
+          <input
+            type="text"
+            name="calle"
+            placeholder="Calle *"
+            value={form.calle}
+            onChange={onChange}
+            required
+          />
+          <input
+            type="text"
+            name="nroCalle"
+            placeholder="Número de calle"
+            value={form.nroCalle}
+            onChange={onChange}
+          />
+          <input
+            type="text"
+            name="piso"
+            placeholder="Piso"
+            value={form.piso}
+            onChange={onChange}
+          />
+          <input
+            type="text"
+            name="departamento"
+            placeholder="Departamento"
+            value={form.departamento}
+            onChange={onChange}
+          />
+          <input
+            type="text"
+            name="barrio"
+            placeholder="Barrio"
+            value={form.barrio}
             onChange={onChange}
           />
           <input
             type="email"
             name="email"
-            placeholder="Email de contacto"
+            placeholder="Email de la empresa"
             value={form.email}
             onChange={onChange}
+          />
+
+          <h3 className="contacto-section-title">Datos del contacto</h3>
+
+          <input
+            type="text"
+            name="contactoNombre"
+            placeholder="Nombre del contacto *"
+            value={form.contactoNombre}
+            onChange={onChange}
             required
+          />
+          <input
+            type="text"
+            name="contactoApellido"
+            placeholder="Apellido del contacto *"
+            value={form.contactoApellido}
+            onChange={onChange}
+            required
+          />
+          <input
+            type="email"
+            name="contactoEmail"
+            placeholder="Email del contacto *"
+            value={form.contactoEmail}
+            onChange={onChange}
+            required
+          />
+          <input
+            type="tel"
+            name="contactoTelefono"
+            placeholder="Teléfono del contacto"
+            value={form.contactoTelefono}
+            onChange={onChange}
           />
 
           <div className="empresa-actions">

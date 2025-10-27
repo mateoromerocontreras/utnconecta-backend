@@ -641,6 +641,7 @@ export default function RegistrarUsuario() {
 
                 <div className="form-group">
                   <label className="checkbox-label">
+                    <span>Usuario activo</span>
                     <input
                       type="checkbox"
                       name="activo"
@@ -648,7 +649,6 @@ export default function RegistrarUsuario() {
                       onChange={handleEditInputChange}
                       disabled={loading}
                     />
-                    Usuario activo
                   </label>
                 </div>
 

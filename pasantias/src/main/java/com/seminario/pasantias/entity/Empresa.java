@@ -12,7 +12,11 @@ public class Empresa {
     private Integer idEmpresa;
     private String nombre;
     private String ciudad;
-    private String direccion;
+    private String calle;
+    private Integer nroCalle;
+    private String piso;
+    private String departamento;
+    private String barrio;
     private String email;
     private String cuit;
     private String razonSocial;

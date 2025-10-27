@@ -266,13 +266,17 @@ export default function Empresas() {
                       <h3 className="emp-name">{e.nombre || e.razonSocial || "Empresa"}</h3>
                       <p className="emp-meta">
                         {(e.ciudad || "—")}
-                        {e.ciudad && e.direccion ? " · " : ""}
-                        {e.direccion || ""}
+                        {(e.calle || e.nroCalle || e.barrio) && " · "}
+                        {e.calle && `${e.calle}`}
+                        {e.nroCalle && ` ${e.nroCalle}`}
+                        {e.piso && `, Piso ${e.piso}`}
+                        {e.departamento && ` Depto ${e.departamento}`}
+                        {e.barrio && ` - ${e.barrio}`}
                       </p>
                       <p className="emp-email">
-                        {e.emailContacto ? (
-                          <a href={`mailto:${e.emailContacto}`} className="link">
-                            {e.emailContacto}
+                        {e.emailContacto || e.email ? (
+                          <a href={`mailto:${e.emailContacto || e.email}`} className="link">
+                            {e.emailContacto || e.email}
                           </a>
                         ) : (
                           <span className="muted">Sin email</span>
@@ -284,8 +288,8 @@ export default function Empresas() {
                       <button className="btn btn-ghost" onClick={() => alert("Perfil aún no implementado")}>
                         Ver perfil
                       </button>
-                      {e.emailContacto && (
-                        <a href={`mailto:${e.emailContacto}`} className="btn btn-primary sm">
+                      {(e.emailContacto || e.email) && (
+                        <a href={`mailto:${e.emailContacto || e.email}`} className="btn btn-primary sm">
                           Contactar
                         </a>
                       )}

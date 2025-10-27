@@ -35,7 +35,11 @@ CREATE TABLE Empresa (
     id_empresa INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(255) NOT NULL,
     ciudad VARCHAR(100),
-    direccion TEXT,
+    calle VARCHAR(255),
+    nro_calle INT,
+    piso VARCHAR(20),
+    departamento VARCHAR(20),
+    barrio VARCHAR(100),
     email VARCHAR(255),
     cuit VARCHAR(100),
     razon_social VARCHAR(255)
@@ -136,25 +140,25 @@ INSERT INTO Carrera (nombre) VALUES
 --
 -- Inserta datos de ejemplo
 --
-INSERT INTO Empresa (nombre, ciudad, direccion, email, cuit, razon_social) VALUES
-('BIOFARMA S.A', 'Córdoba', 'Bv. de los Polacos 6446 Barrio Los Boulevares', 'rrhh@biofarmaweb.com.ar','30-76543210-3', 'BIOFARMA S.A.'),
-('INDACOR S.A.', 'JUAREZ CELMAN', 'Ruta 9 norte km 721 – Juárez Celman', 'aracelipenaflor@pollosindacor.com.ar', '33-12345678-9', 'INDACOR S.A.'),
-('Soc. de Beneficencia Hospital Italiano', 'Córdoba', 'Roma 577', 'seleccion@hospital-italiano.org.ar', NULL, 'Soc. de Beneficencia Hospital Italiano'),
-('SOWIC S.A', 'Córdoba', 'Av. La Voz del Interior 7000, Torre Miragolf Oeste', 'seleccion@sowic.com.ar', NULL, 'SOWIC S.A'),
-('LOS MOLINOS SRL (ELECTROALEM)', 'Córdoba Capital', 'RN19 Ex Km 12 – Malvinas Argentinas', 'rrhhelectroalem@gmail.com', NULL, 'LOS MOLINOS SRL'),
-('HARRIAGUE Y ASOCIADOS SRL (Avenga)', 'Córdoba', 'Capitalinas', 'natalia.barrionuevo@avenga.com', NULL, 'HARRIAGUE Y ASOCIADOS SRL'),
-('Universidad Nacional de Córdoba - FFyH', 'Córdoba', 'Pabellón Agustín Tosco – Ciudad Universitaria', 'biblio@ffyh.unc.edu.ar', NULL, 'Universidad Nacional de Córdoba'),
-('Grupo Kersia', 'Córdoba', NULL, 'constanza.diebel@kersia-group.com', NULL, 'Grupo Kersia'),
-('ELECTROMECÁNICA DICK COSTANTINO SA - WEDO', 'Río Tercero', NULL, 'rrhh@dickcostantinosa.com.ar', NULL, 'ELECTROMECÁNICA DICK COSTANTINO SA'),
-('Prosecretaría de Informática - UNC', 'Córdoba', 'Av Haya de la Torre S/N Pabellón Argentina, 1er piso – Ciudad Universitaria', 'contable@informatica.unc.edu.ar', NULL, 'Prosecretaría de Informática - UNC'),
-('IMPRO SRL', 'Córdoba', 'Barrio Est. Flores', 'rrhhimpro1@gmail.com', NULL, 'IMPRO SRL'),
-('Fumiscor S.A', 'Córdoba', 'Avenida circunvalación km 4 y medio. Barrio los Olmos Sur', 'gestiondetalento.gm@grupomarma.com.ar', NULL, 'Fumiscor S.A'),
-('IVECO ARGENTINA S.A.', 'Córdoba', 'Ferreyra', 'talentos.ivg-argentina@ivecogroup.com', NULL, 'IVECO ARGENTINA S.A.'),
-('BANCO ROELA', 'Córdoba', 'Rosario de Santa Fé 275', 'rrhh@bancoroela.com.ar', NULL, 'BANCO ROELA'),
-('SPINOZZI SAS', 'Córdoba', NULL, 'SPINOZZIRRHH@GMAIL.COM', NULL, 'SPINOZZI SAS'),
-('HELIOS ENERGÍA LIMPIA S.A.', 'Estación General Paz - Córdoba', NULL, 'seleccioncaphumano@selenesoluciones.com', NULL, 'HELIOS ENERGÍA LIMPIA S.A.'),
-('MAXION MONTICH S.A.', 'Córdoba', 'Planta 1 Av 11 de septiembre 3768 y Planta 2 La Carbonada 9500', 'atorres@montich.com.ar', NULL, 'MAXION MONTICH S.A.'),
-('Adecco Argentina/Stellantis', 'Córdoba, Ferreyra', NULL, 'micaela.cardus@adecco.com', NULL, 'Adecco Argentina/Stellantis');
+INSERT INTO Empresa (nombre, ciudad, calle, nro_calle, piso, departamento, barrio, email, cuit, razon_social) VALUES
+('BIOFARMA S.A', 'Córdoba', 'Bv. de los Polacos', 6446, NULL, NULL, 'Los Boulevares', 'rrhh@biofarmaweb.com.ar','30-76543210-3', 'BIOFARMA S.A.'),
+('INDACOR S.A.', 'JUAREZ CELMAN', 'Ruta 9 norte km 721', NULL, NULL, NULL, NULL, 'aracelipenaflor@pollosindacor.com.ar', '33-12345678-9', 'INDACOR S.A.'),
+('Soc. de Beneficencia Hospital Italiano', 'Córdoba', 'Roma', 577, NULL, NULL, NULL, 'seleccion@hospital-italiano.org.ar', NULL, 'Soc. de Beneficencia Hospital Italiano'),
+('SOWIC S.A', 'Córdoba', 'Av. La Voz del Interior', 7000, NULL, NULL, 'Torre Miragolf Oeste', 'seleccion@sowic.com.ar', NULL, 'SOWIC S.A'),
+('LOS MOLINOS SRL (ELECTROALEM)', 'Córdoba Capital', 'RN19 Ex Km 12', NULL, NULL, NULL, 'Malvinas Argentinas', 'rrhhelectroalem@gmail.com', NULL, 'LOS MOLINOS SRL'),
+('HARRIAGUE Y ASOCIADOS SRL (Avenga)', 'Córdoba', NULL, NULL, NULL, NULL, 'Capitalinas', 'natalia.barrionuevo@avenga.com', NULL, 'HARRIAGUE Y ASOCIADOS SRL'),
+('Universidad Nacional de Córdoba - FFyH', 'Córdoba', 'Pabellón Agustín Tosco', NULL, NULL, NULL, 'Ciudad Universitaria', 'biblio@ffyh.unc.edu.ar', NULL, 'Universidad Nacional de Córdoba'),
+('Grupo Kersia', 'Córdoba', NULL, NULL, NULL, NULL, NULL, 'constanza.diebel@kersia-group.com', NULL, 'Grupo Kersia'),
+('ELECTROMECÁNICA DICK COSTANTINO SA - WEDO', 'Río Tercero', NULL, NULL, NULL, NULL, NULL, 'rrhh@dickcostantinosa.com.ar', NULL, 'ELECTROMECÁNICA DICK COSTANTINO SA'),
+('Prosecretaría de Informática - UNC', 'Córdoba', 'Av Haya de la Torre S/N Pabellón Argentina', NULL, '1er piso', NULL, 'Ciudad Universitaria', 'contable@informatica.unc.edu.ar', NULL, 'Prosecretaría de Informática - UNC'),
+('IMPRO SRL', 'Córdoba', NULL, NULL, NULL, NULL, 'Est. Flores', 'rrhhimpro1@gmail.com', NULL, 'IMPRO SRL'),
+('Fumiscor S.A', 'Córdoba', 'Avenida circunvalación km 4 y medio', NULL, NULL, NULL, 'Los Olmos Sur', 'gestiondetalento.gm@grupomarma.com.ar', NULL, 'Fumiscor S.A'),
+('IVECO ARGENTINA S.A.', 'Córdoba', NULL, NULL, NULL, NULL, 'Ferreyra', 'talentos.ivg-argentina@ivecogroup.com', NULL, 'IVECO ARGENTINA S.A.'),
+('BANCO ROELA', 'Córdoba', 'Rosario de Santa Fé', 275, NULL, NULL, NULL, 'rrhh@bancoroela.com.ar', NULL, 'BANCO ROELA'),
+('SPINOZZI SAS', 'Córdoba', NULL, NULL, NULL, NULL, NULL, 'SPINOZZIRRHH@GMAIL.COM', NULL, 'SPINOZZI SAS'),
+('HELIOS ENERGÍA LIMPIA S.A.', 'Estación General Paz', 'Córdoba', NULL, NULL, NULL, NULL, 'seleccioncaphumano@selenesoluciones.com', NULL, 'HELIOS ENERGÍA LIMPIA S.A.'),
+('MAXION MONTICH S.A.', 'Córdoba', 'Av 11 de septiembre', 3768, NULL, NULL, NULL, 'atorres@montich.com.ar', NULL, 'MAXION MONTICH S.A.'),
+('Adecco Argentina/Stellantis', 'Córdoba', NULL, NULL, NULL, NULL, 'Ferreyra', 'micaela.cardus@adecco.com', NULL, 'Adecco Argentina/Stellantis');
 
 --
 -- Inserta datos de ejemplo para Contacto
