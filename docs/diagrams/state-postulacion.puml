@@ -1,0 +1,53 @@
+@startuml Diagrama de Estados - Ciclo de Vida de Postulación
+!theme plain
+
+[*] --> BORRADOR : Estudiante inicia\npostulación
+
+BORRADOR --> PENDIENTE_APROBACION : Estudiante envía\npostulación
+BORRADOR --> [*] : Estudiante descarta
+
+PENDIENTE_APROBACION --> PUBLICADA : Empresa/Facultad\naprueba
+PENDIENTE_APROBACION --> BORRADOR : Se requieren\ncambios
+
+PUBLICADA --> CUBIERTA : Empresa acepta\nal estudiante
+PUBLICADA --> FINALIZADA : Empresa rechaza\no tiempo expirado
+
+CUBIERTA --> FINALIZADA : Pasantía completada
+
+FINALIZADA --> [*]
+
+note right of BORRADOR
+  Estado inicial
+  - Guardada localmente
+  - No enviada
+  - Editable
+end note
+
+note right of PENDIENTE_APROBACION
+  Estado de revisión
+  - Enviada para aprobación
+  - En cola de revisión
+  - No editable
+end note
+
+note right of PUBLICADA
+  Estado aprobado
+  - Visible para empresa
+  - En consideración
+  - Esperando decisión
+end note
+
+note right of CUBIERTA
+  Estado activo
+  - Estudiante aceptado
+  - Pasantía en curso
+  - Contrato vigente
+end note
+
+note right of FINALIZADA
+  Estado terminal
+  - Proceso completado
+  - Rechazada o finalizada
+end note
+
+@enduml

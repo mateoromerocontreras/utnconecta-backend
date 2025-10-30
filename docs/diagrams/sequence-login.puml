@@ -1,0 +1,24 @@
+@startuml Secuencia de Login
+!theme plain
+actor Usuario
+participant "Frontend\n(React)" as Frontend
+participant "API REST" as API
+participant "Security\nFilter" as Security
+participant "AuthService" as Service
+database "MySQL" as DB
+
+Usuario -> Frontend: Ingresa credenciales
+Frontend -> API: POST /auth/login\n{username, password}
+API -> Security: Valida request
+Security -> Service: authenticate()
+Service -> DB: SELECT usuario\nWHERE username=?
+DB --> Service: Usuario encontrado
+Service -> Service: Verificar password\n(BCrypt)
+Service -> Service: Generar JWT token
+Service --> Security: Token generado
+Security --> API: Respuesta con token
+API --> Frontend: {token, usuario}
+Frontend -> Frontend: Almacenar token\n(localStorage)
+Frontend --> Usuario: Login exitoso
+
+@enduml

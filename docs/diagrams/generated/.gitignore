@@ -1,0 +1,7 @@
+# Archivos PlantUML generados
+*.png
+*.svg
+*.pdf
+
+# Mantener el directorio pero no los archivos generados
+!.gitkeep

@@ -1,0 +1,102 @@
+@startuml Modelo de Pasantia Detallado
+!theme plain
+skinparam classAttributeIconSize 0
+
+class Pasantia {
+    - Integer idPasantia
+    - String titulo
+    - String puestoACubrir
+    - String ciudad
+    - String modalidad
+    - Float asignacionEstimulo
+    - Integer cantidadDePasantes
+    - LocalDate fechaPublicacion
+    - LocalDate fechaCaducidad
+    - EstadoPasantia estado
+    - String emailContacto
+    --
+    + Empresa empresa
+    + List<Carrera> carreras
+    + List<Postulacion> postulaciones
+    --
+    + getId(): Integer
+    + getTitulo(): String
+    + getPuestoACubrir(): String
+    + getCiudad(): String
+    + getModalidad(): String
+    + getAsignacionEstimulo(): Float
+    + getCantidadDePasantes(): Integer
+    + getFechaPublicacion(): LocalDate
+    + getFechaCaducidad(): LocalDate
+    + getEstado(): EstadoPasantia
+    + getEmailContacto(): String
+    + getEmpresa(): Empresa
+    + getCarreras(): List<Carrera>
+    + getPostulaciones(): List<Postulacion>
+}
+
+enum EstadoPasantia {
+    PUBLICADA
+    FINALIZADA
+    DADA_DE_BAJA
+    PENDIENTE_DE_APROBACION
+    EXPIRADA
+    --
+    + name(): String
+    + ordinal(): int
+}
+
+class Empresa {
+    - Integer idEmpresa
+    - String nombre
+    - String cuit
+    - String email
+    + getId(): Integer
+    + getNombre(): String
+}
+
+class Carrera {
+    - Integer idCarrera
+    - String nombre
+    - String codigo
+    + getId(): Integer
+    + getNombre(): String
+}
+
+class Postulacion {
+    - Integer idPostulacion
+    - LocalDate fechaPostulacion
+    - EstadoPostulacion estado
+    + getId(): Integer
+    + getEstado(): EstadoPostulacion
+}
+
+Pasantia "n" --> "1" EstadoPasantia : estado
+Pasantia "n" --> "1" Empresa : empresa
+Pasantia "1" *-- "n" Postulacion : postulaciones
+Pasantia "n" --> "n" Carrera : carreras
+
+note right of Pasantia
+  Representa una oferta de pasantía 
+  publicada por una empresa.
+  
+  Estados del ciclo de vida:
+  • PENDIENTE_DE_APROBACION: Enviada, esperando revisión
+  • PUBLICADA: Aprobada y visible
+  • FINALIZADA: Todas las plazas cubiertas
+  • DADA_DE_BAJA: Cancelada por la empresa
+  • EXPIRADA: Pasó la fecha de caducidad
+  
+  Relaciones:
+  • Una empresa publica muchas pasantías
+  • Una pasantía puede tener múltiples postulaciones
+  • Una pasantía puede ser para múltiples carreras
+end note
+
+note right of EstadoPasantia
+  Enum que define los estados
+  del ciclo de vida de una
+  pasantía.
+end note
+
+@enduml

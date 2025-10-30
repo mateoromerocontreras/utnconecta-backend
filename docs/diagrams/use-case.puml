@@ -1,0 +1,45 @@
+@startuml Casos de Uso - Sistema de Pasantías
+!theme plain
+left to right direction
+
+actor "Estudiante" as EST
+actor "Empresa" as EMP
+actor "Administrador" as ADM
+
+rectangle "Sistema de Gestión de Pasantías" {
+    usecase "Registrarse" as UC1
+    usecase "Iniciar Sesión" as UC2
+    usecase "Completar Perfil" as UC3
+    usecase "Modificar Perfil" as UC4
+    usecase "Buscar Pasantías" as UC5
+    usecase "Postular a Pasantía" as UC6
+    usecase "Publicar Pasantía" as UC7
+    usecase "Gestionar Postulaciones" as UC8
+    usecase "Registrar Empresa" as UC9
+    usecase "Registrar Estudiante" as UC10
+    usecase "Gestionar Carreras" as UC11
+    usecase "Ver Reportes" as UC12
+}
+
+EST --> UC1
+EST --> UC2
+EST --> UC3
+EST --> UC4
+EST --> UC5
+EST --> UC6
+
+EMP --> UC2
+EMP --> UC7
+EMP --> UC8
+
+ADM --> UC2
+ADM --> UC9
+ADM --> UC10
+ADM --> UC11
+ADM --> UC12
+
+UC6 ..> UC3 : <<require>>
+UC7 ..> UC2 : <<require>>
+UC8 ..> UC7 : <<include>>
+
+@enduml

@@ -1,0 +1,43 @@
+@startuml Sistema de Gestión de Pasantías - Arquitectura
+!theme plain
+skinparam componentStyle rectangle
+
+package "Frontend - React" {
+    [Interfaz de Usuario] as UI
+    [Componentes React] as Components
+    [Gestión de Estado] as State
+}
+
+package "Backend - Spring Boot" {
+    [API REST] as API
+    [Controladores] as Controllers
+    [Servicios] as Services
+    [Seguridad (JWT)] as Security
+    [MyBatis Mappers] as Mappers
+}
+
+database "MySQL" {
+    [Base de Datos] as DB
+}
+
+UI --> Components
+Components --> State
+State --> API : HTTP/JSON
+
+API --> Security : Autenticación
+Security --> Controllers
+Controllers --> Services
+Services --> Mappers
+Mappers --> DB
+
+note right of Security
+  JWT para autenticación
+  Spring Security
+end note
+
+note right of API
+  RESTful API
+  OpenAPI/Swagger
+end note
+
+@enduml

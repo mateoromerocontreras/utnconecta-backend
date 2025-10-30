@@ -1,0 +1,51 @@
+@startuml Diagrama de Estados - Ciclo de Vida de Pasantía
+!theme plain
+
+[*] --> PENDIENTE_DE_APROBACION : Empresa crea\noferta de pasantía
+
+PENDIENTE_DE_APROBACION --> PUBLICADA : Facultad aprueba
+PENDIENTE_DE_APROBACION --> DADA_DE_BAJA : Empresa cancela\no Facultad rechaza
+
+PUBLICADA --> FINALIZADA : Todas las plazas\nson cubiertas
+PUBLICADA --> EXPIRADA : Fecha de caducidad\nalcanzada
+PUBLICADA --> DADA_DE_BAJA : Empresa cancela\nla oferta
+
+EXPIRADA --> PUBLICADA : Facultad extiende\nfecha de caducidad
+
+FINALIZADA --> [*]
+DADA_DE_BAJA --> [*]
+EXPIRADA --> [*] : Sin extensión
+
+note right of PENDIENTE_DE_APROBACION
+  Estado inicial
+  - Esperando revisión de facultad
+  - No visible para estudiantes
+end note
+
+note right of PUBLICADA
+  Estado activo
+  - Visible para estudiantes
+  - Acepta postulaciones
+  - Antes de fecha de caducidad
+end note
+
+note right of FINALIZADA
+  Estado terminal
+  - Todas las plazas cubiertas
+  - No acepta más postulaciones
+end note
+
+note right of DADA_DE_BAJA
+  Estado terminal
+  - Cancelada por empresa
+  - O rechazada por facultad
+end note
+
+note right of EXPIRADA
+  Estado terminal
+  - Fecha de caducidad alcanzada
+  - Sin postulaciones suficientes
+  - Puede extenderse
+end note
+
+@enduml

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.seminario.pasantias.persistence.PostulacionMapper">
+
+    <!-- ResultMap para Postulacion completa -->
+    <resultMap id="postulacionCompleteMap" type="com.seminario.pasantias.entity.Postulacion">
+        <id property="idPostulacion" column="id_postulacion"/>
+        <result property="fechaPostulacion" column="fecha_postulacion"/>
+        <result property="fechaInicioContrato" column="fecha_inicio_contrato"/>
+        <result property="duracionMeses" column="duracion_meses"/>
+        <result property="estado" column="estado"/>
+        
+        <!-- Pasantia anidada -->
+        <association property="pasantia" javaType="com.seminario.pasantias.entity.Pasantia">
+            <id property="idPasantia" column="pasantia_id"/>
+            <result property="titulo" column="pasantia_titulo"/>
+            <result property="puestoACubrir" column="pasantia_puesto"/>
+            <result property="ciudad" column="pasantia_ciudad"/>
+            <result property="modalidad" column="pasantia_modalidad"/>
+        </association>
+        
+        <!-- Estudiante anidado -->
+        <association property="estudiante" javaType="com.seminario.pasantias.entity.Estudiante">
+            <id property="idEstudiante" column="estudiante_id"/>
+            <result property="nombre" column="estudiante_nombre"/>
+            <result property="apellido" column="estudiante_apellido"/>
+            <result property="email" column="estudiante_email"/>
+        </association>
+    </resultMap>
+
+    <!-- Consulta con filtros dinámicos -->
+    <select id="findWithFilters" parameterType="com.seminario.pasantias.dto.request.PostulacionFiltroDTO"
+            resultMap="postulacionCompleteMap">
+        SELECT 
+            po.id_postulacion,
+            po.fecha_postulacion,
+            po.fecha_inicio_contrato,
+            po.duracion_meses,
+            po.estado,
+            pa.id_pasantia AS pasantia_id,
+            pa.titulo AS pasantia_titulo,
+            pa.puesto_a_cubrir AS pasantia_puesto,
+            pa.ciudad AS pasantia_ciudad,
+            pa.modalidad AS pasantia_modalidad,
+            e.id_estudiante AS estudiante_id,
+            e.nombre AS estudiante_nombre,
+            e.apellido AS estudiante_apellido,
+            e.email AS estudiante_email
+        FROM postulacion po
+        LEFT JOIN pasantia pa ON po.id_pasantia = pa.id_pasantia
+        LEFT JOIN estudiante e ON po.id_estudiante = e.id_estudiante
+        <where>
+            <if test="idEstudiante != null">
+                AND po.id_estudiante = #{idEstudiante}
+            </if>
+            <if test="idPasantia != null">
+                AND po.id_pasantia = #{idPasantia}
+            </if>
+            <if test="estado != null">
+                AND po.estado = #{estado}
+            </if>
+            <if test="fechaDesde != null">
+                AND po.fecha_postulacion &gt;= #{fechaDesde}
+            </if>
+            <if test="fechaHasta != null">
+                AND po.fecha_postulacion &lt;= #{fechaHasta}
+            </if>
+            <if test="idEmpresa != null">
+                AND pa.id_empresa = #{idEmpresa}
+            </if>
+            <if test="soloActivas != null and soloActivas == true">
+                AND po.estado != 'FINALIZADA'
+            </if>
+        </where>
+        <choose>
+            <when test="ordenarPor != null and ordenarPor == 'fechaPostulacion'">
+                ORDER BY po.fecha_postulacion
+            </when>
+            <when test="ordenarPor != null and ordenarPor == 'estado'">
+                ORDER BY po.estado
+            </when>
+            <otherwise>
+                ORDER BY po.fecha_postulacion DESC
+            </otherwise>
+        </choose>
+        <if test="direccion != null and direccion == 'ASC'">
+            ASC
+        </if>
+        <if test="direccion == null or direccion == 'DESC'">
+            DESC
+        </if>
+        <if test="pagina != null and tamanio != null">
+            LIMIT #{tamanio} OFFSET #{pagina}
+        </if>
+    </select>
+
+    <!-- Contar con filtros -->
+    <select id="countWithFilters" parameterType="com.seminario.pasantias.dto.request.PostulacionFiltroDTO"
+            resultType="long">
+        SELECT COUNT(*)
+        FROM postulacion po
+        LEFT JOIN pasantia pa ON po.id_pasantia = pa.id_pasantia
+        <where>
+            <if test="idEstudiante != null">
+                AND po.id_estudiante = #{idEstudiante}
+            </if>
+            <if test="idPasantia != null">
+                AND po.id_pasantia = #{idPasantia}
+            </if>
+            <if test="estado != null">
+                AND po.estado = #{estado}
+            </if>
+            <if test="fechaDesde != null">
+                AND po.fecha_postulacion &gt;= #{fechaDesde}
+            </if>
+            <if test="fechaHasta != null">
+                AND po.fecha_postulacion &lt;= #{fechaHasta}
+            </if>
+            <if test="idEmpresa != null">
+                AND pa.id_empresa = #{idEmpresa}
+            </if>
+            <if test="soloActivas != null and soloActivas == true">
+                AND po.estado != 'FINALIZADA'
+            </if>
+        </where>
+    </select>
+
+</mapper>
