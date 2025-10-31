@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -14,6 +15,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
     @Autowired
@@ -54,6 +56,11 @@ public class SecurityConfig {
                 .requestMatchers("/roles/**").hasRole("ADMINISTRADOR")
                 // Estudiantes endpoints
                 .requestMatchers("/estudiantes/**").hasAnyRole("ADMINISTRADOR", "ESTUDIANTE")
+                // Pasantías endpoints: buscar y ver públicas es público, resto se controla con @PreAuthorize
+                .requestMatchers(HttpMethod.GET, "/api/pasantias/publicadas").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/pasantias/buscar").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/pasantias/{id}").permitAll()
+                .requestMatchers("/api/pasantias/**").hasAnyRole("ADMINISTRADOR", "EMPRESA")
                 // OPTIONS requests para CORS preflight
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 // Cualquier otra solicitud requiere autenticación

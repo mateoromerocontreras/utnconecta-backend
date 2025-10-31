@@ -18,6 +18,9 @@ public interface EmpresaMapper {
 	@Select("SELECT * FROM Empresa WHERE nombre = #{nombre}")
 	List<Empresa> findByNombre(@Param("nombre") String nombre);
 
+	@Select("SELECT * FROM Empresa WHERE id_usuario = #{idUsuario}")
+	Empresa findByIdUsuario(@Param("idUsuario") Integer idUsuario);
+
 	@Insert("INSERT INTO Empresa(nombre, ciudad, calle, nro_calle, piso, departamento, barrio, email, cuit, razon_social) VALUES(#{nombre}, #{ciudad}, #{calle}, #{nroCalle}, #{piso}, #{departamento}, #{barrio}, #{email}, #{cuit}, #{razonSocial})")
 	@Options(useGeneratedKeys = true, keyProperty = "idEmpresa")
 	void insert(Empresa empresa);

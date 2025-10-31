@@ -252,5 +252,16 @@ public interface PostulacionMapper {
      */
     @Select("SELECT COUNT(*) FROM postulacion WHERE id_pasantia = #{idPasantia}")
     Integer countByPasantia(@Param("idPasantia") Integer idPasantia);
+    
+    /**
+     * Contar postulaciones por pasantía excluyendo un estado específico.
+     */
+    @Select("""
+        SELECT COUNT(*) 
+        FROM postulacion 
+        WHERE id_pasantia = #{idPasantia} 
+        AND estado != #{estado}
+    """)
+    Integer countByPasantiaIdAndEstadoNot(@Param("idPasantia") Integer idPasantia, 
+                                           @Param("estado") String estado);
 }
-

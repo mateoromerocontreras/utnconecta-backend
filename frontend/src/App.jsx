@@ -14,6 +14,7 @@ import Carreras from "./pages/Carreras.jsx";
 import RegistrarCarrera from "./pages/RegistrarCarrera.jsx";
 import Perfil from "./pages/Perfil.jsx";
 import ModificarPerfil from "./pages/ModificarPerfil.jsx";
+import RegistrarPasantia from "./pages/RegistrarPasantia.jsx";
 
 export default function App() {
   return (
@@ -31,6 +32,7 @@ export default function App() {
           <Route path="/registrar-empresa" element={<RegistrarEmpresa />} />
           <Route path="/carreras" element={<Carreras />} />
           <Route path="/registrar-carrera" element={<RegistrarCarrera />} />
+          <Route path="/registrar-pasantia" element={<RegistrarPasantia />} />
           <Route path="/perfil" element={<Perfil />} />
           <Route path="/perfil/completar" element={<CompletarPerfil />} />
           <Route path="/perfil/modificar" element={<ModificarPerfil />} />

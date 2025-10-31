@@ -1,12 +1,17 @@
 package com.seminario.pasantias.controller;
 
-import com.seminario.pasantias.dto.*;
-import com.seminario.pasantias.entity.Postulacion;
-import com.seminario.pasantias.response.GenericResponse;
+import com.seminario.pasantias.dto.request.PostulacionRequestDTO;
+import com.seminario.pasantias.dto.response.PostulacionResponseDTO;
 import com.seminario.pasantias.service.PostulacionService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/postulaciones")
@@ -19,17 +24,42 @@ public class PostulacionController {
     private PostulacionService postulacionService;
 
     @PostMapping("/registrarPostulacion")
-    public GenericResponse registrarPostulacion(@RequestBody PostulacionRequest request) {
-        return postulacionService.registrarPostulacion(request);
+    public ResponseEntity<?> registrarPostulacion(@Valid @RequestBody PostulacionRequestDTO request) {
+        try {
+            PostulacionResponseDTO postulacion = postulacionService.crearPostulacion(request);
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("codigo", 0);
+            response.put("mensaje", "Postulación registrada exitosamente");
+            response.put("data", postulacion);
+            
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("codigo", -1);
+            errorResponse.put("mensaje", e.getMessage());
+            
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
     }
 
     @GetMapping("/consultarPostulaciones")
-    public List<Postulacion> consultarPostulaciones() {
-        return postulacionService.consultarPostulaciones();
-    }
-
-    @PutMapping("/modificarPostulacion")
-    public GenericResponse modificarPostulacion(@RequestBody PostulacionUpdateRequest request) {
-        return postulacionService.modificarPostulacion(request);
+    public ResponseEntity<?> consultarPostulaciones() {
+        try {
+            List<PostulacionResponseDTO> postulaciones = postulacionService.consultarPostulaciones();
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("codigo", 0);
+            response.put("mensaje", "Postulaciones encontradas");
+            response.put("data", postulaciones);
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("codigo", -1);
+            errorResponse.put("mensaje", e.getMessage());
+            
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
     }
 }

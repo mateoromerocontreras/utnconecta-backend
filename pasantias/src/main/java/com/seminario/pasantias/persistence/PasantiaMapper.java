@@ -311,6 +311,82 @@ public interface PasantiaMapper {
      */
     @Delete("DELETE FROM pasantia_carrera WHERE id_pasantia = #{idPasantia}")
     void deleteAllCarrerasByPasantiaId(@Param("idPasantia") Integer idPasantia);
+    
+    /**
+     * Eliminar todas las carreras asociadas a una pasantía (alias).
+     */
+    @Delete("DELETE FROM pasantia_carrera WHERE id_pasantia = #{idPasantia}")
+    void deletePasantiaCarrerasByPasantiaId(@Param("idPasantia") Integer idPasantia);
+    
+    /**
+     * Buscar pasantías por empresa ID.
+     */
+    @Select("""
+        SELECT 
+            p.id_pasantia AS idPasantia,
+            p.titulo,
+            p.puesto_a_cubrir AS puestoACubrir,
+            p.ciudad,
+            p.modalidad,
+            p.asignacion_estimulo AS asignacionEstimulo,
+            p.cantidad_de_pasantes AS cantidadDePasantes,
+            p.fecha_publicacion AS fechaPublicacion,
+            p.fecha_caducidad AS fechaCaducidad,
+            p.estado,
+            p.email_contacto AS emailContacto,
+            p.id_empresa AS idEmpresa
+        FROM pasantia p
+        WHERE p.id_empresa = #{empresaId}
+        ORDER BY p.fecha_publicacion DESC
+    """)
+    List<Pasantia> findByEmpresaId(@Param("empresaId") Integer empresaId);
+    
+    /**
+     * Buscar pasantías por carrera ID.
+     */
+    @Select("""
+        SELECT 
+            p.id_pasantia AS idPasantia,
+            p.titulo,
+            p.puesto_a_cubrir AS puestoACubrir,
+            p.ciudad,
+            p.modalidad,
+            p.asignacion_estimulo AS asignacionEstimulo,
+            p.cantidad_de_pasantes AS cantidadDePasantes,
+            p.fecha_publicacion AS fechaPublicacion,
+            p.fecha_caducidad AS fechaCaducidad,
+            p.estado,
+            p.email_contacto AS emailContacto,
+            p.id_empresa AS idEmpresa
+        FROM pasantia p
+        INNER JOIN pasantia_carrera pc ON p.id_pasantia = pc.id_pasantia
+        WHERE pc.id_carrera = #{carreraId}
+        ORDER BY p.fecha_publicacion DESC
+    """)
+    List<Pasantia> findByCarreraId(@Param("carreraId") Integer carreraId);
+    
+    /**
+     * Buscar pasantías por estado.
+     */
+    @Select("""
+        SELECT 
+            p.id_pasantia AS idPasantia,
+            p.titulo,
+            p.puesto_a_cubrir AS puestoACubrir,
+            p.ciudad,
+            p.modalidad,
+            p.asignacion_estimulo AS asignacionEstimulo,
+            p.cantidad_de_pasantes AS cantidadDePasantes,
+            p.fecha_publicacion AS fechaPublicacion,
+            p.fecha_caducidad AS fechaCaducidad,
+            p.estado,
+            p.email_contacto AS emailContacto,
+            p.id_empresa AS idEmpresa
+        FROM pasantia p
+        WHERE p.estado = #{estado}
+        ORDER BY p.fecha_publicacion DESC
+    """)
+    List<Pasantia> findByEstado(@Param("estado") String estado);
 
     /**
      * Contar postulaciones de una pasantía.
