@@ -42,7 +42,11 @@ CREATE TABLE Empresa (
     barrio VARCHAR(100),
     email VARCHAR(255),
     cuit VARCHAR(100),
-    razon_social VARCHAR(255)
+    razon_social VARCHAR(255),
+    id_usuario INT,
+    activo BOOLEAN DEFAULT TRUE,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario) ON DELETE SET NULL
 );
 
 --
@@ -90,19 +94,57 @@ CREATE TABLE Estudiante (
     FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario) ON DELETE CASCADE
 );
 
-CREATE TABLE postulacion (
+--
+-- Estructura de la tabla `Pasantia`
+--
+CREATE TABLE Pasantia (
+    id_pasantia INT AUTO_INCREMENT PRIMARY KEY,
+    titulo VARCHAR(200) NOT NULL,
+    puesto_a_cubrir VARCHAR(150) NOT NULL,
+    ciudad VARCHAR(100) NOT NULL,
+    modalidad VARCHAR(50) NOT NULL,
+    asignacion_estimulo FLOAT,
+    cantidad_de_pasantes INT NOT NULL DEFAULT 1,
+    fecha_publicacion DATE NOT NULL,
+    fecha_caducidad DATE NOT NULL,
+    estado ENUM('PUBLICADA', 'FINALIZADA', 'DADA_DE_BAJA', 'PENDIENTE_DE_APROBACION', 'EXPIRADA') NOT NULL DEFAULT 'PENDIENTE_DE_APROBACION',
+    email_contacto VARCHAR(100) NOT NULL,
+    id_empresa INT NOT NULL,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_empresa) REFERENCES Empresa(id_empresa) ON DELETE CASCADE
+);
+
+--
+-- Tabla intermedia `Pasantia_Carrera` (relación N:N entre Pasantia y Carrera)
+--
+CREATE TABLE Pasantia_Carrera (
+    id_pasantia INT NOT NULL,
+    id_carrera INT NOT NULL,
+    PRIMARY KEY (id_pasantia, id_carrera),
+    FOREIGN KEY (id_pasantia) REFERENCES Pasantia(id_pasantia) ON DELETE CASCADE,
+    FOREIGN KEY (id_carrera) REFERENCES Carrera(id_carrera) ON DELETE CASCADE
+);
+
+--
+-- Estructura de la tabla `Postulacion` (actualizada)
+--
+CREATE TABLE Postulacion (
     id_postulacion INT PRIMARY KEY AUTO_INCREMENT,
-
-    estudiante_id INT NOT NULL,
-    -- pasantia_id INT,  -- (Comentado por ahora, se agregará cuando exista la entidad Pasantia)
-
-    fecha_postulacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    estado VARCHAR(20) DEFAULT 'Pendiente' CHECK (estado IN ('Pendiente', 'Aceptada', 'Rechazada', 'Cancelada')),
-    observaciones TEXT,
-    fecha_actualizacion TIMESTAMP NULL,
-
+    fecha_postulacion DATE NOT NULL,
+    fecha_inicio_contrato DATE,
+    duracion_meses INT,
+    estado ENUM('BORRADOR', 'PENDIENTE_APROBACION', 'PUBLICADA', 'CUBIERTA', 'FINALIZADA') NOT NULL DEFAULT 'BORRADOR',
+    id_pasantia INT NOT NULL,
+    id_estudiante INT NOT NULL,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_postulacion_pasantia
+        FOREIGN KEY (id_pasantia)
+        REFERENCES Pasantia(id_pasantia)
+        ON DELETE CASCADE,
     CONSTRAINT fk_postulacion_estudiante
-        FOREIGN KEY (estudiante_id)
+        FOREIGN KEY (id_estudiante)
         REFERENCES Estudiante(id_estudiante)
         ON DELETE CASCADE
 );
@@ -122,7 +164,9 @@ INSERT INTO Rol (nombre, descripcion, activo) VALUES
 INSERT INTO Usuario (username, email, password, id_rol, activo) VALUES
 ('admin', 'admin@pasantias.com', '$2a$10$7twR9AUAYwkpeDMQl/RUR.bD1u73FBWoBqX0F7E7qVAdTcxnXLEKO', 1, TRUE), -- Contraseña: admin123
 ('estudiante1', 'estudiante1@estudiantes.com', '$2a$10$NRCLtCsvTEz8F7u1JmX5K.M6aY7P7pgWOHuFLvLh7Lc0ZLCaIrat2', 2, TRUE), -- Contraseña: estudiante123
-('empresa1', 'empresa1@empresas.com', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE); -- Contraseña: empresa123
+('empresa1', 'empresa1@empresas.com', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE), -- Contraseña: empresa123
+('biofarma_user', 'rrhh@biofarmaweb.com.ar', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE), -- Contraseña: empresa123
+('hospital_user', 'seleccion@hospital-italiano.org.ar', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE); -- Contraseña: empresa123
 
 --
 -- Inserta datos de ejemplo para Carrera
@@ -140,10 +184,10 @@ INSERT INTO Carrera (nombre) VALUES
 --
 -- Inserta datos de ejemplo
 --
-INSERT INTO Empresa (nombre, ciudad, calle, nro_calle, piso, departamento, barrio, email, cuit, razon_social) VALUES
-('BIOFARMA S.A', 'Córdoba', 'Bv. de los Polacos', 6446, NULL, NULL, 'Los Boulevares', 'rrhh@biofarmaweb.com.ar','30-76543210-3', 'BIOFARMA S.A.'),
-('INDACOR S.A.', 'JUAREZ CELMAN', 'Ruta 9 norte km 721', NULL, NULL, NULL, NULL, 'aracelipenaflor@pollosindacor.com.ar', '33-12345678-9', 'INDACOR S.A.'),
-('Soc. de Beneficencia Hospital Italiano', 'Córdoba', 'Roma', 577, NULL, NULL, NULL, 'seleccion@hospital-italiano.org.ar', NULL, 'Soc. de Beneficencia Hospital Italiano'),
+INSERT INTO Empresa (nombre, ciudad, calle, nro_calle, piso, departamento, barrio, email, cuit, razon_social, id_usuario) VALUES
+('BIOFARMA S.A', 'Córdoba', 'Bv. de los Polacos', 6446, NULL, NULL, 'Los Boulevares', 'rrhh@biofarmaweb.com.ar','30-76543210-3', 'BIOFARMA S.A.', 4),
+('INDACOR S.A.', 'JUAREZ CELMAN', 'Ruta 9 norte km 721', NULL, NULL, NULL, NULL, 'aracelipenaflor@pollosindacor.com.ar', '33-12345678-9', 'INDACOR S.A.', NULL),
+('Soc. de Beneficencia Hospital Italiano', 'Córdoba', 'Roma', 577, NULL, NULL, NULL, 'seleccion@hospital-italiano.org.ar', NULL, 'Soc. de Beneficencia Hospital Italiano', 5),
 ('SOWIC S.A', 'Córdoba', 'Av. La Voz del Interior', 7000, NULL, NULL, 'Torre Miragolf Oeste', 'seleccion@sowic.com.ar', NULL, 'SOWIC S.A'),
 ('LOS MOLINOS SRL (ELECTROALEM)', 'Córdoba Capital', 'RN19 Ex Km 12', NULL, NULL, NULL, 'Malvinas Argentinas', 'rrhhelectroalem@gmail.com', NULL, 'LOS MOLINOS SRL'),
 ('HARRIAGUE Y ASOCIADOS SRL (Avenga)', 'Córdoba', NULL, NULL, NULL, NULL, 'Capitalinas', 'natalia.barrionuevo@avenga.com', NULL, 'HARRIAGUE Y ASOCIADOS SRL'),
@@ -187,9 +231,30 @@ INSERT INTO Contacto (nombre, apellido, email_responsable, telefono_responsable,
 
 
 --
--- Inserta datos de ejemplo para Postulacion (Comentado hasta que existan estudiantes)
+-- Inserta datos de ejemplo para Estudiante
 --
--- INSERT INTO postulacion (estudiante_id, estado, observaciones)
--- VALUES 
---     (1, 'Pendiente', 'Postulación inicial de prueba'),
---     (2, 'Aceptada', 'Postulación aprobada por recursos humanos');
+INSERT INTO Estudiante (dni, apellido, nombre, especialidad, nro_legajo, email, tel_celular, id_usuario, activo) VALUES
+('12345678', 'García', 'Juan', 'Ingeniería en Sistemas', 'L001', 'juan.garcia@estudiantes.com', '351-1234567', 2, TRUE);
+
+--
+-- Inserta datos de ejemplo para Pasantia
+--
+INSERT INTO Pasantia (titulo, puesto_a_cubrir, ciudad, modalidad, asignacion_estimulo, cantidad_de_pasantes, fecha_publicacion, fecha_caducidad, estado, email_contacto, id_empresa) VALUES
+('Desarrollador Backend Java', 'Desarrollador Junior', 'Córdoba', 'Híbrida', 50000.0, 2, '2025-11-01', '2026-02-01', 'PUBLICADA', 'rrhh@biofarmaweb.com.ar', 1),
+('Analista de Sistemas', 'Analista Junior', 'Córdoba', 'Presencial', 45000.0, 1, '2025-11-01', '2026-01-15', 'PUBLICADA', 'seleccion@hospital-italiano.org.ar', 3),
+('Desarrollador Frontend React', 'Desarrollador Frontend', 'Córdoba', 'Remoto', 48000.0, 3, '2025-10-15', '2025-12-31', 'PENDIENTE_DE_APROBACION', 'natalia.barrionuevo@avenga.com', 6);
+
+--
+-- Inserta relaciones Pasantia-Carrera
+--
+INSERT INTO Pasantia_Carrera (id_pasantia, id_carrera) VALUES
+(1, 6), -- Desarrollador Backend Java -> Ingeniería en Sistemas
+(2, 6), -- Analista de Sistemas -> Ingeniería en Sistemas
+(2, 2), -- Analista de Sistemas -> Ingeniería Industrial
+(3, 6); -- Desarrollador Frontend -> Ingeniería en Sistemas
+
+--
+-- Inserta datos de ejemplo para Postulacion
+--
+-- INSERT INTO Postulacion (fecha_postulacion, estado, id_pasantia, id_estudiante) VALUES
+-- ('2025-11-02', 'BORRADOR', 1, 1);
