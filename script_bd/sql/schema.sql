@@ -205,7 +205,11 @@ INSERT INTO Empresa (nombre, ciudad, calle, nro_calle, piso, departamento, barri
 ('SPINOZZI SAS', 'Córdoba', NULL, NULL, NULL, NULL, NULL, 'SPINOZZIRRHH@GMAIL.COM', NULL, 'SPINOZZI SAS', NULL),
 ('HELIOS ENERGÍA LIMPIA S.A.', 'Estación General Paz', 'Córdoba', NULL, NULL, NULL, NULL, 'seleccioncaphumano@selenesoluciones.com', NULL, 'HELIOS ENERGÍA LIMPIA S.A.', NULL),
 ('MAXION MONTICH S.A.', 'Córdoba', 'Av 11 de septiembre', 3768, NULL, NULL, NULL, 'atorres@montich.com.ar', NULL, 'MAXION MONTICH S.A.', NULL),
-('Adecco Argentina/Stellantis', 'Córdoba', NULL, NULL, NULL, NULL, 'Ferreyra', 'micaela.cardus@adecco.com', NULL, 'Adecco Argentina/Stellantis', NULL);
+('Adecco Argentina/Stellantis', 'Córdoba', NULL, NULL, NULL, NULL, 'Ferreyra', 'micaela.cardus@adecco.com', NULL, 'Adecco Argentina/Stellantis', NULL),
+('AMX ARGENTINA S.A. (CLARO ARGENTINA)', 'Córdoba', 'Av. Sabattini', 1417, NULL, NULL, NULL, 'rrhh@claro.com.ar', NULL, 'AMX ARGENTINA S.A.', NULL),
+('AVENUE SA', 'Córdoba', 'Avenida Castro barros', 1155, NULL, NULL, NULL, 'rocio.suarez@grupoquijada.com.ar', NULL, 'AVENUE SA', NULL),
+('Dayco Argentina S.A.', 'Córdoba', 'Juan R. Estomba', NULL, NULL, NULL, 'Parque Industrial Ferreyra', 'alfonsina.gioino@dayco.com', NULL, 'Dayco Argentina S.A.', NULL),
+('Hospital Privado Universitario de Córdoba', 'Córdoba', 'Santa Rosa', 770, NULL, NULL, NULL, 'azul.merlo@hospitalprivado.com.ar', NULL, 'Hospital Privado Universitario de Córdoba', NULL);
 
 --
 -- Inserta datos de ejemplo para Contacto
@@ -229,7 +233,11 @@ INSERT INTO Contacto (nombre, apellido, email_responsable, telefono_responsable,
 ('Mariano', 'Fernandez', 'SPINOZZIRRHH@GMAIL.COM', NULL, 15),
 ('Regina', 'Gerlach', 'seleccioncaphumano@selenesoluciones.com', NULL, 16),
 ('Anabella', 'Torres', 'atorres@montich.com.ar', NULL, 17),
-('María Sol', 'Benedetic', 'micaela.cardus@adecco.com', NULL, 18);
+('María Sol', 'Benedetic', 'micaela.cardus@adecco.com', NULL, 18),
+('Juan Manuel', 'Bachmann', 'rrhh@claro.com.ar', NULL, 19),
+('Rocio', 'Suarez', 'rocio.suarez@grupoquijada.com.ar', NULL, 20),
+('Alfonsina', 'Gioino', 'alfonsina.gioino@dayco.com', NULL, 21),
+('Yanina', 'Giordano', 'azul.merlo@hospitalprivado.com.ar', NULL, 22);
 
 
 
@@ -242,10 +250,14 @@ INSERT INTO Estudiante (dni, apellido, nombre, especialidad, nro_legajo, email, 
 --
 -- Inserta datos de ejemplo para Pasantia
 --
-INSERT INTO Pasantia (titulo, puesto_a_cubrir, ciudad, modalidad, asignacion_estimulo, cantidad_de_pasantes, fecha_publicacion, fecha_caducidad, estado, email_contacto, id_empresa) VALUES
-('Desarrollador Backend Java', 'Desarrollador Junior', 'Córdoba', 'Híbrida', 50000.0, 2, '2025-11-01', '2026-02-01', 'PUBLICADA', 'rrhh@biofarmaweb.com.ar', 1),
-('Analista de Sistemas', 'Analista Junior', 'Córdoba', 'Presencial', 45000.0, 1, '2025-11-01', '2026-01-15', 'PUBLICADA', 'seleccion@hospital-italiano.org.ar', 3),
-('Desarrollador Frontend React', 'Desarrollador Frontend', 'Córdoba', 'Remoto', 48000.0, 3, '2025-10-15', '2025-12-31', 'PENDIENTE_DE_APROBACION', 'natalia.barrionuevo@avenga.com', 6);
+INSERT INTO Pasantia (titulo, puesto_a_cubrir, ciudad, modalidad, asignacion_estimulo, cantidad_de_pasantes, fecha_publicacion, fecha_caducidad, estado, email_contacto, conocimientos, otros_requisitos, beneficios, id_empresa) VALUES
+('Desarrollador Backend Java', 'Desarrollador Junior', 'Córdoba', 'Híbrida', 50000.0, 2, '2025-11-01', '2026-02-01', 'PUBLICADA', 'rrhh@biofarmaweb.com.ar', NULL, NULL, NULL, 1),
+('Analista de Sistemas', 'Analista Junior', 'Córdoba', 'Presencial', 45000.0, 1, '2025-11-01', '2026-01-15', 'PUBLICADA', 'seleccion@hospital-italiano.org.ar', NULL, NULL, NULL, 3),
+('Desarrollador Frontend React', 'Desarrollador Frontend', 'Córdoba', 'Remoto', 48000.0, 3, '2025-10-15', '2025-12-31', 'PENDIENTE_DE_APROBACION', 'natalia.barrionuevo@avenga.com', NULL, NULL, NULL, 6),
+('Pasante IT', 'Pasante IT', 'Córdoba', 'Híbrida', 725888.0, 3, '2025-12-01', '2026-03-01', 'PENDIENTE_DE_APROBACION', 'rrhh@claro.com.ar', 'Conocimientos de lenguaje de base de datos Oracle\nConocimientos en metodologías ágiles y DevOps\nConocimientos de Linux\nPoder dar soporte a ejecuciones realizadas por los usuarios que usan las herramientas de IC/DC\nInglés (nivel medio)', 'Simplicidad en tu forma de pensar y hacer\nVocación de servicio', 'OSDE 210', 19),
+('Pasante de Garantía', 'Pasante de Garantía', 'Córdoba', 'Presencial', 712656.0, 2, '2025-12-01', '2026-03-01', 'PENDIENTE_DE_APROBACION', 'rocio.suarez@grupoquijada.com.ar', 'Estudiantes que estén cursando 3ro o 4to año tendrían los conocimientos necesarios para poder desempeñarse en la posición', 'Manejo de Excel (Básico)', 'SWISS MEDICAL SMG 20', 20),
+('Pasante en Seguridad y Ambiente', 'Pasante en Seguridad y Ambiente', 'Córdoba', 'Presencial', 473101.0, 1, '2025-12-01', '2026-03-01', 'PENDIENTE_DE_APROBACION', 'alfonsina.gioino@dayco.com', 'Conocimiento Excel avanzado', NULL, NULL, 21),
+('Auxiliar de soporte técnico', 'Auxiliar de soporte técnico', 'Córdoba', 'Presencial', 532411.18, 1, '2025-12-01', '2026-03-01', 'PENDIENTE_DE_APROBACION', 'azul.merlo@hospitalprivado.com.ar', 'Conocimientos en reparación y armado de computadoras, redes, impresoras, entre otras. Buen manejo de Word y Excel.', NULL, 'Ninguno', 22);
 
 --
 -- Inserta relaciones Pasantia-Carrera
@@ -254,7 +266,12 @@ INSERT INTO Pasantia_Carrera (id_pasantia, id_carrera) VALUES
 (1, 6), -- Desarrollador Backend Java -> Ingeniería en Sistemas
 (2, 6), -- Analista de Sistemas -> Ingeniería en Sistemas
 (2, 2), -- Analista de Sistemas -> Ingeniería Industrial
-(3, 6); -- Desarrollador Frontend -> Ingeniería en Sistemas
+(3, 6), -- Desarrollador Frontend -> Ingeniería en Sistemas
+(4, 6), -- Pasante IT (AMX/CLARO) -> Ingeniería en Sistemas
+(5, 2), -- Pasante de Garantía (AVENUE) -> Ingeniería Industrial
+(5, 4), -- Pasante de Garantía (AVENUE) -> Ingeniería Mecánica
+(7, 6); -- Auxiliar de soporte técnico (Hospital Privado) -> Ingeniería en Sistemas
+-- Nota: Pasante en Seguridad y Ambiente (Dayco) requiere "Tecnicatura en higiene y seguridad" que no existe en la tabla Carrera
 
 --
 -- Inserta datos de ejemplo para Postulacion

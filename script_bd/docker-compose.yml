@@ -10,6 +10,10 @@ services:
       MYSQL_ROOT_PASSWORD: my-secret-pw
       # Nombre de la base de datos que se creará al inicio
       MYSQL_DATABASE: db_pasantias
+      # Configuración de charset UTF-8
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_unicode_ci
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     ports:
       # Mapeo de puertos: host_port:container_port
       - "3306:3306"

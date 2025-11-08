@@ -222,6 +222,17 @@ public class PasantiaService {
     }
 
     /**
+     * Obtener todas las pasantías
+     */
+    @Transactional(readOnly = true)
+    public List<PasantiaResponseDTO> obtenerTodasLasPasantias() {
+        List<Pasantia> pasantias = pasantiaMapper.findAll();
+        return pasantias.stream()
+                .map(mapperUtil::entityToResponseDto)
+                .collect(Collectors.toList());
+    }
+
+    /**
      * Obtener pasantías publicadas (disponibles para postular)
      */
     @Transactional(readOnly = true)

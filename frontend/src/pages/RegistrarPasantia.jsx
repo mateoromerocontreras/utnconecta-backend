@@ -20,6 +20,9 @@ export default function RegistrarPasantia() {
     fechaPublicacion: "",
     fechaCaducidad: "",
     emailContacto: "",
+    conocimientos: "",
+    otrosRequisitos: "",
+    beneficios: "",
     idsCarreras: []
   });
 
@@ -187,7 +190,10 @@ export default function RegistrarPasantia() {
       fechaCaducidad: form.fechaCaducidad,
       idEmpresa: empresaId,
       idsCarreras: form.idsCarreras,
-      emailContacto: form.emailContacto || null
+      emailContacto: form.emailContacto || null,
+      conocimientos: form.conocimientos || null,
+      otrosRequisitos: form.otrosRequisitos || null,
+      beneficios: form.beneficios || null
     };
 
     try {
@@ -200,7 +206,7 @@ export default function RegistrarPasantia() {
         throw new Error("No hay token de autenticación. Por favor, inicia sesión.");
       }
 
-      const res = await fetch(`${API}/api/pasantias/crear`, {
+      const res = await fetch(`${API}/pasantias/registrar`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -226,6 +232,9 @@ export default function RegistrarPasantia() {
           fechaPublicacion: "",
           fechaCaducidad: "",
           emailContacto: form.emailContacto, // Mantener email
+          conocimientos: "",
+          otrosRequisitos: "",
+          beneficios: "",
           idsCarreras: []
         });
 
@@ -400,6 +409,36 @@ export default function RegistrarPasantia() {
             placeholder="Email de contacto (opcional)"
             value={form.emailContacto}
             onChange={onChange}
+            className="full-width"
+          />
+
+          {/* Requisitos y beneficios */}
+          <h3 className="section-title">Requisitos y beneficios</h3>
+          
+          <textarea
+            name="conocimientos"
+            placeholder="Conocimientos requeridos (opcional)"
+            value={form.conocimientos}
+            onChange={onChange}
+            rows="4"
+            className="full-width"
+          />
+          
+          <textarea
+            name="otrosRequisitos"
+            placeholder="Otros requisitos (opcional)"
+            value={form.otrosRequisitos}
+            onChange={onChange}
+            rows="4"
+            className="full-width"
+          />
+          
+          <textarea
+            name="beneficios"
+            placeholder="Beneficios ofrecidos (opcional)"
+            value={form.beneficios}
+            onChange={onChange}
+            rows="4"
             className="full-width"
           />
 
