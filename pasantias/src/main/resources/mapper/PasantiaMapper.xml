@@ -17,6 +17,9 @@
         <result property="fechaCaducidad" column="fecha_caducidad"/>
         <result property="estado" column="estado"/>
         <result property="emailContacto" column="email_contacto"/>
+        <result property="conocimientos" column="conocimientos"/>
+        <result property="otrosRequisitos" column="otros_requisitos"/>
+        <result property="beneficios" column="beneficios"/>
         
         <!-- Empresa anidada -->
         <association property="empresa" javaType="com.seminario.pasantias.entity.Empresa">
@@ -42,12 +45,15 @@
             p.fecha_caducidad,
             p.estado,
             p.email_contacto,
+            p.conocimientos,
+            p.otros_requisitos,
+            p.beneficios,
             e.id_empresa AS empresa_id,
             e.nombre AS empresa_nombre,
             e.cuit AS empresa_cuit,
             e.email AS empresa_email
-        FROM pasantia p
-        LEFT JOIN empresa e ON p.id_empresa = e.id_empresa
+        FROM Pasantia p
+        LEFT JOIN Empresa e ON p.id_empresa = e.id_empresa
         <where>
             <if test="busqueda != null and busqueda != ''">
                 AND (
@@ -69,7 +75,7 @@
             </if>
             <if test="idsCarreras != null and idsCarreras.size() > 0">
                 AND EXISTS (
-                    SELECT 1 FROM pasantia_carrera pc
+                    SELECT 1 FROM Pasantia_Carrera pc
                     WHERE pc.id_pasantia = p.id_pasantia
                     AND pc.id_carrera IN
                     <foreach collection="idsCarreras" item="idCarrera" open="(" separator="," close=")">
@@ -125,8 +131,8 @@
     <select id="countWithFilters" parameterType="com.seminario.pasantias.dto.request.PasantiaFiltroDTO"
             resultType="long">
         SELECT COUNT(DISTINCT p.id_pasantia)
-        FROM pasantia p
-        LEFT JOIN empresa e ON p.id_empresa = e.id_empresa
+        FROM Pasantia p
+        LEFT JOIN Empresa e ON p.id_empresa = e.id_empresa
         <where>
             <if test="busqueda != null and busqueda != ''">
                 AND (
@@ -148,7 +154,7 @@
             </if>
             <if test="idsCarreras != null and idsCarreras.size() > 0">
                 AND EXISTS (
-                    SELECT 1 FROM pasantia_carrera pc
+                    SELECT 1 FROM Pasantia_Carrera pc
                     WHERE pc.id_pasantia = p.id_pasantia
                     AND pc.id_carrera IN
                     <foreach collection="idsCarreras" item="idCarrera" open="(" separator="," close=")">

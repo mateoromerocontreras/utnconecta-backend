@@ -98,4 +98,19 @@ public class PasantiaResponseDTO {
      * Días restantes hasta la caducidad (calculado)
      */
     private Long diasRestantes;
+
+    /**
+     * Conocimientos requeridos
+     */
+    private String conocimientos;
+
+    /**
+     * Otros requisitos
+     */
+    private String otrosRequisitos;
+
+    /**
+     * Beneficios ofrecidos
+     */
+    private String beneficios;
 }

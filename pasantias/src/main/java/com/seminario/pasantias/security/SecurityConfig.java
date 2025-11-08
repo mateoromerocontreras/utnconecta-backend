@@ -43,6 +43,7 @@ public class SecurityConfig {
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/usuarios/registrarUsuario").permitAll()
                 .requestMatchers("/estudiantes/crearEstudiante").permitAll()
+                .requestMatchers("/pasantias/registrar").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 // Endpoints de usuarios: solo administradores (después de los públicos)
                 .requestMatchers("/usuarios/**").hasRole("ADMINISTRADOR")

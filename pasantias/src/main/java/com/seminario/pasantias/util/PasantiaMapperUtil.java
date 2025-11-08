@@ -36,6 +36,9 @@ public class PasantiaMapperUtil {
         pasantia.setFechaPublicacion(dto.getFechaPublicacion());
         pasantia.setFechaCaducidad(dto.getFechaCaducidad());
         pasantia.setEmailContacto(dto.getEmailContacto());
+        pasantia.setConocimientos(dto.getConocimientos());
+        pasantia.setOtrosRequisitos(dto.getOtrosRequisitos());
+        pasantia.setBeneficios(dto.getBeneficios());
         
         if (dto.getEstado() != null) {
             pasantia.setEstado(dto.getEstado());
@@ -79,6 +82,15 @@ public class PasantiaMapperUtil {
         if (dto.getEmailContacto() != null) {
             pasantia.setEmailContacto(dto.getEmailContacto());
         }
+        if (dto.getConocimientos() != null) {
+            pasantia.setConocimientos(dto.getConocimientos());
+        }
+        if (dto.getOtrosRequisitos() != null) {
+            pasantia.setOtrosRequisitos(dto.getOtrosRequisitos());
+        }
+        if (dto.getBeneficios() != null) {
+            pasantia.setBeneficios(dto.getBeneficios());
+        }
     }
 
     /**
@@ -101,6 +113,9 @@ public class PasantiaMapperUtil {
         dto.setFechaCaducidad(pasantia.getFechaCaducidad());
         dto.setEstado(pasantia.getEstado());
         dto.setEmailContacto(pasantia.getEmailContacto());
+        dto.setConocimientos(pasantia.getConocimientos());
+        dto.setOtrosRequisitos(pasantia.getOtrosRequisitos());
+        dto.setBeneficios(pasantia.getBeneficios());
 
         // Empresa
         if (pasantia.getEmpresa() != null) {
@@ -151,6 +166,9 @@ public class PasantiaMapperUtil {
         dto.setFechaCaducidad(pasantia.getFechaCaducidad());
         dto.setEstado(pasantia.getEstado());
         dto.setEmailContacto(pasantia.getEmailContacto());
+        dto.setConocimientos(pasantia.getConocimientos());
+        dto.setOtrosRequisitos(pasantia.getOtrosRequisitos());
+        dto.setBeneficios(pasantia.getBeneficios());
 
         // Empresa (con detalle)
         if (pasantia.getEmpresa() != null) {

@@ -106,6 +106,21 @@ public class PasantiaDetalleDTO {
     private Boolean aceptaPostulaciones;
 
     /**
+     * Conocimientos requeridos
+     */
+    private String conocimientos;
+
+    /**
+     * Otros requisitos
+     */
+    private String otrosRequisitos;
+
+    /**
+     * Beneficios ofrecidos
+     */
+    private String beneficios;
+
+    /**
      * DTO simple para representar una Empresa
      */
     @Data

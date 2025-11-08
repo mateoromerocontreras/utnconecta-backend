@@ -103,6 +103,24 @@ public class PasantiaRequestDTO {
     private String emailContacto;
 
     /**
+     * Conocimientos requeridos (opcional)
+     */
+    @Size(max = 2000, message = "Los conocimientos no pueden exceder 2000 caracteres")
+    private String conocimientos;
+
+    /**
+     * Otros requisitos (opcional)
+     */
+    @Size(max = 2000, message = "Los otros requisitos no pueden exceder 2000 caracteres")
+    private String otrosRequisitos;
+
+    /**
+     * Beneficios ofrecidos (opcional)
+     */
+    @Size(max = 2000, message = "Los beneficios no pueden exceder 2000 caracteres")
+    private String beneficios;
+
+    /**
      * Valida que la fecha de caducidad sea posterior a la fecha de publicación
      */
     @AssertTrue(message = "La fecha de caducidad debe ser posterior a la fecha de publicación")

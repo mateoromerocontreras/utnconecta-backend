@@ -48,9 +48,9 @@
             e.nombre AS estudiante_nombre,
             e.apellido AS estudiante_apellido,
             e.email AS estudiante_email
-        FROM postulacion po
-        LEFT JOIN pasantia pa ON po.id_pasantia = pa.id_pasantia
-        LEFT JOIN estudiante e ON po.id_estudiante = e.id_estudiante
+        FROM Postulacion po
+        LEFT JOIN Pasantia pa ON po.id_pasantia = pa.id_pasantia
+        LEFT JOIN Estudiante e ON po.id_estudiante = e.id_estudiante
         <where>
             <if test="idEstudiante != null">
                 AND po.id_estudiante = #{idEstudiante}
@@ -100,8 +100,8 @@
     <select id="countWithFilters" parameterType="com.seminario.pasantias.dto.request.PostulacionFiltroDTO"
             resultType="long">
         SELECT COUNT(*)
-        FROM postulacion po
-        LEFT JOIN pasantia pa ON po.id_pasantia = pa.id_pasantia
+        FROM Postulacion po
+        LEFT JOIN Pasantia pa ON po.id_pasantia = pa.id_pasantia
         <where>
             <if test="idEstudiante != null">
                 AND po.id_estudiante = #{idEstudiante}

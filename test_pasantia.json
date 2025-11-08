@@ -1,0 +1,16 @@
+{
+  "titulo": "Desarrollador Full Stack",
+  "puestoACubrir": "Desarrollador Full Stack Junior",
+  "ciudad": "Córdoba",
+  "modalidad": "Híbrida",
+  "asignacionEstimulo": 55000.0,
+  "cantidadDePasantes": 2,
+  "fechaPublicacion": "2025-12-01",
+  "fechaCaducidad": "2026-03-01",
+  "idEmpresa": 1,
+  "idsCarreras": [6],
+  "emailContacto": "rrhh@test.com",
+  "conocimientos": "Java, Spring Boot, React, MySQL, Git",
+  "otrosRequisitos": "Estudiante avanzado, disponibilidad part-time",
+  "beneficios": "Capacitación, ambiente de trabajo dinámico, posibilidad de continuidad"
+}

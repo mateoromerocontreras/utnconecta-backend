@@ -7,6 +7,7 @@ import com.seminario.pasantias.persistence.ContactoMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,11 +56,25 @@ public class EmpresaService {
 	}
 
 	public void createEmpresa(Empresa empresa) {
+		// Set default values if not provided
+		if (empresa.getActivo() == null) {
+			empresa.setActivo(true);
+		}
+		if (empresa.getFechaCreacion() == null) {
+			empresa.setFechaCreacion(LocalDateTime.now());
+		}
 		empresaMapper.insert(empresa);
 	}
 
 	@Transactional
 	public void createEmpresaWithContactos(Empresa empresa) {
+		// Set default values if not provided
+		if (empresa.getActivo() == null) {
+			empresa.setActivo(true);
+		}
+		if (empresa.getFechaCreacion() == null) {
+			empresa.setFechaCreacion(LocalDateTime.now());
+		}
 		empresaMapper.insert(empresa);
 		if (empresa.getContacto() != null) {
 			for (Contacto contacto : empresa.getContacto()) {

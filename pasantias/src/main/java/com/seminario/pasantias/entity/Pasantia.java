@@ -24,4 +24,7 @@ public class Pasantia {
     private List<Carrera> carreras;
     private List<Postulacion> postulaciones;
     private String emailContacto;
+    private String conocimientos;
+    private String otrosRequisitos;
+    private String beneficios;
 }

@@ -25,7 +25,7 @@ public interface PostulacionMapper {
             po.estado,
             po.id_pasantia AS idPasantia,
             po.id_estudiante AS idEstudiante
-        FROM postulacion po
+        FROM Postulacion po
         WHERE po.id_postulacion = #{id}
     """)
     @Results(id = "postulacionResult", value = {
@@ -48,7 +48,7 @@ public interface PostulacionMapper {
             po.estado,
             po.id_pasantia AS idPasantia,
             po.id_estudiante AS idEstudiante
-        FROM postulacion po
+        FROM Postulacion po
         WHERE po.id_postulacion = #{id}
     """)
     @Results({
@@ -72,7 +72,7 @@ public interface PostulacionMapper {
             po.estado,
             po.id_pasantia AS idPasantia,
             po.id_estudiante AS idEstudiante
-        FROM postulacion po
+        FROM Postulacion po
         ORDER BY po.fecha_postulacion DESC
     """)
     @ResultMap("postulacionResult")
@@ -90,7 +90,7 @@ public interface PostulacionMapper {
             po.estado,
             po.id_pasantia AS idPasantia,
             po.id_estudiante AS idEstudiante
-        FROM postulacion po
+        FROM Postulacion po
         WHERE po.id_estudiante = #{idEstudiante}
         ORDER BY po.fecha_postulacion DESC
     """)
@@ -109,7 +109,7 @@ public interface PostulacionMapper {
             po.estado,
             po.id_pasantia AS idPasantia,
             po.id_estudiante AS idEstudiante
-        FROM postulacion po
+        FROM Postulacion po
         WHERE po.id_pasantia = #{idPasantia}
         ORDER BY po.fecha_postulacion DESC
     """)
@@ -128,7 +128,7 @@ public interface PostulacionMapper {
             po.estado,
             po.id_pasantia AS idPasantia,
             po.id_estudiante AS idEstudiante
-        FROM postulacion po
+        FROM Postulacion po
         WHERE po.estado = #{estado}
         ORDER BY po.fecha_postulacion DESC
     """)
@@ -147,7 +147,7 @@ public interface PostulacionMapper {
             po.estado,
             po.id_pasantia AS idPasantia,
             po.id_estudiante AS idEstudiante
-        FROM postulacion po
+        FROM Postulacion po
         WHERE po.id_estudiante = #{idEstudiante}
         AND po.estado != 'FINALIZADA'
         ORDER BY po.fecha_postulacion DESC
@@ -171,7 +171,7 @@ public interface PostulacionMapper {
      */
     @Select("""
         SELECT COUNT(*) > 0 
-        FROM postulacion
+        FROM Postulacion
         WHERE id_estudiante = #{idEstudiante}
         AND id_pasantia = #{idPasantia}
     """)
@@ -181,14 +181,14 @@ public interface PostulacionMapper {
     /**
      * Verificar si existe una postulación.
      */
-    @Select("SELECT COUNT(*) > 0 FROM postulacion WHERE id_postulacion = #{id}")
+    @Select("SELECT COUNT(*) > 0 FROM Postulacion WHERE id_postulacion = #{id}")
     boolean existsById(@Param("id") Integer id);
 
     /**
      * Insertar una nueva postulación.
      */
     @Insert("""
-        INSERT INTO postulacion (
+        INSERT INTO Postulacion (
             fecha_postulacion, fecha_inicio_contrato, duracion_meses,
             estado, id_pasantia, id_estudiante
         ) VALUES (
@@ -203,7 +203,7 @@ public interface PostulacionMapper {
      * Actualizar una postulación existente.
      */
     @Update("""
-        UPDATE postulacion SET
+        UPDATE Postulacion SET
             fecha_postulacion = #{fechaPostulacion},
             fecha_inicio_contrato = #{fechaInicioContrato},
             duracion_meses = #{duracionMeses},
@@ -216,7 +216,7 @@ public interface PostulacionMapper {
      * Actualizar solo el estado de una postulación.
      */
     @Update("""
-        UPDATE postulacion 
+        UPDATE Postulacion 
         SET estado = #{estado}
         WHERE id_postulacion = #{idPostulacion}
     """)
@@ -226,7 +226,7 @@ public interface PostulacionMapper {
      * Actualizar datos del contrato (fecha inicio y duración).
      */
     @Update("""
-        UPDATE postulacion 
+        UPDATE Postulacion 
         SET fecha_inicio_contrato = #{fechaInicioContrato},
             duracion_meses = #{duracionMeses}
         WHERE id_postulacion = #{idPostulacion}
@@ -238,19 +238,19 @@ public interface PostulacionMapper {
     /**
      * Eliminar una postulación.
      */
-    @Delete("DELETE FROM postulacion WHERE id_postulacion = #{id}")
+    @Delete("DELETE FROM Postulacion WHERE id_postulacion = #{id}")
     void delete(@Param("id") Integer id);
 
     /**
      * Contar postulaciones por estudiante.
      */
-    @Select("SELECT COUNT(*) FROM postulacion WHERE id_estudiante = #{idEstudiante}")
+    @Select("SELECT COUNT(*) FROM Postulacion WHERE id_estudiante = #{idEstudiante}")
     Integer countByEstudiante(@Param("idEstudiante") Integer idEstudiante);
 
     /**
      * Contar postulaciones por pasantía.
      */
-    @Select("SELECT COUNT(*) FROM postulacion WHERE id_pasantia = #{idPasantia}")
+    @Select("SELECT COUNT(*) FROM Postulacion WHERE id_pasantia = #{idPasantia}")
     Integer countByPasantia(@Param("idPasantia") Integer idPasantia);
     
     /**
@@ -258,7 +258,7 @@ public interface PostulacionMapper {
      */
     @Select("""
         SELECT COUNT(*) 
-        FROM postulacion 
+        FROM Postulacion 
         WHERE id_pasantia = #{idPasantia} 
         AND estado != #{estado}
     """)

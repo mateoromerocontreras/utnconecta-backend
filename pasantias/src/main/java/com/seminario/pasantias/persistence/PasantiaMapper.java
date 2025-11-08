@@ -1,6 +1,7 @@
 package com.seminario.pasantias.persistence;
 
 import com.seminario.pasantias.dto.request.PasantiaFiltroDTO;
+import com.seminario.pasantias.entity.Carrera;
 import com.seminario.pasantias.entity.Pasantia;
 import org.apache.ibatis.annotations.*;
 import java.util.List;
@@ -30,10 +31,13 @@ public interface PasantiaMapper {
             p.fecha_caducidad AS fechaCaducidad,
             p.estado,
             p.email_contacto AS emailContacto,
+            p.conocimientos,
+            p.otros_requisitos AS otrosRequisitos,
+            p.beneficios,
             p.id_empresa AS idEmpresa,
             e.nombre AS nombreEmpresa
-        FROM pasantia p
-        LEFT JOIN empresa e ON p.id_empresa = e.id_empresa
+        FROM Pasantia p
+        LEFT JOIN Empresa e ON p.id_empresa = e.id_empresa
         WHERE p.id_pasantia = #{id}
     """)
     @Results(id = "pasantiaResult", value = {
@@ -44,6 +48,9 @@ public interface PasantiaMapper {
         @Result(property = "fechaPublicacion", column = "fechaPublicacion"),
         @Result(property = "fechaCaducidad", column = "fechaCaducidad"),
         @Result(property = "emailContacto", column = "emailContacto"),
+        @Result(property = "conocimientos", column = "conocimientos"),
+        @Result(property = "otrosRequisitos", column = "otrosRequisitos"),
+        @Result(property = "beneficios", column = "beneficios"),
         @Result(property = "empresa.idEmpresa", column = "idEmpresa"),
         @Result(property = "empresa.nombre", column = "nombreEmpresa")
     })
@@ -65,8 +72,11 @@ public interface PasantiaMapper {
             p.fecha_caducidad AS fechaCaducidad,
             p.estado,
             p.email_contacto AS emailContacto,
+            p.conocimientos,
+            p.otros_requisitos AS otrosRequisitos,
+            p.beneficios,
             p.id_empresa AS idEmpresa
-        FROM pasantia p
+        FROM Pasantia p
         WHERE p.id_pasantia = #{id}
     """)
     @Results({
@@ -96,10 +106,13 @@ public interface PasantiaMapper {
             p.fecha_caducidad AS fechaCaducidad,
             p.estado,
             p.email_contacto AS emailContacto,
+            p.conocimientos,
+            p.otros_requisitos AS otrosRequisitos,
+            p.beneficios,
             p.id_empresa AS idEmpresa,
             e.nombre AS nombreEmpresa
-        FROM pasantia p
-        LEFT JOIN empresa e ON p.id_empresa = e.id_empresa
+        FROM Pasantia p
+        LEFT JOIN Empresa e ON p.id_empresa = e.id_empresa
         WHERE p.estado = 'PUBLICADA'
         ORDER BY p.fecha_publicacion DESC
     """)
@@ -122,10 +135,13 @@ public interface PasantiaMapper {
             p.fecha_caducidad AS fechaCaducidad,
             p.estado,
             p.email_contacto AS emailContacto,
+            p.conocimientos,
+            p.otros_requisitos AS otrosRequisitos,
+            p.beneficios,
             p.id_empresa AS idEmpresa,
             e.nombre AS nombreEmpresa
-        FROM pasantia p
-        LEFT JOIN empresa e ON p.id_empresa = e.id_empresa
+        FROM Pasantia p
+        LEFT JOIN Empresa e ON p.id_empresa = e.id_empresa
         ORDER BY p.fecha_publicacion DESC
     """)
     @ResultMap("pasantiaResult")
@@ -147,10 +163,13 @@ public interface PasantiaMapper {
             p.fecha_caducidad AS fechaCaducidad,
             p.estado,
             p.email_contacto AS emailContacto,
+            p.conocimientos,
+            p.otros_requisitos AS otrosRequisitos,
+            p.beneficios,
             p.id_empresa AS idEmpresa,
             e.nombre AS nombreEmpresa
-        FROM pasantia p
-        LEFT JOIN empresa e ON p.id_empresa = e.id_empresa
+        FROM Pasantia p
+        LEFT JOIN Empresa e ON p.id_empresa = e.id_empresa
         WHERE p.id_empresa = #{idEmpresa}
         ORDER BY p.fecha_publicacion DESC
     """)
@@ -173,10 +192,13 @@ public interface PasantiaMapper {
             p.fecha_caducidad AS fechaCaducidad,
             p.estado,
             p.email_contacto AS emailContacto,
+            p.conocimientos,
+            p.otros_requisitos AS otrosRequisitos,
+            p.beneficios,
             p.id_empresa AS idEmpresa,
             e.nombre AS nombreEmpresa
-        FROM pasantia p
-        LEFT JOIN empresa e ON p.id_empresa = e.id_empresa
+        FROM Pasantia p
+        LEFT JOIN Empresa e ON p.id_empresa = e.id_empresa
         WHERE p.ciudad = #{ciudad}
         AND p.estado = 'PUBLICADA'
         ORDER BY p.fecha_publicacion DESC
@@ -200,10 +222,13 @@ public interface PasantiaMapper {
             p.fecha_caducidad AS fechaCaducidad,
             p.estado,
             p.email_contacto AS emailContacto,
+            p.conocimientos,
+            p.otros_requisitos AS otrosRequisitos,
+            p.beneficios,
             p.id_empresa AS idEmpresa,
             e.nombre AS nombreEmpresa
-        FROM pasantia p
-        LEFT JOIN empresa e ON p.id_empresa = e.id_empresa
+        FROM Pasantia p
+        LEFT JOIN Empresa e ON p.id_empresa = e.id_empresa
         WHERE p.modalidad = #{modalidad}
         AND p.estado = 'PUBLICADA'
         ORDER BY p.fecha_publicacion DESC
@@ -226,16 +251,16 @@ public interface PasantiaMapper {
      * Insertar una nueva pasantía.
      */
     @Insert("""
-        INSERT INTO pasantia (
+        INSERT INTO Pasantia (
             titulo, puesto_a_cubrir, ciudad, modalidad,
             asignacion_estimulo, cantidad_de_pasantes,
             fecha_publicacion, fecha_caducidad, estado,
-            email_contacto, id_empresa
+            email_contacto, conocimientos, otros_requisitos, beneficios, id_empresa
         ) VALUES (
             #{titulo}, #{puestoACubrir}, #{ciudad}, #{modalidad},
             #{asignacionEstimulo}, #{cantidadDePasantes},
             #{fechaPublicacion}, #{fechaCaducidad}, #{estado},
-            #{emailContacto}, #{empresa.idEmpresa}
+            #{emailContacto}, #{conocimientos}, #{otrosRequisitos}, #{beneficios}, #{empresa.idEmpresa}
         )
     """)
     @Options(useGeneratedKeys = true, keyProperty = "idPasantia", keyColumn = "id_pasantia")
@@ -245,7 +270,7 @@ public interface PasantiaMapper {
      * Actualizar una pasantía existente.
      */
     @Update("""
-        UPDATE pasantia SET
+        UPDATE Pasantia SET
             titulo = #{titulo},
             puesto_a_cubrir = #{puestoACubrir},
             ciudad = #{ciudad},
@@ -255,7 +280,10 @@ public interface PasantiaMapper {
             fecha_publicacion = #{fechaPublicacion},
             fecha_caducidad = #{fechaCaducidad},
             estado = #{estado},
-            email_contacto = #{emailContacto}
+            email_contacto = #{emailContacto},
+            conocimientos = #{conocimientos},
+            otros_requisitos = #{otrosRequisitos},
+            beneficios = #{beneficios}
         WHERE id_pasantia = #{idPasantia}
     """)
     void update(Pasantia pasantia);
@@ -264,7 +292,7 @@ public interface PasantiaMapper {
      * Actualizar solo el estado de una pasantía.
      */
     @Update("""
-        UPDATE pasantia 
+        UPDATE Pasantia 
         SET estado = #{estado}
         WHERE id_pasantia = #{idPasantia}
     """)
@@ -273,34 +301,35 @@ public interface PasantiaMapper {
     /**
      * Eliminar una pasantía (no recomendado, mejor actualizar estado).
      */
-    @Delete("DELETE FROM pasantia WHERE id_pasantia = #{id}")
+    @Delete("DELETE FROM Pasantia WHERE id_pasantia = #{id}")
     void delete(@Param("id") Integer id);
 
     /**
      * Verificar si existe una pasantía.
      */
-    @Select("SELECT COUNT(*) > 0 FROM pasantia WHERE id_pasantia = #{id}")
+    @Select("SELECT COUNT(*) > 0 FROM Pasantia WHERE id_pasantia = #{id}")
     boolean existsById(@Param("id") Integer id);
 
     /**
      * Obtener carreras asociadas a una pasantía.
      */
     @Select("""
-        SELECT c.id_carrera AS idCarrera, c.nombre, c.codigo
-        FROM carrera c
-        INNER JOIN pasantia_carrera pc ON c.id_carrera = pc.id_carrera
+        SELECT c.id_carrera AS id, c.nombre
+        FROM Carrera c
+        INNER JOIN Pasantia_Carrera pc ON c.id_carrera = pc.id_carrera
         WHERE pc.id_pasantia = #{idPasantia}
     """)
     @Results({
-        @Result(property = "idCarrera", column = "idCarrera")
+        @Result(property = "id", column = "id"),
+        @Result(property = "nombre", column = "nombre")
     })
-    List<Pasantia> findCarrerasByPasantiaId(@Param("idPasantia") Integer idPasantia);
+    List<Carrera> findCarrerasByPasantiaId(@Param("idPasantia") Integer idPasantia);
 
     /**
      * Asociar una carrera a una pasantía.
      */
     @Insert("""
-        INSERT INTO pasantia_carrera (id_pasantia, id_carrera)
+        INSERT INTO Pasantia_Carrera (id_pasantia, id_carrera)
         VALUES (#{idPasantia}, #{idCarrera})
     """)
     void insertPasantiaCarrera(@Param("idPasantia") Integer idPasantia, 
@@ -309,13 +338,13 @@ public interface PasantiaMapper {
     /**
      * Eliminar todas las carreras asociadas a una pasantía.
      */
-    @Delete("DELETE FROM pasantia_carrera WHERE id_pasantia = #{idPasantia}")
+    @Delete("DELETE FROM Pasantia_Carrera WHERE id_pasantia = #{idPasantia}")
     void deleteAllCarrerasByPasantiaId(@Param("idPasantia") Integer idPasantia);
     
     /**
      * Eliminar todas las carreras asociadas a una pasantía (alias).
      */
-    @Delete("DELETE FROM pasantia_carrera WHERE id_pasantia = #{idPasantia}")
+    @Delete("DELETE FROM Pasantia_Carrera WHERE id_pasantia = #{idPasantia}")
     void deletePasantiaCarrerasByPasantiaId(@Param("idPasantia") Integer idPasantia);
     
     /**
@@ -335,7 +364,7 @@ public interface PasantiaMapper {
             p.estado,
             p.email_contacto AS emailContacto,
             p.id_empresa AS idEmpresa
-        FROM pasantia p
+        FROM Pasantia p
         WHERE p.id_empresa = #{empresaId}
         ORDER BY p.fecha_publicacion DESC
     """)
@@ -358,8 +387,8 @@ public interface PasantiaMapper {
             p.estado,
             p.email_contacto AS emailContacto,
             p.id_empresa AS idEmpresa
-        FROM pasantia p
-        INNER JOIN pasantia_carrera pc ON p.id_pasantia = pc.id_pasantia
+        FROM Pasantia p
+        INNER JOIN Pasantia_Carrera pc ON p.id_pasantia = pc.id_pasantia
         WHERE pc.id_carrera = #{carreraId}
         ORDER BY p.fecha_publicacion DESC
     """)
@@ -382,7 +411,7 @@ public interface PasantiaMapper {
             p.estado,
             p.email_contacto AS emailContacto,
             p.id_empresa AS idEmpresa
-        FROM pasantia p
+        FROM Pasantia p
         WHERE p.estado = #{estado}
         ORDER BY p.fecha_publicacion DESC
     """)
@@ -393,7 +422,7 @@ public interface PasantiaMapper {
      */
     @Select("""
         SELECT COUNT(*) 
-        FROM postulacion 
+        FROM Postulacion 
         WHERE id_pasantia = #{idPasantia}
     """)
     Integer countPostulaciones(@Param("idPasantia") Integer idPasantia);
@@ -403,7 +432,7 @@ public interface PasantiaMapper {
      */
     @Select("""
         SELECT COUNT(*) 
-        FROM postulacion 
+        FROM Postulacion 
         WHERE id_pasantia = #{idPasantia}
         AND estado = #{estado}
     """)
