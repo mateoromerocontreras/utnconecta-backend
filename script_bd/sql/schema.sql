@@ -1,7 +1,14 @@
 -- Elimina la base de datos si ya existe para empezar de cero
+-- IMPORTANTE: Este archivo debe estar codificado en UTF-8
+-- Para asegurar la correcta interpretación de caracteres especiales en español
+
 DROP DATABASE IF EXISTS db_pasantias;
 CREATE DATABASE db_pasantias CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE db_pasantias;
+
+-- Configurar la conexión para usar UTF-8
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
 
 --
 -- Estructura de la tabla `Rol`

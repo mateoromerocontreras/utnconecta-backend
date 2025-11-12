@@ -16,6 +16,7 @@ import Perfil from "./pages/Perfil.jsx";
 import ModificarPerfil from "./pages/ModificarPerfil.jsx";
 import RegistrarPasantia from "./pages/RegistrarPasantia.jsx";
 import PasantiaDetalle from "./pages/PasantiaDetalle.jsx";
+import PasantiasPublicadas from "./pages/PasantiasPublicadas.jsx";
 
 export default function App() {
   return (
@@ -25,6 +26,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/pasantias" element={<Internships />} />
+          <Route path="/pasantias/publicadas" element={<PasantiasPublicadas />} />
           <Route path="/pasantias/:id" element={<PasantiaDetalle />} />
           <Route path="/empresas" element={<Empresas />} />
           <Route path="/administrar-usuarios" element={<RegistrarUsuario />} />

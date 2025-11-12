@@ -17,15 +17,21 @@ export default function PasantiaDetalle() {
         setLoading(true);
         setError("");
         const res = await fetch(`${API}/pasantias/${id}`, {
-          headers: { Accept: "application/json;charset=UTF-8" }
+          headers: { 
+            Accept: "application/json;charset=UTF-8",
+            "Content-Type": "application/json;charset=UTF-8"
+          }
         });
 
         if (!res.ok) {
-          const data = await res.json().catch(() => ({}));
-          throw new Error(data.mensaje || `HTTP ${res.status}`);
+          const text = await res.text();
+          const errorData = text ? JSON.parse(text) : {};
+          throw new Error(errorData.mensaje || `HTTP ${res.status}`);
         }
 
-        const data = await res.json();
+        // Asegurar que la respuesta se decodifique como UTF-8
+        const text = await res.text();
+        const data = JSON.parse(text);
         setPasantia(data);
       } catch (err) {
         setError(err.message || "No se pudo cargar la pasantía.");
