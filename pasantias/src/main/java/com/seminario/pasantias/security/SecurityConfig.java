@@ -49,8 +49,9 @@ public class SecurityConfig {
                 // Endpoints de empresas: GET público, resto protegido
                 .requestMatchers(HttpMethod.GET, "/empresas", "/empresas/consultarEmpresas").permitAll()
                 .requestMatchers("/empresas/**").hasAnyRole("ADMINISTRADOR", "EMPRESA")
-                // Endpoints de pasantías: GET público para listar todas, resto protegido
+                // Endpoints de pasantías: GET público para listar todas y ver detalles, resto protegido
                 .requestMatchers(HttpMethod.GET, "/pasantias").permitAll()
+                .requestMatchers(HttpMethod.GET, "/pasantias/*").permitAll()
                 // Endpoints de carreras: GET público, resto protegido
                 .requestMatchers(HttpMethod.GET, "/carreras/consultarCarrera").permitAll()
                 .requestMatchers(HttpMethod.GET, "/carreras/listarCarreras").permitAll()
@@ -65,6 +66,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/pasantias/**").hasAnyRole("ADMINISTRADOR", "EMPRESA")
                 // Endpoint para registrar pasantía: requiere autenticación y validación de empresa
                 .requestMatchers(HttpMethod.POST, "/pasantias/registrar").hasAnyRole("ADMINISTRADOR", "EMPRESA")
+                // Endpoint para aprobar pasantía: solo ADMINISTRADOR
+                .requestMatchers(HttpMethod.PUT, "/pasantias/*/aprobar").hasRole("ADMINISTRADOR")
                 // OPTIONS requests para CORS preflight
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 // Cualquier otra solicitud requiere autenticación

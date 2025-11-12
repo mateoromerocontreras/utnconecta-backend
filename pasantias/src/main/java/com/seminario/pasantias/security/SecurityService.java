@@ -189,4 +189,16 @@ public class SecurityService {
             );
         }
     }
+
+    /**
+     * Verifica que el usuario autenticado es ADMINISTRADOR
+     * @throws SecurityException si el usuario no es ADMINISTRADOR
+     */
+    public void validarEsAdministrador() {
+        if (!esAdministrador()) {
+            throw new SecurityException(
+                "Solo los usuarios con rol ADMINISTRADOR pueden realizar esta acción"
+            );
+        }
+    }
 }

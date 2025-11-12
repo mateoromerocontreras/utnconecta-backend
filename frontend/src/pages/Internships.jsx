@@ -1,8 +1,15 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import SearchPanel from "../components/SearchPanel.jsx";
 import "../styles/pasantias.css";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:8080").replace(/\/+$/, "");
+
+function getStoredItem(key) {
+  const persisted = localStorage.getItem(key);
+  if (persisted !== null) return persisted;
+  return sessionStorage.getItem(key);
+}
 
 // Helper para formatear fecha relativa
 function formatRelativeDate(dateString) {
@@ -22,10 +29,43 @@ function formatRelativeDate(dateString) {
 }
 
 export default function Internships() {
+  const navigate = useNavigate();
   const [filters, setFilters] = useState({ texto: "", carrera: "", modalidad: "" });
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [user, setUser] = useState(null);
+  const [approving, setApproving] = useState(new Set());
+
+  const readUserFromStorage = useCallback(() => {
+    const token = getStoredItem("authToken");
+    const userInfoRaw = getStoredItem("userInfo");
+
+    if (!token || !userInfoRaw) {
+      setUser(null);
+      return;
+    }
+
+    try {
+      setUser(JSON.parse(userInfoRaw));
+    } catch (e) {
+      console.error("Error parsing user info:", e);
+      setUser(null);
+    }
+  }, []);
+
+  useEffect(() => {
+    readUserFromStorage();
+    const handleAuthChange = () => readUserFromStorage();
+    window.addEventListener("storage", handleAuthChange);
+    window.addEventListener("auth-change", handleAuthChange);
+    return () => {
+      window.removeEventListener("storage", handleAuthChange);
+      window.removeEventListener("auth-change", handleAuthChange);
+    };
+  }, [readUserFromStorage]);
+
+  const isAdmin = user?.rol === "ADMINISTRADOR";
 
   async function load() {
     try {
@@ -90,6 +130,61 @@ export default function Internships() {
     // navigate(`/pasantias?${qs}`);
   }
 
+  async function handleVerDetalles(id) {
+    navigate(`/pasantias/${id}`);
+  }
+
+  async function handleAprobar(id, e) {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!isAdmin) {
+      alert("Solo los administradores pueden aprobar pasantías");
+      return;
+    }
+
+    const token = getStoredItem("authToken");
+    if (!token) {
+      alert("Debes iniciar sesión para realizar esta acción");
+      return;
+    }
+
+    if (!confirm("¿Estás seguro de que deseas aprobar esta pasantía?")) {
+      return;
+    }
+
+    setApproving(prev => new Set(prev).add(id));
+
+    try {
+      const res = await fetch(`${API}/pasantias/${id}/aprobar`, {
+        method: "PUT",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.mensaje || `Error ${res.status}`);
+      }
+
+      // Recargar la lista de pasantías
+      await load();
+      alert("Pasantía aprobada exitosamente");
+    } catch (err) {
+      console.error("Error al aprobar pasantía:", err);
+      alert(err.message || "Error al aprobar la pasantía");
+    } finally {
+      setApproving(prev => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }
+  }
+
   return (
     <section className="pasantias-page">
       {/* BARRA STICKY con el mismo SearchPanel */}
@@ -152,15 +247,34 @@ export default function Internships() {
                     )}
                     <footer>
                       <span className="time">{j.publicada}</span>
-                      {j.aceptaPostulaciones ? (
-                        <a className="btn btn-ghost" href={`/pasantias/${j.id}`}>
-                          Postular
-                        </a>
-                      ) : (
-                        <span className="btn btn-ghost" style={{ opacity: 0.5, cursor: "not-allowed" }}>
-                          {j.estado === "PUBLICADA" ? "Ver detalles" : j.estado}
-                        </span>
-                      )}
+                      <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                        <button 
+                          className="btn btn-ghost" 
+                          onClick={() => handleVerDetalles(j.id)}
+                          style={{ fontSize: "0.9em" }}
+                        >
+                          Ver detalles
+                        </button>
+                        {j.aceptaPostulaciones && (
+                          <a className="btn btn-ghost" href={`/pasantias/${j.id}`}>
+                            Postular
+                          </a>
+                        )}
+                        {isAdmin && j.estado === "PENDIENTE_DE_APROBACION" && (
+                          <button
+                            className="btn btn-ghost"
+                            onClick={(e) => handleAprobar(j.id, e)}
+                            disabled={approving.has(j.id)}
+                            style={{ 
+                              fontSize: "0.9em",
+                              color: "#28a745",
+                              borderColor: "#28a745"
+                            }}
+                          >
+                            {approving.has(j.id) ? "Aprobando..." : "Aprobar"}
+                          </button>
+                        )}
+                      </div>
                     </footer>
                   </article>
                 ))}
