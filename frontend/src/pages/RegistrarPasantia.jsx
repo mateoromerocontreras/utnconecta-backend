@@ -113,7 +113,10 @@ export default function RegistrarPasantia() {
         const res = await fetch(`${API}/carreras/listarCarreras`);
         if (res.ok) {
           const data = await res.json();
-          setCarreras(data);
+          console.log("Carreras cargadas:", data);
+          setCarreras(data || []);
+        } else {
+          console.error("Error al cargar carreras, status:", res.status);
         }
       } catch (err) {
         console.error("Error al cargar carreras:", err);
@@ -123,17 +126,35 @@ export default function RegistrarPasantia() {
     fetchCarreras();
   }, []);
 
+  const handleCarreraChange = (carreraId, checked) => {
+    setForm((prevForm) => {
+      const currentIds = Array.isArray(prevForm.idsCarreras) ? prevForm.idsCarreras : [];
+      let newIds;
+      
+      if (checked) {
+        // Agregar carrera si no está ya en la lista
+        newIds = currentIds.includes(carreraId) 
+          ? currentIds 
+          : [...currentIds, carreraId];
+      } else {
+        // Remover carrera de la lista
+        newIds = currentIds.filter(id => id !== carreraId);
+      }
+      
+      return { ...prevForm, idsCarreras: newIds };
+    });
+  };
+
   const onChange = (e) => {
-    const { name, value, type } = e.target;
+    const { name, value, type, checked } = e.target;
     
     if (type === "checkbox") {
-      const carreraId = parseInt(value);
-      setForm((f) => ({
-        ...f,
-        idsCarreras: f.idsCarreras.includes(carreraId)
-          ? f.idsCarreras.filter(id => id !== carreraId)
-          : [...f.idsCarreras, carreraId]
-      }));
+      const carreraId = Number(value);
+      if (isNaN(carreraId)) {
+        console.error("Invalid carrera ID in onChange:", value);
+        return;
+      }
+      handleCarreraChange(carreraId, checked);
     } else {
       setForm((f) => ({ ...f, [name]: value }));
     }
@@ -447,19 +468,30 @@ export default function RegistrarPasantia() {
           
           <div className="carreras-grid">
             {carreras.length > 0 ? (
-              carreras.map((carrera) => (
-                <label key={carrera.idCarrera} className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    value={carrera.idCarrera}
-                    checked={form.idsCarreras.includes(carrera.idCarrera)}
-                    onChange={onChange}
-                  />
-                  <span>{carrera.nombre}</span>
-                </label>
-              ))
+              carreras.map((carrera) => {
+                const carreraId = Number(carrera.id);
+                if (isNaN(carreraId)) {
+                  console.error("Invalid carrera ID:", carrera.id, carrera);
+                  return null;
+                }
+                const isChecked = Array.isArray(form.idsCarreras) && form.idsCarreras.includes(carreraId);
+                return (
+                  <label key={carrera.id || carreraId} className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      name={`carrera-${carreraId}`}
+                      value={String(carreraId)}
+                      checked={isChecked}
+                      onChange={onChange}
+                    />
+                    <span>{carrera.nombre || 'Sin nombre'}</span>
+                  </label>
+                );
+              })
             ) : (
-              <p className="no-carreras">No hay carreras disponibles</p>
+              <p className="no-carreras">
+                {carreras.length === 0 ? "No hay carreras disponibles" : "Cargando carreras..."}
+              </p>
             )}
           </div>
 

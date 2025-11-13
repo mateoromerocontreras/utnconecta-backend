@@ -176,7 +176,28 @@ INSERT INTO Usuario (username, email, password, id_rol, activo) VALUES
 ('estudiante1', 'estudiante1@estudiantes.com', '$2a$10$NRCLtCsvTEz8F7u1JmX5K.M6aY7P7pgWOHuFLvLh7Lc0ZLCaIrat2', 2, TRUE), -- Contraseña: estudiante123
 ('empresa1', 'empresa1@empresas.com', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE), -- Contraseña: empresa123
 ('biofarma_user', 'rrhh@biofarmaweb.com.ar', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE), -- Contraseña: empresa123
-('hospital_user', 'seleccion@hospital-italiano.org.ar', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE); -- Contraseña: empresa123
+('hospital_user', 'seleccion@hospital-italiano.org.ar', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE), -- Contraseña: empresa123
+-- Usuarios para empresas sin usuario asignado
+('indacor_user', 'aracelipenaflor@pollosindacor.com.ar', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE), -- Contraseña: empresa123
+('sowic_user', 'seleccion@sowic.com.ar', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE), -- Contraseña: empresa123
+('losmolinos_user', 'rrhhelectroalem@gmail.com', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE), -- Contraseña: empresa123
+('harriague_user', 'natalia.barrionuevo@avenga.com', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE), -- Contraseña: empresa123
+('unc_ffyh_user', 'biblio@ffyh.unc.edu.ar', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE), -- Contraseña: empresa123
+('grupo_kersia_user', 'constanza.diebel@kersia-group.com', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE), -- Contraseña: empresa123
+('dick_costantino_user', 'rrhh@dickcostantinosa.com.ar', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE), -- Contraseña: empresa123
+('proinfo_unc_user', 'contable@informatica.unc.edu.ar', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE), -- Contraseña: empresa123
+('impro_user', 'rrhhimpro1@gmail.com', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE), -- Contraseña: empresa123
+('fumiscor_user', 'gestiondetalento.gm@grupomarma.com.ar', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE), -- Contraseña: empresa123
+('iveco_user', 'talentos.ivg-argentina@ivecogroup.com', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE), -- Contraseña: empresa123
+('banco_roela_user', 'rrhh@bancoroela.com.ar', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE), -- Contraseña: empresa123
+('spinozzi_user', 'spinozzirrhh@gmail.com', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE), -- Contraseña: empresa123
+('helios_user', 'seleccioncaphumano@selenesoluciones.com', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE), -- Contraseña: empresa123
+('maxion_montich_user', 'atorres@montich.com.ar', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE), -- Contraseña: empresa123
+('adecco_user', 'micaela.cardus@adecco.com', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE), -- Contraseña: empresa123
+('amx_claro_user', 'rrhh@claro.com.ar', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE), -- Contraseña: empresa123
+('avenue_user', 'rocio.suarez@grupoquijada.com.ar', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE), -- Contraseña: empresa123
+('dayco_user', 'alfonsina.gioino@dayco.com', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE), -- Contraseña: empresa123
+('hospital_privado_user', 'azul.merlo@hospitalprivado.com.ar', '$2a$10$XxM932luMMMgVuTyTCOaj.VqnTNK/yWtRy3dR7BUJuaqh76TE10gO', 3, TRUE); -- Contraseña: empresa123
 
 --
 -- Inserta datos de ejemplo para Carrera
@@ -196,27 +217,27 @@ INSERT INTO Carrera (nombre) VALUES
 --
 INSERT INTO Empresa (nombre, ciudad, calle, nro_calle, piso, departamento, barrio, email, cuit, razon_social, id_usuario) VALUES
 ('BIOFARMA S.A', 'Córdoba', 'Bv. de los Polacos', 6446, NULL, NULL, 'Los Boulevares', 'rrhh@biofarmaweb.com.ar','30-76543210-3', 'BIOFARMA S.A.', 4),
-('INDACOR S.A.', 'JUAREZ CELMAN', 'Ruta 9 norte km 721', NULL, NULL, NULL, NULL, 'aracelipenaflor@pollosindacor.com.ar', '33-12345678-9', 'INDACOR S.A.', NULL),
+('INDACOR S.A.', 'JUAREZ CELMAN', 'Ruta 9 norte km 721', NULL, NULL, NULL, NULL, 'aracelipenaflor@pollosindacor.com.ar', '33-12345678-9', 'INDACOR S.A.', 6),
 ('Soc. de Beneficencia Hospital Italiano', 'Córdoba', 'Roma', 577, NULL, NULL, NULL, 'seleccion@hospital-italiano.org.ar', NULL, 'Soc. de Beneficencia Hospital Italiano', 5),
-('SOWIC S.A', 'Córdoba', 'Av. La Voz del Interior', 7000, NULL, NULL, 'Torre Miragolf Oeste', 'seleccion@sowic.com.ar', NULL, 'SOWIC S.A', NULL),
-('LOS MOLINOS SRL (ELECTROALEM)', 'Córdoba Capital', 'RN19 Ex Km 12', NULL, NULL, NULL, 'Malvinas Argentinas', 'rrhhelectroalem@gmail.com', NULL, 'LOS MOLINOS SRL', NULL),
-('HARRIAGUE Y ASOCIADOS SRL (Avenga)', 'Córdoba', NULL, NULL, NULL, NULL, 'Capitalinas', 'natalia.barrionuevo@avenga.com', NULL, 'HARRIAGUE Y ASOCIADOS SRL', NULL),
-('Universidad Nacional de Córdoba - FFyH', 'Córdoba', 'Pabellón Agustín Tosco', NULL, NULL, NULL, 'Ciudad Universitaria', 'biblio@ffyh.unc.edu.ar', NULL, 'Universidad Nacional de Córdoba', NULL),
-('Grupo Kersia', 'Córdoba', NULL, NULL, NULL, NULL, NULL, 'constanza.diebel@kersia-group.com', NULL, 'Grupo Kersia', NULL),
-('ELECTROMECÁNICA DICK COSTANTINO SA - WEDO', 'Río Tercero', NULL, NULL, NULL, NULL, NULL, 'rrhh@dickcostantinosa.com.ar', NULL, 'ELECTROMECÁNICA DICK COSTANTINO SA', NULL),
-('Prosecretaría de Informática - UNC', 'Córdoba', 'Av Haya de la Torre S/N Pabellón Argentina', NULL, '1er piso', NULL, 'Ciudad Universitaria', 'contable@informatica.unc.edu.ar', NULL, 'Prosecretaría de Informática - UNC', NULL),
-('IMPRO SRL', 'Córdoba', NULL, NULL, NULL, NULL, 'Est. Flores', 'rrhhimpro1@gmail.com', NULL, 'IMPRO SRL', NULL),
-('Fumiscor S.A', 'Córdoba', 'Avenida circunvalación km 4 y medio', NULL, NULL, NULL, 'Los Olmos Sur', 'gestiondetalento.gm@grupomarma.com.ar', NULL, 'Fumiscor S.A', NULL),
-('IVECO ARGENTINA S.A.', 'Córdoba', NULL, NULL, NULL, NULL, 'Ferreyra', 'talentos.ivg-argentina@ivecogroup.com', NULL, 'IVECO ARGENTINA S.A.', NULL),
-('BANCO ROELA', 'Córdoba', 'Rosario de Santa Fé', 275, NULL, NULL, NULL, 'rrhh@bancoroela.com.ar', NULL, 'BANCO ROELA', NULL),
-('SPINOZZI SAS', 'Córdoba', NULL, NULL, NULL, NULL, NULL, 'SPINOZZIRRHH@GMAIL.COM', NULL, 'SPINOZZI SAS', NULL),
-('HELIOS ENERGÍA LIMPIA S.A.', 'Estación General Paz', 'Córdoba', NULL, NULL, NULL, NULL, 'seleccioncaphumano@selenesoluciones.com', NULL, 'HELIOS ENERGÍA LIMPIA S.A.', NULL),
-('MAXION MONTICH S.A.', 'Córdoba', 'Av 11 de septiembre', 3768, NULL, NULL, NULL, 'atorres@montich.com.ar', NULL, 'MAXION MONTICH S.A.', NULL),
-('Adecco Argentina/Stellantis', 'Córdoba', NULL, NULL, NULL, NULL, 'Ferreyra', 'micaela.cardus@adecco.com', NULL, 'Adecco Argentina/Stellantis', NULL),
-('AMX ARGENTINA S.A. (CLARO ARGENTINA)', 'Córdoba', 'Av. Sabattini', 1417, NULL, NULL, NULL, 'rrhh@claro.com.ar', NULL, 'AMX ARGENTINA S.A.', NULL),
-('AVENUE SA', 'Córdoba', 'Avenida Castro barros', 1155, NULL, NULL, NULL, 'rocio.suarez@grupoquijada.com.ar', NULL, 'AVENUE SA', NULL),
-('Dayco Argentina S.A.', 'Córdoba', 'Juan R. Estomba', NULL, NULL, NULL, 'Parque Industrial Ferreyra', 'alfonsina.gioino@dayco.com', NULL, 'Dayco Argentina S.A.', NULL),
-('Hospital Privado Universitario de Córdoba', 'Córdoba', 'Santa Rosa', 770, NULL, NULL, NULL, 'azul.merlo@hospitalprivado.com.ar', NULL, 'Hospital Privado Universitario de Córdoba', NULL);
+('SOWIC S.A', 'Córdoba', 'Av. La Voz del Interior', 7000, NULL, NULL, 'Torre Miragolf Oeste', 'seleccion@sowic.com.ar', NULL, 'SOWIC S.A', 7),
+('LOS MOLINOS SRL (ELECTROALEM)', 'Córdoba Capital', 'RN19 Ex Km 12', NULL, NULL, NULL, 'Malvinas Argentinas', 'rrhhelectroalem@gmail.com', NULL, 'LOS MOLINOS SRL', 8),
+('HARRIAGUE Y ASOCIADOS SRL (Avenga)', 'Córdoba', NULL, NULL, NULL, NULL, 'Capitalinas', 'natalia.barrionuevo@avenga.com', NULL, 'HARRIAGUE Y ASOCIADOS SRL', 9),
+('Universidad Nacional de Córdoba - FFyH', 'Córdoba', 'Pabellón Agustín Tosco', NULL, NULL, NULL, 'Ciudad Universitaria', 'biblio@ffyh.unc.edu.ar', NULL, 'Universidad Nacional de Córdoba', 10),
+('Grupo Kersia', 'Córdoba', NULL, NULL, NULL, NULL, NULL, 'constanza.diebel@kersia-group.com', NULL, 'Grupo Kersia', 11),
+('ELECTROMECÁNICA DICK COSTANTINO SA - WEDO', 'Río Tercero', NULL, NULL, NULL, NULL, NULL, 'rrhh@dickcostantinosa.com.ar', NULL, 'ELECTROMECÁNICA DICK COSTANTINO SA', 12),
+('Prosecretaría de Informática - UNC', 'Córdoba', 'Av Haya de la Torre S/N Pabellón Argentina', NULL, '1er piso', NULL, 'Ciudad Universitaria', 'contable@informatica.unc.edu.ar', NULL, 'Prosecretaría de Informática - UNC', 13),
+('IMPRO SRL', 'Córdoba', NULL, NULL, NULL, NULL, 'Est. Flores', 'rrhhimpro1@gmail.com', NULL, 'IMPRO SRL', 14),
+('Fumiscor S.A', 'Córdoba', 'Avenida circunvalación km 4 y medio', NULL, NULL, NULL, 'Los Olmos Sur', 'gestiondetalento.gm@grupomarma.com.ar', NULL, 'Fumiscor S.A', 15),
+('IVECO ARGENTINA S.A.', 'Córdoba', NULL, NULL, NULL, NULL, 'Ferreyra', 'talentos.ivg-argentina@ivecogroup.com', NULL, 'IVECO ARGENTINA S.A.', 16),
+('BANCO ROELA', 'Córdoba', 'Rosario de Santa Fé', 275, NULL, NULL, NULL, 'rrhh@bancoroela.com.ar', NULL, 'BANCO ROELA', 17),
+('SPINOZZI SAS', 'Córdoba', NULL, NULL, NULL, NULL, NULL, 'SPINOZZIRRHH@GMAIL.COM', NULL, 'SPINOZZI SAS', 18),
+('HELIOS ENERGÍA LIMPIA S.A.', 'Estación General Paz', 'Córdoba', NULL, NULL, NULL, NULL, 'seleccioncaphumano@selenesoluciones.com', NULL, 'HELIOS ENERGÍA LIMPIA S.A.', 19),
+('MAXION MONTICH S.A.', 'Córdoba', 'Av 11 de septiembre', 3768, NULL, NULL, NULL, 'atorres@montich.com.ar', NULL, 'MAXION MONTICH S.A.', 20),
+('Adecco Argentina/Stellantis', 'Córdoba', NULL, NULL, NULL, NULL, 'Ferreyra', 'micaela.cardus@adecco.com', NULL, 'Adecco Argentina/Stellantis', 21),
+('AMX ARGENTINA S.A. (CLARO ARGENTINA)', 'Córdoba', 'Av. Sabattini', 1417, NULL, NULL, NULL, 'rrhh@claro.com.ar', NULL, 'AMX ARGENTINA S.A.', 22),
+('AVENUE SA', 'Córdoba', 'Avenida Castro barros', 1155, NULL, NULL, NULL, 'rocio.suarez@grupoquijada.com.ar', NULL, 'AVENUE SA', 23),
+('Dayco Argentina S.A.', 'Córdoba', 'Juan R. Estomba', NULL, NULL, NULL, 'Parque Industrial Ferreyra', 'alfonsina.gioino@dayco.com', NULL, 'Dayco Argentina S.A.', 24),
+('Hospital Privado Universitario de Córdoba', 'Córdoba', 'Santa Rosa', 770, NULL, NULL, NULL, 'azul.merlo@hospitalprivado.com.ar', NULL, 'Hospital Privado Universitario de Córdoba', 25);
 
 --
 -- Inserta datos de ejemplo para Contacto
