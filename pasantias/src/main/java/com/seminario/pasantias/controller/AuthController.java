@@ -18,6 +18,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -92,9 +94,12 @@ public class AuthController {
             // Generar token
             String roleName = usuario.getRol() != null ? usuario.getRol().getNombre() : "USER";
             String token = jwtUtil.generateToken(usuario.getUsername(), roleName);
+            
+            // Incluir estado de verificación de email
+            Boolean emailVerificado = usuario.getEmailVerificado() != null ? usuario.getEmailVerificado() : false;
 
             return ResponseEntity.ok(new AuthResponse(token, usuario.getUsername(), 
-                                                    usuario.getEmail(), roleName));
+                                                    usuario.getEmail(), roleName, emailVerificado));
 
         } catch (Exception e) {
             return ResponseEntity.badRequest()
@@ -117,8 +122,9 @@ public class AuthController {
             
             Usuario usuario = usuarioOpt.get();
             String roleName = usuario.getRol() != null ? usuario.getRol().getNombre() : null;
+            Boolean emailVerificado = usuario.getEmailVerificado() != null ? usuario.getEmailVerificado() : false;
             return ResponseEntity.ok(new AuthResponse(null, usuario.getUsername(), 
-                                                    usuario.getEmail(), roleName, null));
+                                                    usuario.getEmail(), roleName, emailVerificado));
             
         } catch (Exception e) {
             return ResponseEntity.badRequest()
@@ -212,14 +218,46 @@ public class AuthController {
             // Generar token JWT
             String token = jwtUtil.generateToken(usuario.getUsername(), "ESTUDIANTE");
             
-            // Retornar respuesta con token
-            return ResponseEntity.ok(new AuthResponse(token, usuario.getUsername(), 
-                                                     usuario.getEmail(), "ESTUDIANTE"));
+            // Retornar respuesta con token e información de verificación
+            Boolean emailVerificado = usuario.getEmailVerificado() != null ? usuario.getEmailVerificado() : false;
+            String message = emailVerificado ? null : "Por favor verifica tu email. Revisa tu bandeja de entrada.";
+            
+            AuthResponse response = new AuthResponse(token, usuario.getUsername(), 
+                                                     usuario.getEmail(), "ESTUDIANTE", emailVerificado);
+            response.setMessage(message);
+            
+            return ResponseEntity.ok(response);
             
         } catch (Exception e) {
             return ResponseEntity.badRequest()
                 .body(new AuthResponse(null, null, null, null, 
                     "Error al registrar estudiante: " + e.getMessage()));
+        }
+    }
+    
+    /**
+     * Endpoint para confirmar la cuenta mediante token de verificación
+     * 
+     * @param token Token de verificación recibido por email
+     * @return Respuesta con código de éxito o error
+     */
+    @PostMapping("/confirmar-cuenta")
+    public ResponseEntity<Map<String, Object>> confirmarCuenta(@RequestParam String token) {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            usuarioService.verificarEmail(token);
+            response.put("codigo", 0);
+            response.put("mensaje", "Cuenta verificada exitosamente");
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            response.put("codigo", -1);
+            response.put("mensaje", e.getMessage());
+            return ResponseEntity.badRequest().body(response);
+        } catch (Exception e) {
+            response.put("codigo", -1);
+            response.put("mensaje", "Error al verificar la cuenta: " + e.getMessage());
+            return ResponseEntity.badRequest().body(response);
         }
     }
 }
