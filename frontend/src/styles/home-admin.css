@@ -1,104 +1,49 @@
-.admin-home{
-  background: linear-gradient(180deg, #f8fafc 0%, #fff 100%);
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  padding: 48px 0;
-}
-
-.admin-home-head{
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 28px;
-  max-width: 720px;
-}
-
-.admin-home-head h2{
-  margin: 0;
-  font-size: clamp(26px, 3vw, 34px);
-  color: var(--utn-blue);
-}
-
-.admin-home-head p{
-  margin: 0;
-  color: #475569;
-  font-size: 16px;
-  line-height: 1.5;
-}
-
-.admin-home-grid{
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
-}
-
-.admin-home-card{
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  padding: 20px;
+.admin-home {
+  padding: 64px 0;
   background: #fff;
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  text-decoration: none;
-  color: inherit;
-  box-shadow: 0 12px 28px rgba(34, 100, 178, 0.12);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
-.admin-home-card:hover{
-  transform: translateY(-4px);
-  border-color: rgba(34, 100, 178, 0.35);
-  box-shadow: 0 18px 34px rgba(34, 100, 178, 0.18);
-}
-
-.admin-home-icon{
-  display: inline-flex;
+.admin-home--landing {
+  min-height: calc(100vh - 128px);
+  display: flex;
   align-items: center;
-  justify-content: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  background: var(--utn-sky);
-  flex-shrink: 0;
+  text-align: center;
 }
 
-.admin-home-icon img{
-  width: 28px;
-  height: 28px;
-}
-
-.admin-home-body h3{
-  margin: 0;
-  font-size: 18px;
-  color: #0f172a;
-}
-
-.admin-home-body p{
-  margin: 6px 0 0 0;
-  color: #475569;
-  font-size: 14px;
-  line-height: 1.4;
-}
-
-.admin-home-arrow{
-  margin-left: auto;
-  font-size: 20px;
-  font-weight: 600;
+.admin-home--landing h1 {
+  margin: 24px 0 12px;
+  font-size: clamp(28px, 4vw, 42px);
   color: var(--utn-blue);
 }
 
-@media (max-width: 768px){
-  .admin-home{
-    padding: 36px 0;
+.admin-home--landing p {
+  margin: 0;
+  color: #475569;
+  font-size: 17px;
+}
+
+.admin-home-logo {
+  width: min(320px, 60vw);
+  margin: 0 auto;
+  padding: 32px;
+  border-radius: 28px;
+  background: #fff;
+  box-shadow: 0 30px 80px rgba(15, 23, 42, 0.1);
+  border: 1px solid var(--border);
+}
+
+.admin-home-logo img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+@media (max-width: 768px) {
+  .admin-home {
+    padding: 48px 0;
   }
 
-  .admin-home-card{
-    flex-wrap: wrap;
-    justify-content: flex-start;
-  }
-
-  .admin-home-arrow{
-    margin-left: 0;
+  .admin-home--landing {
+    min-height: calc(100vh - 96px);
   }
 }

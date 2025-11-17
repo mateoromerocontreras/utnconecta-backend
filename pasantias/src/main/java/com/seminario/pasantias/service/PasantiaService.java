@@ -44,6 +44,7 @@ public class PasantiaService {
     public PasantiaResponseDTO crearPasantia(PasantiaRequestDTO request) {
         // Validar que la empresa existe
         Empresa empresa = empresaMapper.findById(request.getIdEmpresa());
+        System.out.println("MARCOS " + empresa.toString());
         if (empresa == null) {
             throw new IllegalArgumentException("La empresa con ID " + request.getIdEmpresa() + " no existe");
         }

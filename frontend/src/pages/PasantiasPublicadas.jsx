@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import SearchPanel from "../components/SearchPanel.jsx";
+import FilterBar from "../components/FilterBar.jsx";
 import "../styles/pasantias.css";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:8080").replace(/\/+$/, "");
@@ -79,7 +79,7 @@ export default function PasantiasPublicadas() {
 
   const filtered = useMemo(() => {
     return jobs.filter(j => {
-      const t = filters.texto.toLowerCase();
+      const t = filters.texto.trim().toLowerCase();
       const byTexto = !t || 
         j.titulo.toLowerCase().includes(t) || 
         j.empresa.toLowerCase().includes(t) || 
@@ -91,8 +91,20 @@ export default function PasantiasPublicadas() {
     });
   }, [jobs, filters]);
 
-  function handleSearch(payload) {
-    setFilters(payload);
+  const hasActiveFilters = Boolean(
+    filters.texto.trim() || filters.carrera || filters.modalidad
+  );
+
+  function handleFiltersChange(event) {
+    const { name, value } = event.target;
+    setFilters((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+  }
+
+  function handleResetFilters() {
+    setFilters({ texto: "", carrera: "", modalidad: "" });
   }
 
   function handleVerDetalles(id) {
@@ -101,12 +113,60 @@ export default function PasantiasPublicadas() {
 
   return (
     <section className="pasantias-page">
-      {/* BARRA STICKY con el mismo SearchPanel */}
       <div className="filters-bar">
-        <div className="container">
-          {/* Usamos el SearchPanel ya abierto y en modo inline. La barra lo deja fijo. */}
-          <SearchPanel open={true} variant="inline" onSearch={handleSearch} />
-        </div>
+        <FilterBar
+          actions={
+            <button
+              type="button"
+              className="btn btn-outline sm"
+              onClick={handleResetFilters}
+              disabled={!hasActiveFilters}
+            >
+              Limpiar
+            </button>
+          }
+        >
+          <form
+            className="pasantias-filter-form"
+            onSubmit={(e) => e.preventDefault()}
+          >
+            <input
+              type="text"
+              name="texto"
+              className="filter-bar-input"
+              placeholder="Cargo, empresa o ciudad…"
+              value={filters.texto}
+              onChange={handleFiltersChange}
+            />
+            <select
+              name="carrera"
+              className="filter-bar-input"
+              value={filters.carrera}
+              onChange={handleFiltersChange}
+            >
+              <option value="">Todas las carreras</option>
+              <option>Ingeniería en Sistemas</option>
+              <option>Ingeniería Industrial</option>
+              <option>Ingeniería Química</option>
+              <option>Ingeniería Civil</option>
+              <option>Ingeniería en Energía Eléctrica</option>
+              <option>Ingeniería Electrónica</option>
+              <option>Ingeniería Mecánica</option>
+              <option>Ingeniería Metalúrgica</option>
+            </select>
+            <select
+              name="modalidad"
+              className="filter-bar-input"
+              value={filters.modalidad}
+              onChange={handleFiltersChange}
+            >
+              <option value="">Cualquier modalidad</option>
+              <option>Presencial</option>
+              <option>Híbrida</option>
+              <option>Remota</option>
+            </select>
+          </form>
+        </FilterBar>
       </div>
 
       {/* Contenido / resultados */}
@@ -186,4 +246,3 @@ export default function PasantiasPublicadas() {
     </section>
   );
 }
-

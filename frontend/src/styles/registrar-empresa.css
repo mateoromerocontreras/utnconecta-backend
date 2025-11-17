@@ -5,19 +5,19 @@
   align-items:center;
   flex-direction:column;
   gap:28px;
-  padding:64px 16px;
+  padding:20px 16px;
   min-height:calc(100vh - 140px);
-  background-color:#0f172a;
+  background-color:#fff;
   background-size:cover;
   background-position:center;
-  color:#fff;
+  color:var(--utn-blue);
 }
 
 .empresa-hero::before{
   content:"";
   position:absolute;
   inset:0;
-  background:rgba(15,23,42,0.6);
+
   backdrop-filter:blur(2px);
 }
 
@@ -30,6 +30,7 @@
   background:#fff;
   color:#0f172a;
   box-shadow:0 24px 48px rgba(15,23,42,0.2);
+  border: 1px solid var(--utn-blue);
 }
 
 .empresa-title{
@@ -138,15 +139,6 @@
   line-height:1.5;
 }
 
-.empresa-cta{
-  position:relative;
-  z-index:1;
-  font-size:clamp(20px, 2.6vw, 26px);
-  font-weight:700;
-  text-align:center;
-  line-height:1.4;
-  max-width:580px;
-}
 
 @media (max-width: 720px){
   .empresa-card{

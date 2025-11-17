@@ -73,7 +73,7 @@ export default function PasantiaDetalle() {
   return (
     <section className="pasantias-page">
       <div className="container">
-        <header style={{ marginBottom: "2rem" }}>
+        <header style={{ margin: "28px 0 2rem" }}>
           <button 
             className="btn btn-ghost" 
             onClick={() => navigate("/pasantias")}
@@ -188,4 +188,3 @@ export default function PasantiaDetalle() {
     </section>
   );
 }
-

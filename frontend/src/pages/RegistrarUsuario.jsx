@@ -237,7 +237,7 @@ export default function RegistrarUsuario() {
           loadUsuarios();
         }
       } else {
-        pushToast(data.message || "Error al registrar usuario", "error");
+        pushToast(data.message || "Error al Registrar usuario", "error");
       }
     } catch (err) {
       pushToast("Error de conexión: " + (err.message || ""), "error");
@@ -246,7 +246,7 @@ export default function RegistrarUsuario() {
     }
   };
 
-  // Funciones para modificar usuario
+  // Funciones para Modificar usuario
   const openEditUser = (usuario) => {
     setEditingUser(usuario);
     setEditFormData({
@@ -368,11 +368,21 @@ export default function RegistrarUsuario() {
   return (
     <section className="registrar-usuario-page">
       <div className="container">
+        <header className="section-head">
+          <div>
+            <p className="section-head__eyebrow">Panel administrativo</p>
+            <h1>Gestion de usuarios</h1>
+            <p className="muted">
+              Controla altas, bajas y permisos de todo el equipo desde un unico lugar.
+            </p>
+          </div>
+          <div className="section-head__meta">
+            <span className="section-head__badge">
+              {loadingUsuarios ? "Cargando..." : `${usuarios.length} usuario${usuarios.length === 1 ? "" : "s"}`}
+            </span>
+          </div>
+        </header>
         <div className="form-wrapper">
-          <header className="form-header">
-            <h1>Gestión de Usuarios</h1>
-            <p className="muted">Administrar usuarios del sistema</p>
-          </header>
 
           {/* Tabs */}
           <div className="tabs">
@@ -380,25 +390,25 @@ export default function RegistrarUsuario() {
               className={`tab ${activeTab === "consultar" ? "active" : ""}`}
               onClick={() => setActiveTab("consultar")}
             >
-              Consultar Usuarios
+              Consultar usuarios
             </button>
             <button 
               className={`tab ${activeTab === "registrar" ? "active" : ""}`}
               onClick={() => setActiveTab("registrar")}
             >
-              Registrar Usuario
+              Registrar usuario
             </button>
             {editingUser && (
               <button 
                 className={`tab ${activeTab === "modificar" ? "active" : ""}`}
                 onClick={() => setActiveTab("modificar")}
               >
-                Modificar Usuario
+                Modificar usuario
               </button>
             )}
           </div>
 
-          {/* Contenido de Consultar Usuarios */}
+          {/* Contenido de Consultar usuarios */}
           {activeTab === "consultar" && (
             <div className="tab-content">
               <div className="search-section">
@@ -479,7 +489,7 @@ export default function RegistrarUsuario() {
             </div>
           )}
 
-          {/* Contenido de Registrar Usuario */}
+          {/* Contenido de Registrar usuario */}
           {activeTab === "registrar" && (
             <div className="tab-content">
               <form className="user-form" onSubmit={handleSubmit}>
@@ -560,17 +570,17 @@ export default function RegistrarUsuario() {
                     className="btn btn-primary"
                     disabled={loading}
                   >
-                    {loading ? "Registrando..." : "Registrar Usuario"}
+                    {loading ? "Registrando..." : "Registrar usuario"}
                   </button>
                 </div>
               </form>
             </div>
           )}
 
-          {/* Contenido de Modificar Usuario */}
+          {/* Contenido de Modificar usuario */}
           {activeTab === "modificar" && editingUser && (
             <div className="tab-content">
-              <h3>Modificar Usuario: {editingUser.username}</h3>
+              <h3>Modificar usuario: {editingUser.username}</h3>
               <form className="user-form" onSubmit={handleEditSubmit}>
                 <div className="form-group">
                   <label htmlFor="edit-nombre" className="form-label">
@@ -703,8 +713,14 @@ export default function RegistrarUsuario() {
           </div>
         </div>
       )}
-    </div>      {/* Toasts */}
+    </div>
       <Toast toasts={toasts} onClose={closeToast} />
     </section>
   );
 }
+
+
+
+
+
+

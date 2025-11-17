@@ -2,85 +2,36 @@ package com.seminario.pasantias.dto.response;
 
 import com.seminario.pasantias.entity.EstadoPostulacion;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
-/**
- * DTO de respuesta básica para Postulación.
- * Contiene información esencial sin relaciones anidadas completas.
- * Ideal para listados y búsquedas.
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class PostulacionResponseDTO {
-
-    /**
-     * ID único de la postulación
-     */
     private Integer idPostulacion;
-
-    /**
-     * Fecha de postulación
-     */
     private LocalDate fechaPostulacion;
-
-    /**
-     * Fecha de inicio del contrato (si está definida)
-     */
     private LocalDate fechaInicioContrato;
-
-    /**
-     * Duración del contrato en meses
-     */
     private Integer duracionMeses;
-
-    /**
-     * Estado actual de la postulación
-     */
     private EstadoPostulacion estado;
+    private String observaciones;
+    private LocalDate fechaCreacion;
 
-    /**
-     * ID de la pasantía
-     */
+    // Campos desnormalizados
     private Integer idPasantia;
-
-    /**
-     * Título de la pasantía (desnormalizado)
-     */
     private String tituloPasantia;
-
-    /**
-     * ID del estudiante
-     */
-    private Integer idEstudiante;
-
-    /**
-     * Nombre completo del estudiante (desnormalizado)
-     */
-    private String nombreEstudiante;
-
-    /**
-     * Nombre de la empresa (desnormalizado)
-     */
+    private String modalidad;
     private String nombreEmpresa;
 
-    /**
-     * Modalidad de la pasantía
-     */
-    private String modalidad;
+    private Integer idEstudiante;
+    private String nombreEstudiante;
+    private String apellidoEstudiante;
+    private String emailEstudiante;
 
-    /**
-     * Indica si la postulación puede ser editada
-     */
+    // Campos calculados
     private Boolean esEditable;
-
-    /**
-     * Fecha de última actualización
-     */
-    private LocalDate fechaActualizacion;
+    private LocalDateTime fechaActualizacion;
 }

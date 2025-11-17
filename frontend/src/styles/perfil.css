@@ -1,6 +1,6 @@
 .perfil-page {
   min-height: calc(100vh - 8vh);
-  background: linear-gradient(135deg, #f0f4ff 0%, #e8f3ff 100%);
+  background: #fff;
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -8,7 +8,7 @@
 }
 
 .perfil-card {
-  background: #ffffff;
+  background: #fff;
   border-radius: 20px;
   box-shadow: 0 20px 45px rgba(34, 100, 178, 0.15);
   padding: 32px;
@@ -99,27 +99,6 @@
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-.btn.btn-primary {
-  background: #286FA9;
-  color: #ffffff;
-}
-
-.btn.btn-primary:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(40, 111, 169, 0.4);
-}
-
-.btn.btn-secondary {
-  background: #64748b;
-  color: #ffffff;
-}
-
-.btn.btn-secondary:hover:not(:disabled) {
-  background: #475569;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(100, 116, 139, 0.4);
 }
 
 .btn.btn-danger {

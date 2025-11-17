@@ -73,6 +73,9 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/pasantias/*/finalizar").hasRole("ADMINISTRADOR")
                 // OPTIONS requests para CORS preflight
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                //POSTULACIONES ADMINISTRADOR O ESTUDIANTES
+                .requestMatchers("/postulaciones/registrarPostulacion").hasAnyRole("ADMINISTRADOR", "ESTUDIANTE")
+                .requestMatchers("/postulaciones/consultarPostulaciones").hasAnyRole("ADMINISTRADOR", "ESTUDIANTE")
                 // Cualquier otra solicitud requiere autenticación
                 .anyRequest().authenticated()
             )

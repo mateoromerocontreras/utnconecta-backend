@@ -312,11 +312,6 @@ export default function RegistrarEmpresa() {
           vacantes y contactar candidatos.
         </p>
       </div>
-
-      <p className="empresa-cta">
-        ¡Unite y publicá pasantías gratis!<br />
-        Encontrá los mejores estudiantes para tu empresa.
-      </p>
     </section>
   );
 }

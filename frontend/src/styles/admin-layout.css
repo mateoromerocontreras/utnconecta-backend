@@ -1,0 +1,142 @@
+.admin-layout {
+  flex: 1;
+  display: flex;
+  min-height: 100vh;
+  height: 100vh;
+  background: #fff;
+  overflow: hidden;
+}
+
+.admin-sidebar {
+  width: 260px;
+  background: var(--utn-blue);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 1.5rem;
+  gap: 1.5rem;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.admin-sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.admin-sidebar__brand img {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+}
+
+.admin-sidebar__brand-name {
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.admin-sidebar__brand-role {
+  font-size: 0.85rem;
+  color: rgba(248, 250, 252, 0.7);
+}
+
+.admin-sidebar__nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.admin-sidebar__home {
+  margin: 1.5rem 0 1rem;
+}
+
+.admin-sidebar__account {
+  margin-top: 1rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid rgba(248, 250, 252, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.admin-sidebar__nav-label {
+  margin: 0 0 0.6rem;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(248, 250, 252, 0.6);
+}
+
+.admin-sidebar__link {
+  padding: 0.75rem 1rem;
+  display: block;
+  border-radius: 12px;
+  color: rgba(248, 250, 252, 0.85);
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.admin-sidebar__link:hover {
+  background: rgba(15, 23, 42, 0.6);
+  color: #fff;
+}
+
+.admin-sidebar__link.is-active {
+  background: var(--utn-orange, #FF6600);
+  color: #fff;
+}
+
+.admin-main {
+  flex: 1;
+  padding: 2rem;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+@media (max-width: 900px) {
+  .admin-layout {
+    flex-direction: column;
+    height: auto;
+    min-height: auto;
+    overflow: visible;
+  }
+
+  .admin-sidebar {
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    position: static;
+    height: auto;
+    overflow: visible;
+  }
+
+  .admin-sidebar__nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .admin-sidebar__nav-label {
+    width: 100%;
+  }
+
+  .admin-sidebar__link {
+    flex: 1 1 45%;
+    text-align: center;
+  }
+
+  .admin-main {
+    height: auto;
+    overflow: visible;
+  }
+}

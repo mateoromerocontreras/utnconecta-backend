@@ -1,6 +1,7 @@
 package com.seminario.pasantias.persistence;
 
 import com.seminario.pasantias.dto.request.PostulacionFiltroDTO;
+import com.seminario.pasantias.dto.response.PostulacionResponseDTO;
 import com.seminario.pasantias.entity.Postulacion;
 import org.apache.ibatis.annotations.*;
 import java.util.List;
@@ -24,7 +25,7 @@ public interface PostulacionMapper {
             po.duracion_meses AS duracionMeses,
             po.estado,
             po.id_pasantia AS idPasantia,
-            po.id_estudiante AS idEstudiante
+            po.estudiante_id AS idEstudiante
         FROM Postulacion po
         WHERE po.id_postulacion = #{id}
     """)
@@ -47,7 +48,7 @@ public interface PostulacionMapper {
             po.duracion_meses AS duracionMeses,
             po.estado,
             po.id_pasantia AS idPasantia,
-            po.id_estudiante AS idEstudiante
+            po.estudiante_id AS idEstudiante
         FROM Postulacion po
         WHERE po.id_postulacion = #{id}
     """)
@@ -61,22 +62,54 @@ public interface PostulacionMapper {
     Optional<Postulacion> findByIdWithRelations(@Param("id") Integer id);
 
     /**
-     * Listar todas las postulaciones.
+     * Listar todas las postulaciones con relaciones complejas.
      */
-    @Select("""
+        @Select("""
         SELECT 
             po.id_postulacion AS idPostulacion,
             po.fecha_postulacion AS fechaPostulacion,
             po.fecha_inicio_contrato AS fechaInicioContrato,
             po.duracion_meses AS duracionMeses,
             po.estado,
-            po.id_pasantia AS idPasantia,
-            po.id_estudiante AS idEstudiante
+            po.observaciones AS observaciones,
+            po.fecha_creacion AS fechaCreacion,
+
+            pa.id_pasantia AS idPasantia,
+            pa.titulo AS tituloPasantia,
+            pa.modalidad AS modalidad,
+            em.nombre AS nombreEmpresa,
+
+            e.id_estudiante AS idEstudiante,
+            e.nombre AS nombreEstudiante,
+            e.apellido AS apellidoEstudiante,
+            e.email AS emailEstudiante
         FROM Postulacion po
+        LEFT JOIN Estudiante e ON po.estudiante_id = e.id_estudiante
+        LEFT JOIN Pasantia pa ON po.id_pasantia = pa.id_pasantia
+        LEFT JOIN Empresa em ON pa.id_empresa = em.id_empresa
         ORDER BY po.fecha_postulacion DESC
     """)
-    @ResultMap("postulacionResult")
-    List<Postulacion> findAll();
+        @Results(id = "postulacionResponseResult", value = {
+                @Result(property = "idPostulacion", column = "idPostulacion", id = true),
+                @Result(property = "fechaPostulacion", column = "fechaPostulacion"),
+                @Result(property = "fechaInicioContrato", column = "fechaInicioContrato"),
+                @Result(property = "duracionMeses", column = "duracionMeses"),
+                @Result(property = "estado", column = "estado"),
+                @Result(property = "observaciones", column = "observaciones"),
+                @Result(property = "fechaCreacion", column = "fechaCreacion"),
+
+                @Result(property = "idPasantia", column = "idPasantia"),
+                @Result(property = "tituloPasantia", column = "tituloPasantia"),
+                @Result(property = "modalidad", column = "modalidad"),
+                @Result(property = "nombreEmpresa", column = "nombreEmpresa"),
+
+                @Result(property = "idEstudiante", column = "idEstudiante"),
+                @Result(property = "nombreEstudiante", column = "nombreEstudiante"),
+                @Result(property = "apellidoEstudiante", column = "apellidoEstudiante"),
+                @Result(property = "emailEstudiante", column = "emailEstudiante")
+        })
+        List<PostulacionResponseDTO> findAllResponse();
+
 
     /**
      * Buscar postulaciones por estudiante.
@@ -89,9 +122,9 @@ public interface PostulacionMapper {
             po.duracion_meses AS duracionMeses,
             po.estado,
             po.id_pasantia AS idPasantia,
-            po.id_estudiante AS idEstudiante
+            po.estudiante_id AS idEstudiante
         FROM Postulacion po
-        WHERE po.id_estudiante = #{idEstudiante}
+        WHERE po.estudiante_id = #{idEstudiante}
         ORDER BY po.fecha_postulacion DESC
     """)
     @ResultMap("postulacionResult")
@@ -108,7 +141,7 @@ public interface PostulacionMapper {
             po.duracion_meses AS duracionMeses,
             po.estado,
             po.id_pasantia AS idPasantia,
-            po.id_estudiante AS idEstudiante
+            po.estudiante_id AS idEstudiante
         FROM Postulacion po
         WHERE po.id_pasantia = #{idPasantia}
         ORDER BY po.fecha_postulacion DESC
@@ -127,7 +160,7 @@ public interface PostulacionMapper {
             po.duracion_meses AS duracionMeses,
             po.estado,
             po.id_pasantia AS idPasantia,
-            po.id_estudiante AS idEstudiante
+            po.estudiante_id AS idEstudiante
         FROM Postulacion po
         WHERE po.estado = #{estado}
         ORDER BY po.fecha_postulacion DESC
@@ -146,9 +179,9 @@ public interface PostulacionMapper {
             po.duracion_meses AS duracionMeses,
             po.estado,
             po.id_pasantia AS idPasantia,
-            po.id_estudiante AS idEstudiante
+            po.estudiante_id AS idEstudiante
         FROM Postulacion po
-        WHERE po.id_estudiante = #{idEstudiante}
+        WHERE po.estudiante_id = #{idEstudiante}
         AND po.estado != 'FINALIZADA'
         ORDER BY po.fecha_postulacion DESC
     """)
@@ -172,7 +205,7 @@ public interface PostulacionMapper {
     @Select("""
         SELECT COUNT(*) > 0 
         FROM Postulacion
-        WHERE id_estudiante = #{idEstudiante}
+        WHERE estudiante_id = #{idEstudiante}
         AND id_pasantia = #{idPasantia}
     """)
     boolean existsByEstudianteAndPasantia(@Param("idEstudiante") Integer idEstudiante, 
@@ -190,7 +223,7 @@ public interface PostulacionMapper {
     @Insert("""
         INSERT INTO Postulacion (
             fecha_postulacion, fecha_inicio_contrato, duracion_meses,
-            estado, id_pasantia, id_estudiante
+            estado, id_pasantia, estudiante_id
         ) VALUES (
             #{fechaPostulacion}, #{fechaInicioContrato}, #{duracionMeses},
             #{estado}, #{pasantia.idPasantia}, #{estudiante.idEstudiante}
@@ -244,7 +277,7 @@ public interface PostulacionMapper {
     /**
      * Contar postulaciones por estudiante.
      */
-    @Select("SELECT COUNT(*) FROM Postulacion WHERE id_estudiante = #{idEstudiante}")
+    @Select("SELECT COUNT(*) FROM Postulacion WHERE estudiante_id = #{idEstudiante}")
     Integer countByEstudiante(@Param("idEstudiante") Integer idEstudiante);
 
     /**
@@ -264,4 +297,34 @@ public interface PostulacionMapper {
     """)
     Integer countByPasantiaIdAndEstadoNot(@Param("idPasantia") Integer idPasantia, 
                                            @Param("estado") String estado);
-}
+
+
+        @Select("""
+        SELECT 
+            po.id_postulacion AS idPostulacion,
+            po.fecha_postulacion AS fechaPostulacion,
+            po.fecha_inicio_contrato AS fechaInicioContrato,
+            po.duracion_meses AS duracionMeses,
+            po.estado,
+            po.observaciones AS observaciones,
+            po.fecha_creacion AS fechaCreacion,
+
+            pa.id_pasantia AS idPasantia,
+            pa.titulo AS tituloPasantia,
+            pa.modalidad AS modalidad,
+            em.nombre AS nombreEmpresa,
+
+            e.id_estudiante AS idEstudiante,
+            e.nombre AS nombreEstudiante,
+            e.apellido AS apellidoEstudiante,
+            e.email AS emailEstudiante
+        FROM Postulacion po
+        LEFT JOIN Estudiante e ON po.estudiante_id = e.id_estudiante
+        LEFT JOIN Pasantia pa ON po.id_pasantia = pa.id_pasantia
+        LEFT JOIN Empresa em ON pa.id_empresa = em.id_empresa
+        WHERE e.id_usuario = #{idUsuario}
+        ORDER BY po.fecha_postulacion DESC
+    """)
+        List<PostulacionResponseDTO> findByUsuarioId(Integer idUsuario);
+    }
+
