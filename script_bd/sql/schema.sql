@@ -147,7 +147,7 @@ CREATE TABLE Postulacion (
     estado ENUM('BORRADOR', 'PENDIENTE_APROBACION', 'PUBLICADA', 'CUBIERTA', 'FINALIZADA') NOT NULL DEFAULT 'BORRADOR',
     observaciones TEXT,  -- nueva columna para comentarios/observaciones
     id_pasantia INT NOT NULL,
-    id_estudiante INT NOT NULL,
+    estudiante_id INT NOT NULL,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_postulacion_pasantia
