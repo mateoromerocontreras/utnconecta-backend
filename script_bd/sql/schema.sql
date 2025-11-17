@@ -155,10 +155,11 @@ CREATE TABLE Postulacion (
         REFERENCES Pasantia(id_pasantia)
         ON DELETE CASCADE,
     CONSTRAINT fk_postulacion_estudiante
-        FOREIGN KEY (id_estudiante)
+        FOREIGN KEY (estudiante_id)
         REFERENCES Estudiante(id_estudiante)
         ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 --
 -- Inserta datos de ejemplo para Rol
