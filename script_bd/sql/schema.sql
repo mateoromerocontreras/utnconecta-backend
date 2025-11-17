@@ -313,22 +313,23 @@ INSERT INTO Pasantia_Carrera (id_pasantia, id_carrera) VALUES
 -- Inserta datos de ejemplo para Postulacion
 --
 -- Postulaciones para Estudiante 1 (Juan García)
-INSERT INTO Postulacion (fecha_postulacion, estado, id_pasantia, id_estudiante)
+INSERT INTO Postulacion (fecha_postulacion, estado, id_pasantia, estudiante_id)
 VALUES ('2025-11-02', 'BORRADOR', 1, 1);
 
-INSERT INTO Postulacion (fecha_postulacion, estado, id_pasantia, id_estudiante)
+INSERT INTO Postulacion (fecha_postulacion, estado, id_pasantia, estudiante_id)
 VALUES ('2025-11-05', 'PENDIENTE_APROBACION', 2, 1);
 
 -- Postulaciones para Estudiante 2 (María López)
-INSERT INTO Postulacion (fecha_postulacion, fecha_inicio_contrato, duracion_meses, estado, id_pasantia, id_estudiante)
+INSERT INTO Postulacion (fecha_postulacion, fecha_inicio_contrato, duracion_meses, estado, id_pasantia, estudiante_id)
 VALUES ('2025-11-08', '2025-12-01', 6, 'PUBLICADA', 3, 2);
 
-INSERT INTO Postulacion (fecha_postulacion, estado, id_pasantia, id_estudiante)
+INSERT INTO Postulacion (fecha_postulacion, estado, id_pasantia, estudiante_id)
 VALUES ('2025-11-15', 'BORRADOR', 4, 2);
 
 -- Postulaciones para Estudiante 3 (Carlos Fernández)
-INSERT INTO Postulacion (fecha_postulacion, fecha_inicio_contrato, duracion_meses, estado, id_pasantia, id_estudiante)
+INSERT INTO Postulacion (fecha_postulacion, fecha_inicio_contrato, duracion_meses, estado, id_pasantia, estudiante_id)
 VALUES ('2025-11-20', '2025-12-10', 12, 'CUBIERTA', 5, 3);
 
-INSERT INTO Postulacion (fecha_postulacion, estado, id_pasantia, id_estudiante)
+INSERT INTO Postulacion (fecha_postulacion, estado, id_pasantia, estudiante_id)
 VALUES ('2025-11-25', 'FINALIZADA', 6, 3);
+
