@@ -145,6 +145,7 @@ CREATE TABLE Postulacion (
     fecha_inicio_contrato DATE,
     duracion_meses INT,
     estado ENUM('BORRADOR', 'PENDIENTE_APROBACION', 'PUBLICADA', 'CUBIERTA', 'FINALIZADA') NOT NULL DEFAULT 'BORRADOR',
+    observaciones TEXT,  -- nueva columna para comentarios/observaciones
     id_pasantia INT NOT NULL,
     id_estudiante INT NOT NULL,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -157,7 +158,7 @@ CREATE TABLE Postulacion (
         FOREIGN KEY (id_estudiante)
         REFERENCES Estudiante(id_estudiante)
         ON DELETE CASCADE
-);
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Inserta datos de ejemplo para Rol
