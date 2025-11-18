@@ -69,12 +69,13 @@
 }
 .job-card .time{ color:#64748b; font-size:12px; }
 .btn-ghost{
-  background: transparent;
-  color: var(--utn-blue);
-  border:1px solid var(--utn-blue);
-  border-radius: 10px;
-  padding: 6px 10px;
-  text-decoration:none; font-weight:600; font-size:14px;
+  background: #2264B2 !important;
+  color: #fff;
+  border:none;
+}
+.btn-ghost:hover{
+  filter: brightness(1.05);
+  color: #fff;
 }
 
 /* --- FAQ + CTA --- */

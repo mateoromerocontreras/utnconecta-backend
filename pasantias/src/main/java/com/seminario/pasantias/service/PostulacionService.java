@@ -7,6 +7,8 @@ import com.seminario.pasantias.persistence.PostulacionMapper;
 import com.seminario.pasantias.persistence.EstudianteMapper;
 import com.seminario.pasantias.persistence.PasantiaMapper;
 import com.seminario.pasantias.util.PostulacionMapperUtil;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,17 +26,19 @@ public class PostulacionService {
     private final EstudianteMapper estudianteMapper;
     private final PasantiaMapper pasantiaMapper;
     private final PostulacionMapperUtil mapperUtil;
+    private final UsuarioService usuarioService;
 
     @Autowired
     public PostulacionService(
-            PostulacionMapper postulacionMapper, 
+            PostulacionMapper postulacionMapper,
             EstudianteMapper estudianteMapper,
             PasantiaMapper pasantiaMapper,
-            PostulacionMapperUtil mapperUtil) {
+            PostulacionMapperUtil mapperUtil, UsuarioService usuarioService) {
         this.postulacionMapper = postulacionMapper;
         this.estudianteMapper = estudianteMapper;
         this.pasantiaMapper = pasantiaMapper;
         this.mapperUtil = mapperUtil;
+        this.usuarioService = usuarioService;
     }
 
     /**
@@ -43,6 +47,7 @@ public class PostulacionService {
     public PostulacionResponseDTO crearPostulacion(PostulacionRequestDTO request) {
         // Validar que el estudiante existe
         Optional<Estudiante> estudianteOpt = estudianteMapper.findById(request.getIdEstudiante());
+        System.out.println("MARCOS ESTUDIANTE: " + estudianteOpt.toString());
         if (estudianteOpt.isEmpty()) {
             throw new IllegalArgumentException("El estudiante con ID " + request.getIdEstudiante() + " no existe");
         }
@@ -54,7 +59,7 @@ public class PostulacionService {
         }
 
         Pasantia pasantia = pasantiaOpt.get();
-
+        System.out.println("AGUSTIN PASANTIA " + pasantia.toString() );
         // Verificar que la pasantía esté en estado PUBLICADA
         if (pasantia.getEstado() != EstadoPasantia.PUBLICADA) {
             throw new IllegalStateException("La pasantía no está disponible para postulaciones. Estado actual: " + pasantia.getEstado());
@@ -70,6 +75,7 @@ public class PostulacionService {
                 request.getIdEstudiante(), 
                 request.getIdPasantia()
         );
+        System.out.println("AGUSTIN YA POSTULO? " + yaPostulo);
         if (yaPostulo) {
             throw new IllegalStateException("El estudiante ya tiene una postulación para esta pasantía");
         }
@@ -206,15 +212,41 @@ public class PostulacionService {
     }
 
     /**
+     * Obtener todas las postulaciones de una pasantía con información completa de estudiantes
+     */
+    @Transactional(readOnly = true)
+    public List<PostulacionResponseDTO> obtenerTodasPostulacionesPorPasantia(Integer pasantiaId) {
+        List<PostulacionResponseDTO> postulaciones = postulacionMapper.findAllByPasantiaId(pasantiaId);
+        
+        // Calcular campos adicionales
+        postulaciones.forEach(dto -> {
+            dto.setEsEditable(
+                    dto.getEstado() == EstadoPostulacion.BORRADOR ||
+                            dto.getEstado() == EstadoPostulacion.PENDIENTE_APROBACION
+            );
+        });
+        
+        return postulaciones;
+    }
+
+    /**
      * Obtener todas las postulaciones
      */
     @Transactional(readOnly = true)
     public List<PostulacionResponseDTO> consultarPostulaciones() {
-        List<Postulacion> postulaciones = postulacionMapper.findAll();
-        return postulaciones.stream()
-                .map(mapperUtil::entityToResponseDto)
-                .collect(Collectors.toList());
+        List<PostulacionResponseDTO> postulaciones = postulacionMapper.findAllResponse();
+
+        // Calcular campos adicionales
+        postulaciones.forEach(dto -> {
+            dto.setEsEditable(
+                    dto.getEstado() == EstadoPostulacion.BORRADOR ||
+                            dto.getEstado() == EstadoPostulacion.PENDIENTE_APROBACION
+            );
+        });
+
+        return postulaciones;
     }
+
 
     /**
      * Eliminar postulación (solo si está en BORRADOR)
@@ -272,5 +304,73 @@ public class PostulacionService {
                         "No se puede cambiar el estado de una postulación FINALIZADA"
                 );
         }
+    }
+    @Transactional(readOnly = true)
+    public List<PostulacionResponseDTO> consultarMisPostulaciones() {
+        // Recuperar usuario autenticado
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+
+        // Buscar el usuario en BD
+        Optional<Usuario> usuario = usuarioService.findByUsername(username);
+        System.out.println("AGUSTIN USUARIO: " + usuario.get().getIdUsuario());
+        // Buscar postulaciones por idUsuario
+        List<PostulacionResponseDTO> postulaciones = postulacionMapper.findByUsuarioId(usuario.get().getIdUsuario());
+
+        // Calcular campos adicionales
+        postulaciones.forEach(dto -> {
+            dto.setEsEditable(
+                    dto.getEstado() == EstadoPostulacion.BORRADOR ||
+                            dto.getEstado() == EstadoPostulacion.PENDIENTE_APROBACION
+            );
+            dto.setFechaActualizacion(null); // o LocalDateTime.now() si querés setearlo
+        });
+
+        return postulaciones;
+    }
+
+    /**
+     * Obtener postulación del usuario autenticado para una pasantía específica
+     */
+    @Transactional(readOnly = true)
+    public Optional<PostulacionResponseDTO> obtenerPostulacionPorPasantia(Integer pasantiaId) {
+        // Recuperar usuario autenticado
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+
+        // Buscar el usuario en BD
+        Optional<Usuario> usuarioOpt = usuarioService.findByUsername(username);
+        if (usuarioOpt.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Usuario usuario = usuarioOpt.get();
+
+        // Buscar el estudiante asociado al usuario
+        Optional<Estudiante> estudianteOpt = estudianteMapper.findByUsuarioId(usuario.getIdUsuario());
+        if (estudianteOpt.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Estudiante estudiante = estudianteOpt.get();
+
+        // Buscar postulación por estudiante y pasantía
+        Optional<Postulacion> postulacionOpt = postulacionMapper.findByEstudianteAndPasantia(
+                estudiante.getIdEstudiante(), 
+                pasantiaId
+        );
+
+        if (postulacionOpt.isEmpty()) {
+            return Optional.empty();
+        }
+
+        // Convertir a DTO
+        PostulacionResponseDTO dto = mapperUtil.entityToResponseDto(postulacionOpt.get());
+        dto.setEsEditable(
+                dto.getEstado() == EstadoPostulacion.BORRADOR ||
+                        dto.getEstado() == EstadoPostulacion.PENDIENTE_APROBACION
+        );
+
+        return Optional.of(dto);
     }
 }

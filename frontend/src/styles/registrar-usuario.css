@@ -2,37 +2,21 @@
 .registrar-usuario-page {
   background: #fff;
   min-height: 100vh;
-  padding: 48px 0;
+  padding: 48px 0 64px;
+}
+
+.registrar-usuario-page .container{
+  max-width: 1100px;
+  margin: 0 auto;
 }
 
 /* Wrapper del formulario */
 .form-wrapper {
-  max-width: 800px; /* Increased width for table */
-  margin: 0 auto;
-  background: var(--utn-sky);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  width: 100%;
+  background: #fff;
+  border-radius: var(--radius);
   padding: 32px;
-  box-shadow: 0 4px 12px rgba(0,0,0,.08);
-}
-
-/* Encabezado del formulario */
-.form-header {
-  text-align: center;
-  margin-bottom: 32px;
-}
-
-.form-header h1 {
-  margin: 0 0 8px 0;
-  font-size: clamp(22px, 2.2vw, 28px);
-  color: var(--text);
-  font-weight: 600;
-}
-
-.form-header .muted {
-  margin: 0;
-  color: var(--muted);
-  font-size: 15px;
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
 }
 
 /* Formulario */
@@ -146,18 +130,6 @@ select.form-input {
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-.btn-primary {
-  background: var(--utn-blue);
-  color: #fff;
-  min-width: 140px;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: #1e5ba8;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(34,100,178,.3);
 }
 
 /* Toast stack (reutilizando de empresas) */
@@ -343,10 +315,6 @@ select.form-input {
     padding: 24px 20px;
   }
   
-  .form-header h1 {
-    font-size: 24px;
-  }
-  
   .toast-stack {
     left: 16px;
     right: 16px;
@@ -357,42 +325,50 @@ select.form-input {
 /* ========== Tabs ========== */
 .tabs {
   display: flex;
-  gap: 4px;
+  gap: 8px;
   margin-bottom: 24px;
-  border-bottom: 1px solid var(--border);
+  background: var(--utn-sky);
+  padding: 6px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  flex-wrap: wrap;
 }
 
 .tab {
-  padding: 12px 20px;
-  background: none;
+  flex: 1;
+  min-width: 180px;
+  padding: 0.85rem 1rem;
+  background: transparent;
   border: none;
   color: var(--muted);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s ease;
+  border-radius: var(--radius);
+  transition: background .2s ease, color .2s ease, box-shadow .2s ease;
 }
 
 .tab:hover {
   color: var(--text);
-  background: rgba(0,0,0,0.05);
 }
 
 .tab.active {
-  color: var(--blue);
-  border-bottom-color: var(--blue);
-  background: rgba(70, 130, 180, 0.1);
+  color: var(--utn-blue);
+  background: #fff;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
 }
 
 /* ========== Tab Content ========== */
 .tab-content {
   min-height: 400px;
+  padding-top: 4px;
 }
 
 /* ========== Search Section ========== */
 .search-section {
   margin-bottom: 24px;
+  padding: 16px;
+  background: #fff;
 }
 
 .search-form {
@@ -407,31 +383,17 @@ select.form-input {
   flex: 1;
   min-width: 200px;
   margin-bottom: 0;
+  border-radius: var(--radius);
+  background-color: var(--utn-sky);
 }
 
 .search-form .btn {
   margin: 0 !important;
 }
 
-.btn-secondary {
-  background: var(--muted);
-  color: white;
-  border: 1px solid var(--muted);
-}
-
-.btn-secondary:hover {
-  background: var(--text);
-  border-color: var(--text);
-}
-
-.btn-outline {
-  background: transparent;
-  color: var(--text);
-  border: 1px solid var(--border);
-}
-
-.btn-outline:hover {
-  background: rgba(0,0,0,0.05);
+.registrar-usuario-page .btn-outline:hover {
+  background: var(--utn-blue);
+  color: #fff;
 }
 
 .btn-small {
@@ -541,6 +503,7 @@ select.form-input {
     margin: 0 16px;
     padding: 20px;
   }
+
   
   .search-form {
     flex-direction: column;

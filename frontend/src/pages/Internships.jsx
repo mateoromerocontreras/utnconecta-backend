@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import SearchPanel from "../components/SearchPanel.jsx";
+import { useNavigate, useLocation } from "react-router-dom";
+import FilterBar from "../components/FilterBar.jsx";
 import "../styles/pasantias.css";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:8080").replace(/\/+$/, "");
@@ -30,6 +30,7 @@ function formatRelativeDate(dateString) {
 
 export default function Internships() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [filters, setFilters] = useState({ texto: "", carrera: "", modalidad: "" });
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -37,6 +38,7 @@ export default function Internships() {
   const [user, setUser] = useState(null);
   const [approving, setApproving] = useState(new Set());
   const [finalizing, setFinalizing] = useState(new Set());
+  const [careers, setCareers] = useState([]);
 
   const readUserFromStorage = useCallback(() => {
     const token = getStoredItem("authToken");
@@ -115,9 +117,36 @@ export default function Internships() {
     load();
   }, []);
 
+  // Prefill filters from query params (e.g. searches from Home)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    setFilters((prev) => ({
+      ...prev,
+      texto: params.get("texto") || "",
+      carrera: params.get("carrera") || "",
+      modalidad: params.get("modalidad") || ""
+    }));
+  }, [location.search]);
+
+  useEffect(() => {
+    async function loadCareers() {
+      try {
+        const res = await fetch(`${API}/carreras/listarCarreras`, {
+          headers: { Accept: "application/json" }
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        setCareers(Array.isArray(data) ? data.map((c) => c.nombre).filter(Boolean) : []);
+      } catch (err) {
+        console.error("No se pudo obtener el listado de carreras para filtros:", err);
+      }
+    }
+    loadCareers();
+  }, []);
+
   const filtered = useMemo(() => {
     return jobs.filter(j => {
-      const t = filters.texto.toLowerCase();
+      const t = filters.texto.trim().toLowerCase();
       const byTexto = !t || 
         j.titulo.toLowerCase().includes(t) || 
         j.empresa.toLowerCase().includes(t) || 
@@ -129,11 +158,23 @@ export default function Internships() {
     });
   }, [jobs, filters]);
 
-  function handleSearch(payload) {
-    setFilters(payload);
-    // Si querés usar querystring:
-    // const qs = new URLSearchParams(payload).toString();
-    // navigate(`/pasantias?${qs}`);
+  const hasActiveFilters = Boolean(
+    filters.texto.trim() || filters.carrera || filters.modalidad
+  );
+
+  function handleFiltersChange(event) {
+    const { name, value } = event.target;
+    setFilters((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+  }
+
+  function handleResetFilters() {
+    setFilters({ texto: "", carrera: "", modalidad: "" });
+    if (location.search) {
+      navigate("/pasantias", { replace: true });
+    }
   }
 
   async function handleVerDetalles(id) {
@@ -244,24 +285,72 @@ export default function Internships() {
 
   return (
     <section className="pasantias-page">
-      {/* BARRA STICKY con el mismo SearchPanel */}
-      <div className="filters-bar">
-        <div className="container">
-          {/* Usamos el SearchPanel ya abierto y en modo inline. La barra lo deja fijo. */}
-          <SearchPanel open={true} variant="inline" onSearch={handleSearch} />
-        </div>
-      </div>
-
       {/* Contenido / resultados */}
       <div className="container results-wrap">
-        <header className="results-head">
-          <h1>Pasantías</h1>
-          <p className="muted">
-            {loading ? "Cargando…" :
-              error ? "—" :
-              `${filtered.length} resultado${filtered.length !== 1 ? "s" : ""}${(filters.texto || filters.carrera || filters.modalidad) ? " (filtrado)" : ""}`}
-          </p>
+        <header className="section-head results-head">
+          <div>
+            <p className="section-head__eyebrow">Oportunidades activas</p>
+            <h1>Pasantias</h1>
+            <p className="muted">
+              Explora las pasantias disponibles y filtra por carrera y modalidad.
+            </p>
+          </div>
+          <div className="section-head__meta">
+            <span className="section-head__badge">
+              {loading ? "Cargando..." :
+                error ? "—" :
+                `${filtered.length} resultado${filtered.length !== 1 ? "s" : ""}${(filters.texto || filters.carrera || filters.modalidad) ? " (filtrado)" : ""}`}
+            </span>
+          </div>
         </header>
+        <FilterBar
+          actions={
+            <button
+              type="button"
+              className="btn btn-outline sm"
+              onClick={handleResetFilters}
+              disabled={!hasActiveFilters}
+            >
+              Limpiar
+            </button>
+          }
+        >
+          <form
+            className="pasantias-filter-form"
+            onSubmit={(e) => e.preventDefault()}
+          >
+            <input
+              type="text"
+              name="texto"
+              className="filter-bar-input"
+              placeholder="Cargo, empresa o ciudad…"
+              value={filters.texto}
+              onChange={handleFiltersChange}
+            />
+            <select
+              name="carrera"
+              className="filter-bar-input"
+              value={filters.carrera}
+              onChange={handleFiltersChange}
+            >
+              <option value="">Todas las carreras</option>
+              {careers.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+            <select
+              name="modalidad"
+              className="filter-bar-input"
+              value={filters.modalidad}
+              onChange={handleFiltersChange}
+            >
+              <option value="">Cualquier modalidad</option>
+              <option>Presencial</option>
+              <option>Híbrida</option>
+              <option>Remota</option>
+            </select>
+          </form>
+        </FilterBar>
 
         {error && (
           <div className="emp-alert error" style={{ marginBottom: "1rem" }}>
@@ -312,34 +401,28 @@ export default function Internships() {
                         >
                           Ver detalles
                         </button>
-                        {j.aceptaPostulaciones && (
+                        {j.aceptaPostulaciones && (!user || user?.rol === "ESTUDIANTE") && (
                           <a className="btn btn-ghost" href={`/pasantias/${j.id}`}>
                             Postular
                           </a>
                         )}
                         {isAdmin && j.estado === "PENDIENTE_DE_APROBACION" && (
                           <button
-                            className="btn btn-ghost"
+                            className="btn btn-approve"
                             onClick={(e) => handleAprobar(j.id, e)}
                             disabled={approving.has(j.id)}
-                            style={{ 
-                              fontSize: "0.9em",
-                              color: "#28a745",
-                              borderColor: "#28a745"
-                            }}
+                            style={{ fontSize: "0.9em" }}
                           >
                             {approving.has(j.id) ? "Aprobando..." : "Aprobar"}
                           </button>
                         )}
                         {isAdmin && j.estado === "PUBLICADA" && (
                           <button
-                            className="btn btn-ghost"
+                            className="btn btn-finish"
                             onClick={(e) => handleFinalizar(j.id, e)}
                             disabled={finalizing.has(j.id)}
                             style={{ 
                               fontSize: "0.9em",
-                              color: "#dc3545",
-                              borderColor: "#dc3545"
                             }}
                           >
                             {finalizing.has(j.id) ? "Finalizando..." : "Finalizar"}

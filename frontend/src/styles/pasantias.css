@@ -1,6 +1,4 @@
-:root{
-  --nav-h: 64px; /* alto del navbar */
-}
+
 
 /* Página Pasantías: layout base */
 .pasantias-page{
@@ -11,52 +9,59 @@
 .filters-bar{
   position: sticky;
   top: var(--nav-h);          /* justo debajo del navbar */
-  z-index: 30;                /* debajo del nav (que tenés en ~40) y por encima del contenido */
+  z-index: 30;                /* debajo del nav y por encima del contenido */
   background: #fff;
-  border-bottom: 1px solid var(--border);
-  box-shadow: 0 8px 24px rgba(0,0,0,.04);
+  padding: 1.5rem 0 0.6rem;
+
+  margin-bottom: 1.4rem;
 }
 
-/* Reusar SearchPanel abierto, pero con estilo de “barra” */
-.filters-bar .search-panel.inline{
-  max-height: none;           /* siempre visible */
-  padding: 10px 0;
-  margin-top: 0;
-  border: none;
-  border-radius: 0;
-  box-shadow: none;
+.filters-bar .filter-bar{
+  margin: 0;
+  padding: 0;
 }
 
-/* Ajustes de la grilla del buscador en la barra */
-.filters-bar .search-grid{
-  grid-template-columns: 1fr 280px 220px 64px;
+.pasantias-filter-form{
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) 1fr 1fr;
   gap: 12px;
 }
 
-.filters-bar .search-grid input,
-.filters-bar .search-grid select{
-  height: 52px;
-  font-size: 15px;
+@media (max-width: 980px){
+  .pasantias-filter-form{
+    grid-template-columns: 1fr 1fr;
+  }
+  .pasantias-filter-form .filter-bar-input:first-child{
+    grid-column: span 2;
+  }
 }
 
-.filters-bar .big{
-  height: 52px;
-  width: 64px;
+@media (max-width: 640px){
+  .pasantias-filter-form{
+    grid-template-columns: 1fr;
+  }
+  .pasantias-filter-form .filter-bar-input:first-child{
+    grid-column: span 1;
+  }
 }
 
 /* ===== Contenido / resultados ===== */
 .results-wrap{
-  padding: 24px 0 40px;
+  padding: 36px 0 42px;
 }
 
 .results-head{
-  display:flex; align-items:baseline; gap:12px; margin-bottom: 14px;
+  margin: 8px 0 32px;
 }
-.results-head h1{
-  margin:0; font-size: 28px; color: var(--utn-blue);
+
+.btn-approve{
+  background: #2c7a2c !important;
+  color: #fff !important;
+  border: 1px solid #2c7a2c !important;
 }
-.results-head .muted{
-  margin:0; color:#64748b; font-size:14px;
+.btn-finish{
+  background: #ff0000 !important;
+  color: #fff 
 }
 
 .results-grid{
@@ -93,15 +98,6 @@
   margin-top:12px; display:flex; align-items:center; justify-content:space-between;
 }
 .job-card .time{ color:#64748b; font-size:12px; }
-.btn-ghost{
-  background: transparent;
-  color: var(--utn-blue);
-  border:1px solid var(--utn-blue);
-  border-radius: 10px;
-  padding: 6px 10px;
-  text-decoration:none; font-weight:600; font-size:14px;
-}
-
 .no-results{
   grid-column: 1 / -1;
   padding: 24px;

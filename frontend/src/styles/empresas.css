@@ -3,70 +3,14 @@
   background:#fff;
 }
 
-/* Barra fija de búsqueda */
-.empresas-bar{
-  margin-top: 1.5rem;
-  padding: 0 0 0.6rem;
-  background: transparent;
-}
-.empresas-bar-inner{
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 12px;
-  padding: 0;
-  align-items: center;
-}
-
-/* Input de búsqueda */
-.emp-search{
-  width: 100%;
-  height: 44px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0 14px;
-  font-size: 15px;
-  outline: none;
-  background: var(--utn-sky);
-  color: var(--text);
-  transition: all 0.2s ease;
-}
-.emp-search::placeholder{ color: var(--muted); }
-.emp-search:focus{
-  border-color: var(--utn-blue);
-  box-shadow: 0 0 0 3px rgba(34,100,178,.15);
-  background:#fff;
-}
-
-.empresas-actions{
-  display: flex !important;
-  flex-direction: row !important;
-  gap: 0.75rem;
-  align-items: center !important;
-  flex-wrap: nowrap !important;
-  justify-content: flex-end !important;
-}
-
-.empresas-actions .btn{
-  margin: 0 !important;
-  display: inline-flex !important;
-  align-items: center;
-  justify-content: center;
-}
-
 /* Contenido principal */
 .empresas-wrap{
-  padding: 28px 0 48px;
+  padding: 32px 0 48px;
 }
 
 /* Encabezado */
 .emp-head{
-  display:flex; align-items:end; justify-content:space-between;
-  gap: 12px; margin: 12px 0 18px;
-}
-.emp-head h1{
-  margin:0; font-size: clamp(22px, 2.2vw, 28px);
-  color: var(--utn-blue);
-  letter-spacing:.2px;
+  margin: 12px 0 28px;
 }
 .muted{ color: var(--muted); }
 
@@ -207,25 +151,6 @@
   margin: 0 !important;
 }
 
-/* Ver perfil → Naranja */
-.btn-ghost{
-  background: #2264B2 !important;
-  color: #fff;
-  border:none;
-}
-.btn-ghost:hover{
-  filter: brightness(1.05);
-}
-
-/* Contactar → Azul */
-.btn-primary{
-  background: var(--utn-blue);
-  color:#fff;
-  border:none;
-}
-.btn-primary:hover{
-  filter: brightness(1.1);
-}
 /* Fuerza "Contactar" en AZUL dentro de las cards */
 .emp-card .emp-actions .btn.btn-primary{
   background: var(--utn-blue);
@@ -241,19 +166,6 @@
 
 /* Variantes adicionales */
 .btn.sm{ padding:.55rem .9rem; font-size: .9rem; border-radius: 14px; }
-.btn-outline{
-  background: transparent;
-  color: #667eea;
-  border: 2px solid #667eea;
-  border-radius: 14px;
-}
-.btn-outline:hover:not(:disabled){
-  background: #667eea;
-  color: #fff;
-}
-.btn-outline:disabled{
-  opacity:.7; cursor:not-allowed; transform:none;
-}
 
 /* Empty state */
 .emp-empty{
@@ -283,17 +195,6 @@
 /* Ajustes responsivos extra */
 @media (max-width: 768px){
   .emp-head{ flex-direction: column; align-items:flex-start; gap: 6px; }
-  .empresas-bar-inner{ 
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-  .empresas-actions{
-    width: 100%;
-    justify-content: stretch;
-  }
-  .empresas-actions .btn{
-    flex: 1;
-  }
   .emp-actions{
     flex-wrap: wrap;
   }
@@ -301,7 +202,6 @@
 
 /* Accesibilidad mínima */
 .btn:focus,
-.emp-search:focus,
 .link:focus,
 .emp-card:focus-within{
   outline: none;
@@ -401,3 +301,4 @@
 }
 .modal .btn-danger{ background:#dc2626; color:#fff; }
 .modal .btn-danger:hover{ filter:brightness(1.1); }
+

@@ -7,11 +7,13 @@ import com.seminario.pasantias.dto.response.PasantiaResponseDTO;
 import com.seminario.pasantias.entity.EstadoPasantia;
 import com.seminario.pasantias.security.SecurityService;
 import com.seminario.pasantias.service.PasantiaService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -160,9 +162,12 @@ public class PasantiaController {
      * @see EstadoPasantia#PENDIENTE_DE_APROBACION
      */
     @PostMapping("/registrar")
+    @SecurityRequirement(name = "Bearer Authentication")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'EMPRESA')")
     public ResponseEntity<?> registrarPasantia(@Valid @RequestBody PasantiaRequestDTO request) {
         try {
             // Validar que el usuario autenticado tiene permiso para crear pasantía para esta empresa
+            System.out.println("MARCOS ID EMPRESA " + request.getIdEmpresa());
             securityService.validarPermisoCrearPasantia(request.getIdEmpresa());
             
             // Crear la pasantía en la base de datos

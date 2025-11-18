@@ -111,17 +111,6 @@
 .center{ text-align:center; }
 .muted{ color:#6b7280; }
 
-/* CTA violeta con degradé */
-.btn-primary{
-  width:100%;
-  height:50px; border:none; border-radius:12px;
-  background: #FF6600;
-  color:#fff; font-weight:700; cursor:pointer;
-  font-size: 19px;
-}
-.btn-primary:disabled{ 
-  opacity:.7; cursor:default; 
-}
 .btn-block{ 
   width:100%; margin-top: 10px; 
 }

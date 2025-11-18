@@ -137,50 +137,8 @@
   border-top: 2px solid #e5e7eb;
 }
 
-.btn-primary {
-  flex: 1;
-  height: 52px;
-  border: none;
-  border-radius: 12px;
-  background: #FF6600;
-  color: #fff;
-  font-weight: 700;
-  cursor: pointer;
-  font-size: 18px;
-  transition: background .2s ease;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: #e55a00;
-}
-
-.btn-primary:disabled {
-  opacity: .7;
-  cursor: not-allowed;
-}
-
-.btn-secondary {
-  flex: 1;
-  height: 52px;
-  border: 2px solid #e5e7eb;
-  border-radius: 12px;
-  background: #fff;
-  color: #64748b;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 16px;
-  transition: all .2s ease;
-}
-
-.btn-secondary:hover:not(:disabled) {
-  border-color: #cbd5e1;
-  background: #f8fafc;
-  color: #475569;
-}
-
-.btn-secondary:disabled {
-  opacity: .7;
-  cursor: not-allowed;
+.form-actions .btn-secondary {
+  flex: none;
 }
 
 /* ===== Columna derecha: info box ===== */

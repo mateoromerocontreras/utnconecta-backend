@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import HomeHero from "../components/HomeHero.jsx";
 import HomeBottom from "../components/HomeBottom.jsx";
 import "../styles/home-admin.css";
@@ -51,24 +50,13 @@ export default function Home() {
 
   if (isAdmin) {
     return (
-      <section className="admin-home">
+      <section className="admin-home admin-home--landing">
         <div className="container">
-          <div className="admin-home-head">
-            <h2>Gestión del sitio</h2>
-            <p>Accedé rápidamente a las herramientas de administración disponibles para vos.</p>
+          <div className="admin-home-logo" aria-hidden="true">
+            <img src="/logo-utn.png" alt="" />
           </div>
-          <div className="admin-home-grid">
-            <Link to="/administrar-usuarios" className="admin-home-card">
-              <span className="admin-home-icon" aria-hidden="true">
-                <img src="/icons/profile.svg" alt="" />
-              </span>
-              <div className="admin-home-body">
-                <h3>Gestión de usuarios</h3>
-                <p>Registrá nuevas cuentas y administrá los roles del equipo.</p>
-              </div>
-              <span className="admin-home-arrow" aria-hidden="true">→</span>
-            </Link>
-          </div>
+          <h1>Bienvenido a la consola UTN Conecta</h1>
+          <p>Selecciona una seccion desde el panel lateral para comenzar.</p>
         </div>
       </section>
     );

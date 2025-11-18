@@ -12,8 +12,10 @@ public class Postulacion {
     private Integer idPostulacion;
     private LocalDate fechaPostulacion;
     private LocalDate fechaInicioContrato;
+    private LocalDate fechaCreacion;
     private Integer duracionMeses;
     private EstadoPostulacion estado;
     private Pasantia pasantia;
     private Estudiante estudiante;
+    private String observaciones;
 }

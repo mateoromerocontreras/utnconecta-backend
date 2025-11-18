@@ -46,7 +46,9 @@ public interface EstudianteMapper {
     
     @Select("SELECT e.*, u.username, u.email as usuario_email, u.activo as usuario_activo " +
             "FROM Estudiante e LEFT JOIN Usuario u ON e.id_usuario = u.id_usuario " +
-            "WHERE e.id_usuario = #{idUsuario}")
+            "WHERE e.id_usuario = #{idUsuario} " +
+            "ORDER BY e.fecha_creacion DESC, e.id_estudiante DESC " +
+            "LIMIT 1")
     @Results({
         @Result(property = "idEstudiante", column = "id_estudiante"),
         @Result(property = "nroCalle", column = "nro_calle"),

@@ -88,7 +88,7 @@ public class SecurityService {
      */
     public Empresa getEmpresaDelUsuario() {
         Usuario usuario = getUsuarioAutenticado();
-        
+        System.out.println("MARCOS USUARIO AUTENTICADO: " + usuario.toString());
         if (!esEmpresa()) {
             throw new SecurityException("El usuario no es de tipo EMPRESA");
         }
@@ -166,6 +166,7 @@ public class SecurityService {
         if (!puedeCrearPasantiaParaEmpresa(empresaId)) {
             if (esEmpresa()) {
                 Empresa miEmpresa = getEmpresaDelUsuario();
+                System.out.println("MARCOS EMPRESA DEL USUARIO: " + getEmpresaDelUsuario().toString());
                 throw new SecurityException(
                     String.format("No tienes permiso para crear pasantías para la empresa %d. " +
                                 "Solo puedes crear pasantías para tu empresa (%d - %s)",

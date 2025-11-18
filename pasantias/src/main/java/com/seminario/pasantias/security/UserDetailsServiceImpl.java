@@ -36,6 +36,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         String roleName = "USER"; // rol por defecto
         if (usuario.getRol() != null && usuario.getRol().getNombre() != null) {
             roleName = usuario.getRol().getNombre();
+            System.out.println("ROLE_" + roleName);
         }
         
         return User.builder()
