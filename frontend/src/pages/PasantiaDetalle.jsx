@@ -1,8 +1,14 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../styles/pasantias.css";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:8080").replace(/\/+$/, "");
+
+function getStoredItem(key) {
+  const persisted = localStorage.getItem(key);
+  if (persisted !== null) return persisted;
+  return sessionStorage.getItem(key);
+}
 
 export default function PasantiaDetalle() {
   const { id } = useParams();
@@ -10,6 +16,49 @@ export default function PasantiaDetalle() {
   const [pasantia, setPasantia] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [postulacion, setPostulacion] = useState(null);
+  const [loadingPostulacion, setLoadingPostulacion] = useState(false);
+  const [postulaciones, setPostulaciones] = useState([]);
+  const [loadingPostulaciones, setLoadingPostulaciones] = useState(false);
+  const [user, setUser] = useState(null);
+  const [registering, setRegistering] = useState(false);
+  const [toasts, setToasts] = useState([]);
+
+  const pushToast = useCallback((message, type = "success") => {
+    const toastId = crypto.randomUUID();
+    setToasts(curr => [...curr, { id: toastId, message, type }]);
+    setTimeout(() => setToasts(curr => curr.filter(t => t.id !== toastId)), 4500);
+  }, []);
+
+  const closeToast = (id) => setToasts(curr => curr.filter(t => t.id !== id));
+
+  useEffect(() => {
+    const readUserFromStorage = () => {
+      const token = getStoredItem("authToken");
+      const userInfoRaw = getStoredItem("userInfo");
+
+      if (!token || !userInfoRaw) {
+        setUser(null);
+        return;
+      }
+
+      try {
+        setUser(JSON.parse(userInfoRaw));
+      } catch (e) {
+        console.error("Error parsing user info:", e);
+        setUser(null);
+      }
+    };
+
+    readUserFromStorage();
+    const handleAuthChange = () => readUserFromStorage();
+    window.addEventListener("storage", handleAuthChange);
+    window.addEventListener("auth-change", handleAuthChange);
+    return () => {
+      window.removeEventListener("storage", handleAuthChange);
+      window.removeEventListener("auth-change", handleAuthChange);
+    };
+  }, []);
 
   useEffect(() => {
     async function load() {
@@ -25,11 +74,15 @@ export default function PasantiaDetalle() {
 
         if (!res.ok) {
           const text = await res.text();
-          const errorData = text ? JSON.parse(text) : {};
+          let errorData;
+          try {
+            errorData = JSON.parse(text);
+          } catch (parseError) {
+            errorData = { mensaje: text || `HTTP ${res.status}` };
+          }
           throw new Error(errorData.mensaje || `HTTP ${res.status}`);
         }
 
-        // Asegurar que la respuesta se decodifique como UTF-8
         const text = await res.text();
         const data = JSON.parse(text);
         setPasantia(data);
@@ -44,6 +97,264 @@ export default function PasantiaDetalle() {
       load();
     }
   }, [id]);
+
+  useEffect(() => {
+    async function loadPostulacion() {
+      if (!id || !pasantia) return;
+
+      try {
+        setLoadingPostulacion(true);
+        const token = getStoredItem("authToken");
+        
+        if (!token) {
+          setLoadingPostulacion(false);
+          return;
+        }
+
+        const res = await fetch(`${API}/postulaciones/porPasantia/${id}`, {
+          headers: { 
+            Accept: "application/json;charset=UTF-8",
+            "Content-Type": "application/json;charset=UTF-8",
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (res.ok) {
+          const text = await res.text();
+          try {
+            const data = JSON.parse(text);
+            if (data.codigo === 0 && data.data) {
+              setPostulacion(data.data);
+            }
+          } catch (e) {
+            console.error("Error parsing postulacion response:", e);
+          }
+        }
+      } catch (err) {
+        console.error("Error al cargar postulación:", err);
+      } finally {
+        setLoadingPostulacion(false);
+      }
+    }
+
+    loadPostulacion();
+  }, [id, pasantia]);
+
+  useEffect(() => {
+    async function loadPostulaciones() {
+      if (!id || !pasantia) return;
+
+      const token = getStoredItem("authToken");
+      if (!token) {
+        return;
+      }
+
+      try {
+        setLoadingPostulaciones(true);
+
+        const res = await fetch(`${API}/postulaciones/pasantia/${id}`, {
+          headers: {
+            Accept: "application/json;charset=UTF-8",
+            "Content-Type": "application/json;charset=UTF-8",
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (res.ok) {
+          const text = await res.text();
+          try {
+            const data = JSON.parse(text);
+            if (data.codigo === 0 && data.data && Array.isArray(data.data)) {
+              setPostulaciones(data.data);
+            }
+          } catch (e) {
+            console.error("Error parsing postulaciones list response:", e);
+          }
+        }
+      } catch (err) {
+        console.error("Error al cargar postulaciones:", err);
+      } finally {
+        setLoadingPostulaciones(false);
+      }
+    }
+
+    loadPostulaciones();
+  }, [id, pasantia]);
+
+  const handleConfirmarPostulacion = useCallback(async () => {
+    if (!user || user.rol !== "ESTUDIANTE") {
+      pushToast("Debes estar autenticado como estudiante para postular", "error");
+      return;
+    }
+
+    if (!pasantia || pasantia.estado !== "PUBLICADA") {
+      pushToast("Esta pasantía no está disponible para postulaciones", "error");
+      return;
+    }
+
+    if (postulacion) {
+      pushToast("Ya tienes una postulación para esta pasantía", "error");
+      return;
+    }
+
+    try {
+      setRegistering(true);
+      const token = getStoredItem("authToken");
+      
+      if (!token) {
+        pushToast("No estás autenticado. Por favor inicia sesión", "error");
+        return;
+      }
+
+      // Get estudiante ID
+      const resEstudiante = await fetch(`${API}/estudiantes/perfil?email=${encodeURIComponent(user.email)}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json;charset=UTF-8",
+          "Content-Type": "application/json;charset=UTF-8"
+        }
+      });
+
+      const textEstudiante = await resEstudiante.text();
+      let estudianteData;
+      
+      // The endpoint returns JSON - either a string (error) or an object (Estudiante)
+      try {
+        estudianteData = JSON.parse(textEstudiante);
+      } catch (e) {
+        // If it's not valid JSON, it's likely a plain text error
+        throw new Error(textEstudiante || "No se pudo obtener el perfil de estudiante");
+      }
+      
+      // If the parsed result is a string, it's an error message from the backend
+      if (typeof estudianteData === 'string') {
+        // Check if it's a database error about multiple results
+        if (estudianteData.includes("Expected one result") || estudianteData.includes("but found")) {
+          throw new Error("Error en la base de datos: se encontraron múltiples perfiles de estudiante. Por favor contacta al administrador.");
+        }
+        throw new Error(estudianteData);
+      }
+      
+      // Validate that we have the required data (it should be an object with idEstudiante)
+      if (!estudianteData || typeof estudianteData !== 'object' || !estudianteData.idEstudiante) {
+        throw new Error("Perfil de estudiante no encontrado. Por favor completa tu perfil primero.");
+      }
+
+      // Register postulacion
+      const postulacionRequest = {
+        idPasantia: parseInt(id),
+        idEstudiante: estudianteData.idEstudiante,
+        fechaPostulacion: new Date().toISOString().split('T')[0],
+        estado: "BORRADOR"
+      };
+
+      const resPostulacion = await fetch(`${API}/postulaciones/registrarPostulacion`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json;charset=UTF-8",
+          "Content-Type": "application/json;charset=UTF-8"
+        },
+        body: JSON.stringify(postulacionRequest)
+      });
+
+      const text = await resPostulacion.text();
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch (parseError) {
+        throw new Error(text || "Error al registrar la postulación");
+      }
+
+      if (resPostulacion.ok && data.codigo === 0) {
+        pushToast("Postulación registrada exitosamente", "success");
+        
+        // Use the postulacion from the response directly
+        if (data.data) {
+          setPostulacion(data.data);
+        }
+        
+        // Refresh user's postulacion (in case the response doesn't have full data)
+        try {
+          const resUserPost = await fetch(`${API}/postulaciones/porPasantia/${id}`, {
+            headers: {
+              Accept: "application/json;charset=UTF-8",
+              "Content-Type": "application/json;charset=UTF-8",
+              Authorization: `Bearer ${token}`
+            }
+          });
+          if (resUserPost.ok) {
+            const textUser = await resUserPost.text();
+            try {
+              const dataUser = JSON.parse(textUser);
+              if (dataUser.codigo === 0 && dataUser.data) {
+                setPostulacion(dataUser.data);
+              }
+            } catch (e) {
+              console.error("Error parsing user postulacion response:", e);
+            }
+          }
+        } catch (e) {
+          console.error("Error fetching user postulacion:", e);
+        }
+        
+        // Reload postulaciones list to ensure it's up to date
+        try {
+          const resPostulaciones = await fetch(`${API}/postulaciones/pasantia/${id}`, {
+            headers: {
+              Accept: "application/json;charset=UTF-8",
+              "Content-Type": "application/json;charset=UTF-8",
+              Authorization: `Bearer ${token}`
+            }
+          });
+          if (resPostulaciones.ok) {
+            const textPost = await resPostulaciones.text();
+            try {
+              const dataPost = JSON.parse(textPost);
+              if (dataPost.codigo === 0 && dataPost.data && Array.isArray(dataPost.data)) {
+                setPostulaciones(dataPost.data);
+              } else if (dataPost.codigo === 0 && !dataPost.data) {
+                // If no data but successful, set empty array
+                setPostulaciones([]);
+              }
+            } catch (e) {
+              console.error("Error parsing postulaciones list response:", e);
+            }
+          } else {
+            // If the request fails, at least add the new postulacion to the list
+            if (data.data) {
+              setPostulaciones(prev => {
+                const exists = prev.some(p => p.idPostulacion === data.data.idPostulacion);
+                if (!exists) {
+                  return [...prev, data.data];
+                }
+                return prev;
+              });
+            }
+          }
+        } catch (e) {
+          console.error("Error fetching postulaciones list:", e);
+          // If the request fails, at least add the new postulacion to the list
+          if (data.data) {
+            setPostulaciones(prev => {
+              const exists = prev.some(p => p.idPostulacion === data.data.idPostulacion);
+              if (!exists) {
+                return [...prev, data.data];
+              }
+              return prev;
+            });
+          }
+        }
+      } else {
+        throw new Error(data?.mensaje || "Error al registrar la postulación");
+      }
+    } catch (err) {
+      console.error("Error al registrar postulación:", err);
+      pushToast(err.message || "Error al registrar la postulación", "error");
+    } finally {
+      setRegistering(false);
+    }
+  }, [user, pasantia, postulacion, id, pushToast]);
 
   if (loading) {
     return (
@@ -120,6 +431,41 @@ export default function PasantiaDetalle() {
           </article>
 
           <aside>
+            {/* Button to confirm postulacion - only for ESTUDIANTE users without existing postulacion */}
+            {user && user.rol === "ESTUDIANTE" && !postulacion && pasantia?.estado === "PUBLICADA" && (
+              <div className="job-card" style={{ padding: "1.5rem", marginBottom: "1rem" }}>
+                <h3 style={{ fontSize: "1.1em", marginBottom: "1rem" }}>Postular</h3>
+                <p style={{ marginBottom: "1rem", fontSize: "0.9em" }}>
+                  ¿Deseas postular a esta pasantía?
+                </p>
+                <button
+                  className="btn"
+                  onClick={handleConfirmarPostulacion}
+                  disabled={registering}
+                  style={{ width: "100%" }}
+                >
+                  {registering ? "Registrando..." : "Confirmar Postulación"}
+                </button>
+              </div>
+            )}
+
+            {/* Button to view all postulaciones - shows if there are ANY postulaciones */}
+            {postulaciones.length > 0 && (
+              <div className="job-card" style={{ padding: "1.5rem", marginBottom: "1rem" }}>
+                <h3 style={{ fontSize: "1.1em", marginBottom: "1rem" }}>Postulaciones</h3>
+                <p style={{ marginBottom: "1rem", fontSize: "0.9em" }}>
+                  {postulaciones.length} {postulaciones.length === 1 ? "postulación" : "postulaciones"} para esta pasantía
+                </p>
+                <button
+                  className="btn"
+                  onClick={() => navigate(`/postulaciones/pasantia/${id}`)}
+                  style={{ width: "100%" }}
+                >
+                  Ver Postulaciones
+                </button>
+              </div>
+            )}
+
             <div className="job-card" style={{ padding: "1.5rem", marginBottom: "1rem" }}>
               <h3 style={{ fontSize: "1.1em", marginBottom: "1rem" }}>Información</h3>
               <dl style={{ display: "grid", gap: "0.75rem" }}>
@@ -184,6 +530,55 @@ export default function PasantiaDetalle() {
             )}
           </aside>
         </div>
+      </div>
+
+      {/* Toast Notifications */}
+      <div style={{
+        position: "fixed",
+        top: "20px",
+        right: "20px",
+        zIndex: 10000,
+        display: "flex",
+        flexDirection: "column",
+        gap: "0.5rem"
+      }}>
+        {toasts.map(toast => (
+          <div
+            key={toast.id}
+            style={{
+              padding: "1rem 1.5rem",
+              backgroundColor: toast.type === "error" ? "#dc3545" : "#28a745",
+              color: "white",
+              borderRadius: "4px",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+              minWidth: "300px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: "1rem"
+            }}
+          >
+            <span>{toast.message}</span>
+            <button
+              onClick={() => closeToast(toast.id)}
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "white",
+                cursor: "pointer",
+                fontSize: "1.2em",
+                padding: "0",
+                width: "24px",
+                height: "24px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+              }}
+            >
+              ×
+            </button>
+          </div>
+        ))}
       </div>
     </section>
   );

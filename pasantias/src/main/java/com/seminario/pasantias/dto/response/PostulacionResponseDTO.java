@@ -30,6 +30,16 @@ public class PostulacionResponseDTO {
     private String nombreEstudiante;
     private String apellidoEstudiante;
     private String emailEstudiante;
+    private String dniEstudiante;
+    private String telefonoEstudiante;
+    private String telefonoFijoEstudiante;
+    private String legajoEstudiante;
+    private String especialidadEstudiante;
+    private String calleEstudiante;
+    private Integer nroCalleEstudiante;
+    private String barrioEstudiante;
+    private String localidadEstudiante;
+    private String provinciaEstudiante;
 
     // Campos calculados
     private Boolean esEditable;

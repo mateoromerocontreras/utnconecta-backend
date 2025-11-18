@@ -19,6 +19,7 @@ import ModificarPerfil from "./pages/ModificarPerfil.jsx";
 import RegistrarPasantia from "./pages/RegistrarPasantia.jsx";
 import PasantiaDetalle from "./pages/PasantiaDetalle.jsx";
 import PasantiasPublicadas from "./pages/PasantiasPublicadas.jsx";
+import PostulacionDetalle from "./pages/PostulacionDetalle.jsx";
 import "./styles/admin-layout.css";
 
 function getStoredItem(key) {
@@ -77,6 +78,7 @@ export default function App() {
       <Route path="/pasantias" element={<Internships />} />
       <Route path="/pasantias/publicadas" element={<PasantiasPublicadas />} />
       <Route path="/pasantias/:id" element={<PasantiaDetalle />} />
+      <Route path="/postulaciones/pasantia/:pasantiaId" element={<PostulacionDetalle />} />
       <Route path="/empresas" element={<Empresas />} />
       <Route path="/administrar-usuarios" element={<RegistrarUsuario />} />
       <Route path="/registrarse" element={<RegistrarEstudiante />} />

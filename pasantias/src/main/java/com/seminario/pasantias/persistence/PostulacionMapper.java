@@ -212,6 +212,33 @@ public interface PostulacionMapper {
                                           @Param("idPasantia") Integer idPasantia);
 
     /**
+     * Buscar postulación por estudiante y pasantía.
+     */
+    @Select("""
+        SELECT 
+            po.id_postulacion AS idPostulacion,
+            po.fecha_postulacion AS fechaPostulacion,
+            po.fecha_inicio_contrato AS fechaInicioContrato,
+            po.duracion_meses AS duracionMeses,
+            po.estado,
+            po.id_pasantia AS idPasantia,
+            po.estudiante_id AS idEstudiante
+        FROM Postulacion po
+        WHERE po.estudiante_id = #{idEstudiante}
+        AND po.id_pasantia = #{idPasantia}
+        LIMIT 1
+    """)
+    @Results({
+        @Result(property = "idPostulacion", column = "idPostulacion"),
+        @Result(property = "pasantia", column = "idPasantia", 
+                one = @One(select = "com.seminario.pasantias.persistence.PasantiaMapper.findById")),
+        @Result(property = "estudiante", column = "idEstudiante", 
+                one = @One(select = "com.seminario.pasantias.persistence.EstudianteMapper.findById"))
+    })
+    Optional<Postulacion> findByEstudianteAndPasantia(@Param("idEstudiante") Integer idEstudiante, 
+                                                       @Param("idPasantia") Integer idPasantia);
+
+    /**
      * Verificar si existe una postulación.
      */
     @Select("SELECT COUNT(*) > 0 FROM Postulacion WHERE id_postulacion = #{id}")
@@ -326,5 +353,75 @@ public interface PostulacionMapper {
         ORDER BY po.fecha_postulacion DESC
     """)
         List<PostulacionResponseDTO> findByUsuarioId(Integer idUsuario);
+
+    /**
+     * Buscar todas las postulaciones de una pasantía con información completa de estudiantes.
+     */
+    @Select("""
+        SELECT 
+            po.id_postulacion AS idPostulacion,
+            po.fecha_postulacion AS fechaPostulacion,
+            po.fecha_inicio_contrato AS fechaInicioContrato,
+            po.duracion_meses AS duracionMeses,
+            po.estado,
+            po.observaciones AS observaciones,
+            po.fecha_creacion AS fechaCreacion,
+
+            pa.id_pasantia AS idPasantia,
+            pa.titulo AS tituloPasantia,
+            pa.modalidad AS modalidad,
+            em.nombre AS nombreEmpresa,
+
+            e.id_estudiante AS idEstudiante,
+            e.nombre AS nombreEstudiante,
+            e.apellido AS apellidoEstudiante,
+            e.email AS emailEstudiante,
+            e.dni AS dniEstudiante,
+            e.tel_celular AS telefonoEstudiante,
+            e.tel_fijo AS telefonoFijoEstudiante,
+            e.nro_legajo AS legajoEstudiante,
+            e.especialidad AS especialidadEstudiante,
+            e.calle AS calleEstudiante,
+            e.nro_calle AS nroCalleEstudiante,
+            e.barrio AS barrioEstudiante,
+            e.localidad AS localidadEstudiante,
+            e.provincia AS provinciaEstudiante
+        FROM Postulacion po
+        LEFT JOIN Estudiante e ON po.estudiante_id = e.id_estudiante
+        LEFT JOIN Pasantia pa ON po.id_pasantia = pa.id_pasantia
+        LEFT JOIN Empresa em ON pa.id_empresa = em.id_empresa
+        WHERE po.id_pasantia = #{pasantiaId}
+        ORDER BY po.fecha_postulacion DESC
+    """)
+    @Results(id = "postulacionPasantiaResult", value = {
+            @Result(property = "idPostulacion", column = "idPostulacion", id = true),
+            @Result(property = "fechaPostulacion", column = "fechaPostulacion"),
+            @Result(property = "fechaInicioContrato", column = "fechaInicioContrato"),
+            @Result(property = "duracionMeses", column = "duracionMeses"),
+            @Result(property = "estado", column = "estado"),
+            @Result(property = "observaciones", column = "observaciones"),
+            @Result(property = "fechaCreacion", column = "fechaCreacion"),
+
+            @Result(property = "idPasantia", column = "idPasantia"),
+            @Result(property = "tituloPasantia", column = "tituloPasantia"),
+            @Result(property = "modalidad", column = "modalidad"),
+            @Result(property = "nombreEmpresa", column = "nombreEmpresa"),
+
+            @Result(property = "idEstudiante", column = "idEstudiante"),
+            @Result(property = "nombreEstudiante", column = "nombreEstudiante"),
+            @Result(property = "apellidoEstudiante", column = "apellidoEstudiante"),
+            @Result(property = "emailEstudiante", column = "emailEstudiante"),
+            @Result(property = "dniEstudiante", column = "dniEstudiante"),
+            @Result(property = "telefonoEstudiante", column = "telefonoEstudiante"),
+            @Result(property = "telefonoFijoEstudiante", column = "telefonoFijoEstudiante"),
+            @Result(property = "legajoEstudiante", column = "legajoEstudiante"),
+            @Result(property = "especialidadEstudiante", column = "especialidadEstudiante"),
+            @Result(property = "calleEstudiante", column = "calleEstudiante"),
+            @Result(property = "nroCalleEstudiante", column = "nroCalleEstudiante"),
+            @Result(property = "barrioEstudiante", column = "barrioEstudiante"),
+            @Result(property = "localidadEstudiante", column = "localidadEstudiante"),
+            @Result(property = "provinciaEstudiante", column = "provinciaEstudiante")
+    })
+    List<PostulacionResponseDTO> findAllByPasantiaId(@Param("pasantiaId") Integer pasantiaId);
     }
 
