@@ -32,6 +32,9 @@ CREATE TABLE Usuario (
     id_rol INT NOT NULL,
     activo BOOLEAN DEFAULT TRUE,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    email_verificado BOOLEAN DEFAULT FALSE,
+    token_verificacion VARCHAR(255) NULL,
+    fecha_expiracion_token TIMESTAMP NULL,
     FOREIGN KEY (id_rol) REFERENCES Rol(id_rol)
 );
 
