@@ -77,6 +77,7 @@ public class SecurityConfig {
                 .requestMatchers("/postulaciones/registrarPostulacion").hasAnyRole("ADMINISTRADOR", "ESTUDIANTE")
                 .requestMatchers("/postulaciones/consultarPostulaciones").hasAnyRole("ADMINISTRADOR", "ESTUDIANTE")
                 // Cualquier otra solicitud requiere autenticación
+                .requestMatchers("/cvs/**").hasAnyRole("ADMINISTRADOR", "ESTUDIANTE")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

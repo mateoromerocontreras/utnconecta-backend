@@ -17,5 +17,6 @@ public class Postulacion {
     private EstadoPostulacion estado;
     private Pasantia pasantia;
     private Estudiante estudiante;
+    private Integer idCv;
     private String observaciones;
 }

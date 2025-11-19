@@ -118,4 +118,7 @@ public interface EstudianteMapper {
     
     @Delete("DELETE FROM Estudiante WHERE id_estudiante = #{id}")
     void delete(@Param("id") Integer id);
+
+    @Update("UPDATE Estudiante SET cv=#{cv} WHERE id_estudiante=#{idEstudiante}")
+    void updateCV(Estudiante estudiante);
 }

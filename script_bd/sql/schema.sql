@@ -112,6 +112,18 @@ CREATE TABLE Estudiante (
 );
 
 --
+-- Estructura de la tabla `CV`
+--
+CREATE TABLE CV (
+    id_cv INT AUTO_INCREMENT PRIMARY KEY,
+    nombre_archivo VARCHAR(255) NOT NULL,
+    datos_cv LONGBLOB NOT NULL,
+    fecha_subida TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    id_estudiante INT NOT NULL,
+    FOREIGN KEY (id_estudiante) REFERENCES Estudiante(id_estudiante) ON DELETE CASCADE
+);
+
+--
 -- Estructura de la tabla `Pasantia`
 --
 CREATE TABLE Pasantia (
@@ -155,9 +167,10 @@ CREATE TABLE Postulacion (
     fecha_inicio_contrato DATE,
     duracion_meses INT,
     estado ENUM('BORRADOR', 'PENDIENTE_APROBACION', 'PUBLICADA', 'CUBIERTA', 'FINALIZADA') NOT NULL DEFAULT 'BORRADOR',
-    observaciones TEXT,  -- nueva columna para comentarios/observaciones
+    observaciones TEXT,
     id_pasantia INT NOT NULL,
     estudiante_id INT NOT NULL,
+    id_cv INT,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_postulacion_pasantia
@@ -167,7 +180,11 @@ CREATE TABLE Postulacion (
     CONSTRAINT fk_postulacion_estudiante
         FOREIGN KEY (estudiante_id)
         REFERENCES Estudiante(id_estudiante)
-        ON DELETE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT fk_postulacion_cv
+        FOREIGN KEY (id_cv)
+        REFERENCES CV(id_cv)
+        ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
@@ -295,6 +312,14 @@ INSERT INTO Estudiante (dni, apellido, nombre, especialidad, nro_legajo, email, 
 VALUES ('34567890', 'Fernández', 'Carlos', 'Ingeniería Mecánica', 'L003', 'carlos.fernandez@estudiantes.com', '351-4567890', 2, TRUE);
 
 --
+-- Inserta datos de ejemplo para CV
+--
+-- Un CV de ejemplo para el Estudiante 1 (Juan García).
+-- El contenido es un PDF falso muy simple, representado en hexadecimal.
+INSERT INTO CV (nombre_archivo, datos_cv, id_estudiante) VALUES
+('CV_Juan_Garcia.pdf', 0x255044462d312e340a25e2e3cfd30a312030206f626a0a3c3c2f547970652f436174616c6f672f50616765732032203020523e3e0a656e646f626a0a322030206f626a0a3c3c2f547970652f50616765732f4b6964735b33203020525d2f436f756e7420313e3e0a656e646f626a0a332030206f626a0a3c3c2f547970652f506167652f506172656e742032203020522f4d65646961426f785b30203020363132203739325d2f436f6e74656e74732034203020522f5265736f75726365733c3c2f466f6e743c3c2f46313c3c2f547970652f466f6e742f537562747970652f54797065312f42617365466f6e742f48656c7665746963613e3e3e3e3e3e0a656e646f626a0a342030206f626a0a3c3c2f4c656e6774682035353e3e0a73747265616d0a42540a2f46312032342054660a313030203730302054640a28456a656d706c6f20646520435629546a0a45540a656e6473747265616d0a656e646f626a0a787265660a3020350a303030303030303030302036353533352066200a30303030303030303138203030303030206e200a303030303030303837203030303030206e200a303030303030313437203030303030206e200a303030303030323838203030303030206e200a747261696c65720a3c3c2f53697a6520352f526f6f742031203020523e3e0a7374617274787265660a3430390a2525454f460a, 1);
+
+--
 -- Inserta datos de ejemplo para Pasantia
 --
 INSERT INTO Pasantia (titulo, puesto_a_cubrir, ciudad, modalidad, asignacion_estimulo, cantidad_de_pasantes, fecha_publicacion, fecha_caducidad, estado, email_contacto, conocimientos, otros_requisitos, beneficios, id_empresa) VALUES
@@ -324,8 +349,9 @@ INSERT INTO Pasantia_Carrera (id_pasantia, id_carrera) VALUES
 -- Inserta datos de ejemplo para Postulacion
 --
 -- Postulaciones para Estudiante 1 (Juan García)
-INSERT INTO Postulacion (fecha_postulacion, estado, id_pasantia, estudiante_id)
-VALUES ('2025-11-02', 'BORRADOR', 1, 1);
+-- Esta postulación ahora está asociada con el CV de ejemplo (id_cv = 1)
+INSERT INTO Postulacion (fecha_postulacion, estado, id_pasantia, estudiante_id, id_cv)
+VALUES ('2025-11-02', 'BORRADOR', 1, 1, 1);
 
 INSERT INTO Postulacion (fecha_postulacion, estado, id_pasantia, estudiante_id)
 VALUES ('2025-11-05', 'PENDIENTE_APROBACION', 2, 1);

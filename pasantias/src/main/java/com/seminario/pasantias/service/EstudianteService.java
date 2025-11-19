@@ -1,16 +1,18 @@
 package com.seminario.pasantias.service;
 
+import com.seminario.pasantias.dto.EstudianteBasicResponse;
+import com.seminario.pasantias.dto.EstudianteUpdateProfileRequest;
+import com.seminario.pasantias.dto.EstudianteUpdateRequest;
 import com.seminario.pasantias.entity.Estudiante;
 import com.seminario.pasantias.entity.Usuario;
-import com.seminario.pasantias.dto.EstudianteUpdateRequest;
-import com.seminario.pasantias.dto.EstudianteUpdateProfileRequest;
-import com.seminario.pasantias.dto.EstudianteBasicResponse;
 import com.seminario.pasantias.persistence.EstudianteMapper;
 import com.seminario.pasantias.persistence.UsuarioMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
