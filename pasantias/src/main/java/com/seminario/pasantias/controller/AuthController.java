@@ -8,6 +8,7 @@ import com.seminario.pasantias.response.GenericResponse;
 import com.seminario.pasantias.security.JwtUtil;
 import com.seminario.pasantias.service.UsuarioService;
 import com.seminario.pasantias.service.EstudianteService;
+import com.seminario.pasantias.service.EmailVerificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +19,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -34,6 +33,9 @@ public class AuthController {
     
     @Autowired
     private EstudianteService estudianteService;
+
+    @Autowired
+    private EmailVerificationService emailVerificationService;
 
     @Autowired
     private JwtUtil jwtUtil;
@@ -80,10 +82,10 @@ public class AuthController {
                     .body(new AuthResponse(null, null, null, null, "Credenciales inválidas"));
             }
 
-            // Verificar que el usuario esté activo
+            // Verificar que el usuario esta activo
             if (!usuario.getActivo()) {
                 return ResponseEntity.badRequest()
-                    .body(new AuthResponse(null, null, null, null, "Usuario inactivo"));
+                    .body(new AuthResponse(null, null, null, null, "El usuario aun no confirmo su email"));
             }
 
             // Autenticar (Spring Security usa username, pero podemos usar email como username)
@@ -94,12 +96,9 @@ public class AuthController {
             // Generar token
             String roleName = usuario.getRol() != null ? usuario.getRol().getNombre() : "USER";
             String token = jwtUtil.generateToken(usuario.getUsername(), roleName);
-            
-            // Incluir estado de verificación de email
-            Boolean emailVerificado = usuario.getEmailVerificado() != null ? usuario.getEmailVerificado() : false;
 
             return ResponseEntity.ok(new AuthResponse(token, usuario.getUsername(), 
-                                                    usuario.getEmail(), roleName, emailVerificado));
+                                                    usuario.getEmail(), roleName));
 
         } catch (Exception e) {
             return ResponseEntity.badRequest()
@@ -122,9 +121,8 @@ public class AuthController {
             
             Usuario usuario = usuarioOpt.get();
             String roleName = usuario.getRol() != null ? usuario.getRol().getNombre() : null;
-            Boolean emailVerificado = usuario.getEmailVerificado() != null ? usuario.getEmailVerificado() : false;
             return ResponseEntity.ok(new AuthResponse(null, usuario.getUsername(), 
-                                                    usuario.getEmail(), roleName, emailVerificado));
+                                                    usuario.getEmail(), roleName, null));
             
         } catch (Exception e) {
             return ResponseEntity.badRequest()
@@ -155,57 +153,57 @@ public class AuthController {
     @PostMapping("/registrarEstudiante")
     public ResponseEntity<AuthResponse> registrarEstudiante(@RequestBody EstudianteRegisterRequest request) {
         try {
-            // Validaciones básicas
             if (request.getNombre() == null || request.getNombre().isEmpty()) {
                 return ResponseEntity.badRequest()
                     .body(new AuthResponse(null, null, null, null, "El nombre es obligatorio"));
             }
-            
+
             if (request.getApellido() == null || request.getApellido().isEmpty()) {
                 return ResponseEntity.badRequest()
                     .body(new AuthResponse(null, null, null, null, "El apellido es obligatorio"));
             }
-            
+
             if (request.getDni() == null || request.getDni().isEmpty()) {
                 return ResponseEntity.badRequest()
                     .body(new AuthResponse(null, null, null, null, "El DNI es obligatorio"));
             }
-            
+
             if (request.getTelCelular() == null || request.getTelCelular().isEmpty()) {
                 return ResponseEntity.badRequest()
-                    .body(new AuthResponse(null, null, null, null, "El teléfono celular es obligatorio"));
+                    .body(new AuthResponse(null, null, null, null, "El telefono celular es obligatorio"));
             }
-            
+
             if (request.getEmail() == null || request.getEmail().isEmpty()) {
                 return ResponseEntity.badRequest()
                     .body(new AuthResponse(null, null, null, null, "El email es obligatorio"));
             }
-            
+
             if (request.getPassword() == null || request.getPassword().isEmpty()) {
                 return ResponseEntity.badRequest()
-                    .body(new AuthResponse(null, null, null, null, "La contraseña es obligatoria"));
+                    .body(new AuthResponse(null, null, null, null, "La contrasena es obligatoria"));
             }
-            
-            // Validación de seguridad de contraseña: al menos 8 caracteres, 1 minúscula y 1 número
+
             String password = request.getPassword();
             if (!password.matches("^(?=.*[a-z])(?=.*\\d).{8,}$")) {
                 return ResponseEntity.badRequest()
-                    .body(new AuthResponse(null, null, null, null, 
-                        "La contraseña debe tener al menos 8 caracteres, una letra minúscula y un número"));
+                    .body(new AuthResponse(null, null, null, null,
+                        "La contrasena debe tener al menos 8 caracteres, una letra minuscula y un numero"));
             }
-            
-            // Verificar si el email ya existe
+
             Optional<Usuario> usuarioExistente = usuarioService.findByEmail(request.getEmail());
             if (usuarioExistente.isPresent()) {
                 return ResponseEntity.badRequest()
-                    .body(new AuthResponse(null, null, null, null, "El email ya está registrado"));
+                    .body(new AuthResponse(null, null, null, null, "El email ya esta registrado"));
             }
-            
-            // Crear usuario
-            Usuario usuario = usuarioService.createUsuario(request.getEmail(), request.getEmail(), 
-                                                          request.getPassword(), "ESTUDIANTE");
-            
-            // Crear perfil de estudiante con datos básicos
+
+            Usuario usuario = usuarioService.createUsuario(
+                request.getEmail(),
+                request.getEmail(),
+                request.getPassword(),
+                "ESTUDIANTE",
+                false
+            );
+
             estudianteService.createEstudianteBasico(
                 request.getNombre(),
                 request.getApellido(),
@@ -214,50 +212,37 @@ public class AuthController {
                 request.getEmail(),
                 usuario.getIdUsuario()
             );
-            
-            // Generar token JWT
-            String token = jwtUtil.generateToken(usuario.getUsername(), "ESTUDIANTE");
-            
-            // Retornar respuesta con token e información de verificación
-            Boolean emailVerificado = usuario.getEmailVerificado() != null ? usuario.getEmailVerificado() : false;
-            String message = emailVerificado ? null : "Por favor verifica tu email. Revisa tu bandeja de entrada.";
-            
-            AuthResponse response = new AuthResponse(token, usuario.getUsername(), 
-                                                     usuario.getEmail(), "ESTUDIANTE", emailVerificado);
-            response.setMessage(message);
-            
-            return ResponseEntity.ok(response);
-            
+
+            emailVerificationService.enviarCorreoDeVerificacion(usuario);
+
+            return ResponseEntity.ok(new AuthResponse(
+                null,
+                usuario.getUsername(),
+                usuario.getEmail(),
+                "ESTUDIANTE",
+                "Registro exitoso. Revisa tu correo para confirmar la cuenta."
+            ));
+
         } catch (Exception e) {
             return ResponseEntity.badRequest()
-                .body(new AuthResponse(null, null, null, null, 
+                .body(new AuthResponse(null, null, null, null,
                     "Error al registrar estudiante: " + e.getMessage()));
         }
     }
-    
-    /**
-     * Endpoint para confirmar la cuenta mediante token de verificación
-     * 
-     * @param token Token de verificación recibido por email
-     * @return Respuesta con código de éxito o error
-     */
-    @PostMapping("/confirmar-cuenta")
-    public ResponseEntity<Map<String, Object>> confirmarCuenta(@RequestParam String token) {
-        Map<String, Object> response = new HashMap<>();
-        
+
+    @GetMapping("/confirmar")
+    public ResponseEntity<GenericResponse> confirmarEmail(@RequestParam String token) {
+        GenericResponse response = new GenericResponse();
         try {
-            usuarioService.verificarEmail(token);
-            response.put("codigo", 0);
-            response.put("mensaje", "Cuenta verificada exitosamente");
+            emailVerificationService.confirmarToken(token);
+            response.setCode(0);
+            response.setMessage("Cuenta verificada correctamente. Ya podes iniciar sesion.");
             return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            response.put("codigo", -1);
-            response.put("mensaje", e.getMessage());
-            return ResponseEntity.badRequest().body(response);
         } catch (Exception e) {
-            response.put("codigo", -1);
-            response.put("mensaje", "Error al verificar la cuenta: " + e.getMessage());
+            response.setCode(-1);
+            response.setMessage("No se pudo verificar la cuenta: " + e.getMessage());
             return ResponseEntity.badRequest().body(response);
         }
     }
 }
+

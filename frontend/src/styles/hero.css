@@ -64,6 +64,7 @@
   flex-shrink:0;
 }
 
+
 /* Mobile: un toque más chico */
 @media (max-width: 960px){
   .hero-promo img.promo-icon{

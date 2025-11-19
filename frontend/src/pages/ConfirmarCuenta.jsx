@@ -10,6 +10,7 @@ export default function ConfirmarCuenta() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   const token = searchParams.get("token");
 
   const verificarCuenta = useCallback(async () => {
@@ -21,29 +22,30 @@ export default function ConfirmarCuenta() {
     try {
       setLoading(true);
       setError("");
+      setMessage("");
 
-      const response = await fetch(`${API}/auth/confirmar-cuenta?token=${encodeURIComponent(token)}`, {
-        method: "POST",
+      const response = await fetch(`${API}/auth/confirmar?token=${encodeURIComponent(token)}`, {
+        method: "GET",
         headers: {
-          "Content-Type": "application/json",
           Accept: "application/json"
         }
       });
 
       const data = await response.json();
+      const ok = response.ok && (data.code === 0 || data.codigo === 0);
 
-      if (response.ok && data.codigo === 0) {
+      if (ok) {
         setSuccess(true);
-        // Redirigir al login después de 5 segundos
+        setMessage(data.message || data.mensaje || "Cuenta verificada correctamente. Ya podes iniciar sesion.");
         setTimeout(() => {
           navigate("/login", { replace: true });
-        }, 5000);
+        }, 4000);
       } else {
-        setError(data.mensaje || "Error al verificar la cuenta");
+        setError(data.message || data.mensaje || "Error al verificar la cuenta");
       }
     } catch (err) {
-      console.error("Error de verificación:", err);
-      setError("Error de conexión. Intentá nuevamente.");
+      console.error("Error de verificacion:", err);
+      setError("Error de conexion. Intenta nuevamente.");
     } finally {
       setLoading(false);
     }
@@ -60,41 +62,41 @@ export default function ConfirmarCuenta() {
   return (
     <section className="login-hero">
       <div className="container login-grid">
-        <div className="login-card">
+        <div className="login-card" style={{ padding: "2.5rem" }}>
           <div className="or-divider">
             <span>Confirmar cuenta</span>
           </div>
 
           {loading && (
             <div className="center" style={{ padding: "2rem" }}>
-              <div style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>⏳</div>
-              <p>Verificando tu cuenta...</p>
+              <div style={{ fontSize: "2rem", marginBottom: "1rem", color: "#1976d2" }}>...</div>
+              <p style={{ margin: 0, color: "#555" }}>Verificando tu cuenta...</p>
             </div>
           )}
 
           {success && !loading && (
             <div className="center" style={{ padding: "2rem" }}>
-              <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>✓</div>
-              <h2 style={{ color: "#4caf50", marginBottom: "1rem" }}>¡Cuenta verificada exitosamente!</h2>
+              <div style={{ fontSize: "2rem", marginBottom: "1rem", color: "#4caf50" }}>✔</div>
+              <h2 style={{ color: "#4caf50", marginBottom: "0.75rem" }}>Cuenta verificada</h2>
               <p style={{ marginBottom: "2rem", color: "#666" }}>
-                Tu email ha sido verificado. Serás redirigido al inicio de sesión en unos segundos.
+                {message || "Tu email fue confirmado. Te redirigimos al inicio de sesion."}
               </p>
               <Link to="/login" className="btn-primary btn-block">
-                Ir al inicio de sesión
+                Ir al inicio de sesion
               </Link>
             </div>
           )}
 
           {error && !loading && !success && (
             <div className="center" style={{ padding: "2rem" }}>
-              <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>✗</div>
-              <h2 style={{ color: "#f44336", marginBottom: "1rem" }}>Error al verificar</h2>
-              <div className="login-error" style={{ marginBottom: "2rem" }}>
+              <div style={{ fontSize: "2rem", marginBottom: "1rem", color: "#f44336" }}>!</div>
+              <h2 style={{ color: "#f44336", marginBottom: "0.75rem" }}>No pudimos verificar</h2>
+              <div className="login-error" style={{ marginBottom: "1.5rem" }}>
                 {error}
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
                 <Link to="/login" className="btn-primary btn-block">
-                  Ir al inicio de sesión
+                  Ir al inicio de sesion
                 </Link>
                 <Link to="/registrarse" className="btn-outline btn-block">
                   Registrarse nuevamente
@@ -103,15 +105,15 @@ export default function ConfirmarCuenta() {
             </div>
           )}
 
-          {!token && !loading && (
+          {!token && !loading && !success && (
             <div className="center" style={{ padding: "2rem" }}>
-              <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>⚠️</div>
+              <div style={{ fontSize: "2rem", marginBottom: "1rem" }}>?</div>
               <h2 style={{ marginBottom: "1rem" }}>Token no encontrado</h2>
               <p style={{ marginBottom: "2rem", color: "#666" }}>
-                No se proporcionó un token de verificación. Por favor, usa el enlace que recibiste por email.
+                Usa el enlace que recibiste por email para confirmar tu cuenta.
               </p>
               <Link to="/login" className="btn-primary btn-block">
-                Ir al inicio de sesión
+                Ir al inicio de sesion
               </Link>
             </div>
           )}
@@ -119,9 +121,9 @@ export default function ConfirmarCuenta() {
 
         <div className="login-art">
           <h2>
-            Verificá tu cuenta,
+            Verifica tu cuenta,
             <br />
-            comenzá tu carrera
+            comienza tu carrera
             <br />
             profesional hoy.
           </h2>
@@ -130,4 +132,8 @@ export default function ConfirmarCuenta() {
     </section>
   );
 }
+
+
+
+
 

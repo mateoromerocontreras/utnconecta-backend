@@ -9,6 +9,7 @@ import com.seminario.pasantias.entity.Usuario;
 import com.seminario.pasantias.response.GenericResponse;
 import com.seminario.pasantias.service.EstudianteService;
 import com.seminario.pasantias.service.UsuarioService;
+import com.seminario.pasantias.service.EmailVerificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,68 +26,72 @@ public class EstudianteController {
     @Autowired
     private UsuarioService usuarioService;
 
+    @Autowired
+    private EmailVerificationService emailVerificationService;
+
     @PostMapping("/crearEstudiante")
     public GenericResponse crearEstudiante(@RequestBody EstudianteRegisterRequest request) {
         GenericResponse response = new GenericResponse();
-        
+
         try {
-            // Validaciones básicas
             if (request.getNombre() == null || request.getNombre().isEmpty()) {
                 response.setCode(-1);
                 response.setMessage("El nombre es obligatorio");
                 return response;
             }
-            
+
             if (request.getApellido() == null || request.getApellido().isEmpty()) {
                 response.setCode(-1);
                 response.setMessage("El apellido es obligatorio");
                 return response;
             }
-            
+
             if (request.getDni() == null || request.getDni().isEmpty()) {
                 response.setCode(-1);
                 response.setMessage("El DNI es obligatorio");
                 return response;
             }
-            
+
             if (request.getTelCelular() == null || request.getTelCelular().isEmpty()) {
                 response.setCode(-1);
-                response.setMessage("El teléfono celular es obligatorio");
+                response.setMessage("El telefono celular es obligatorio");
                 return response;
             }
-            
+
             if (request.getEmail() == null || request.getEmail().isEmpty()) {
                 response.setCode(-1);
                 response.setMessage("El email es obligatorio");
                 return response;
             }
-            
+
             if (request.getPassword() == null || request.getPassword().isEmpty()) {
                 response.setCode(-1);
-                response.setMessage("La contraseña es obligatoria");
+                response.setMessage("La contrasena es obligatoria");
                 return response;
             }
-            
-            // Validación de seguridad de contraseña: al menos 8 caracteres, 1 minúscula y 1 número
+
             String password = request.getPassword();
             if (!password.matches("^(?=.*[a-z])(?=.*\\d).{8,}$")) {
                 response.setCode(-1);
-                response.setMessage("La contraseña debe tener al menos 8 caracteres, una letra minúscula y un número");
+                response.setMessage("La contrasena debe tener al menos 8 caracteres, una letra minuscula y un numero");
                 return response;
             }
-            
-            // Verificar si el email ya existe
+
             Optional<Usuario> usuarioExistente = usuarioService.findByEmail(request.getEmail());
             if (usuarioExistente.isPresent()) {
                 response.setCode(-1);
-                response.setMessage("El email ya está registrado");
+                response.setMessage("El email ya esta registrado");
                 return response;
             }
-            
-            // Crear usuario directamente usando UsuarioService
-            Usuario usuario = usuarioService.createUsuario(request.getEmail(), request.getEmail(), request.getPassword(), "ESTUDIANTE");
-            
-            // Crear el perfil de estudiante con datos básicos
+
+            Usuario usuario = usuarioService.createUsuario(
+                request.getEmail(),
+                request.getEmail(),
+                request.getPassword(),
+                "ESTUDIANTE",
+                false
+            );
+
             estudianteService.createEstudianteBasico(
                 request.getNombre(),
                 request.getApellido(),
@@ -95,9 +100,11 @@ public class EstudianteController {
                 request.getEmail(),
                 usuario.getIdUsuario()
             );
-            
+
+            emailVerificationService.enviarCorreoDeVerificacion(usuario);
+
             response.setCode(0);
-            response.setMessage("Usuario creado exitosamente. Por favor verifica tu email para activar tu cuenta.");
+            response.setMessage("Se envio un email de verificacion para activar la cuenta");
             return response;
 
         } catch (Exception e) {
@@ -235,3 +242,4 @@ public class EstudianteController {
         }
     }
 }
+

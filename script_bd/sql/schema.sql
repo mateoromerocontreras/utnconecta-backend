@@ -32,10 +32,17 @@ CREATE TABLE Usuario (
     id_rol INT NOT NULL,
     activo BOOLEAN DEFAULT TRUE,
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    email_verificado BOOLEAN DEFAULT FALSE,
-    token_verificacion VARCHAR(255) NULL,
-    fecha_expiracion_token TIMESTAMP NULL,
     FOREIGN KEY (id_rol) REFERENCES Rol(id_rol)
+);
+
+CREATE TABLE EmailVerificationToken (
+    id_token INT AUTO_INCREMENT PRIMARY KEY,
+    id_usuario INT NOT NULL,
+    token VARCHAR(255) NOT NULL UNIQUE,
+    fecha_expiracion DATETIME NOT NULL,
+    usado BOOLEAN DEFAULT FALSE,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_usuario) REFERENCES Usuario(id_usuario) ON DELETE CASCADE
 );
 
 --
@@ -336,4 +343,3 @@ VALUES ('2025-11-20', '2025-12-10', 12, 'CUBIERTA', 5, 3);
 
 INSERT INTO Postulacion (fecha_postulacion, estado, id_pasantia, estudiante_id)
 VALUES ('2025-11-25', 'FINALIZADA', 6, 3);
-

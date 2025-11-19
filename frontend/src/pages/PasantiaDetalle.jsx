@@ -23,6 +23,7 @@ export default function PasantiaDetalle() {
   const [user, setUser] = useState(null);
   const [registering, setRegistering] = useState(false);
   const [toasts, setToasts] = useState([]);
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
   const pushToast = useCallback((message, type = "success") => {
     const toastId = crypto.randomUUID();
@@ -431,23 +432,23 @@ export default function PasantiaDetalle() {
           </article>
 
           <aside>
-            {/* Button to confirm postulacion - only for ESTUDIANTE users without existing postulacion */}
-            {user && user.rol === "ESTUDIANTE" && !postulacion && pasantia?.estado === "PUBLICADA" && (
-              <div className="job-card" style={{ padding: "1.5rem", marginBottom: "1rem" }}>
-                <h3 style={{ fontSize: "1.1em", marginBottom: "1rem" }}>Postular</h3>
-                <p style={{ marginBottom: "1rem", fontSize: "0.9em" }}>
-                  ¿Deseas postular a esta pasantía?
-                </p>
-                <button
-                  className="btn"
-                  onClick={handleConfirmarPostulacion}
-                  disabled={registering}
-                  style={{ width: "100%" }}
-                >
-                  {registering ? "Registrando..." : "Confirmar Postulación"}
-                </button>
-              </div>
-            )}
+              {/* Button to confirm postulacion - only for ESTUDIANTE users without existing postulacion */}
+              {user && user.rol === "ESTUDIANTE" && !postulacion && pasantia?.estado === "PUBLICADA" && (
+                <div className="job-card" style={{ padding: "1.5rem", marginBottom: "1rem" }}>
+                  <h3 style={{ fontSize: "1.1em", marginBottom: "1rem" }}>Postularse</h3>
+                  <p style={{ marginBottom: "1rem", fontSize: "0.9em" }}>
+                    ¿Deseas postular a esta pasantía?
+                  </p>
+                  <button
+                    className="btn"
+                    onClick={() => setConfirmOpen(true)}
+                    disabled={registering}
+                    style={{ width: "100%" }}
+                  >
+                    {registering ? "Registrando..." : "Postularse"}
+                  </button>
+                </div>
+              )}
 
             {/* Button to view all postulaciones - shows if there are ANY postulaciones */}
             {postulaciones.length > 0 && (
@@ -580,6 +581,60 @@ export default function PasantiaDetalle() {
           </div>
         ))}
       </div>
+
+      {/* Confirmación de postulación */}
+      {confirmOpen && (
+        <div
+          className="modal-overlay"
+          style={{
+            position: "fixed",
+            inset: 0,
+            background: "rgba(0,0,0,0.45)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000
+          }}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="modal"
+            style={{
+              background: "#fff",
+              borderRadius: "12px",
+              padding: "1.5rem",
+              maxWidth: "420px",
+              width: "calc(100% - 32px)",
+              boxShadow: "0 12px 32px rgba(0,0,0,0.18)"
+            }}
+          >
+            <h3 style={{ marginTop: 0, marginBottom: "0.75rem" }}>Confirmar postulación</h3>
+            <p style={{ marginBottom: "1.25rem", color: "#475569" }}>
+              Vas a enviar tu postulación a esta pasantía. ¿Deseas continuar?
+            </p>
+            <div style={{ display: "flex", gap: "0.75rem", justifyContent: "flex-end", flexWrap: "wrap" }}>
+              <button
+                className="btn btn-outline"
+                onClick={() => setConfirmOpen(false)}
+                disabled={registering}
+              >
+                Cancelar
+              </button>
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  setConfirmOpen(false);
+                  handleConfirmarPostulacion();
+                }}
+                disabled={registering}
+              >
+                {registering ? "Enviando..." : "Confirmar"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

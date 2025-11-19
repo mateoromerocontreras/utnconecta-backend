@@ -294,11 +294,11 @@ export default function Empresas() {
                     </div>
 
                     <div className="emp-actions">
-                      <button className="btn btn-ghost btn-ver-perfil" onClick={() => alert("Perfil aún no implementado")}>
+                      <button className="btn btn-primary " onClick={() => alert("Perfil aún no implementado")}>
                         Ver perfil
                       </button>
                       {(e.emailContacto || e.email) && (
-                        <a href={`mailto:${e.emailContacto || e.email}`} className="btn btn-primary sm">
+                        <a href={`mailto:${e.emailContacto || e.email}`} className="btn btn-secondary ">
                           Contactar
                         </a>
                       )}

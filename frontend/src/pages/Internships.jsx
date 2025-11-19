@@ -39,6 +39,7 @@ export default function Internships() {
   const [approving, setApproving] = useState(new Set());
   const [finalizing, setFinalizing] = useState(new Set());
   const [careers, setCareers] = useState([]);
+  const [appliedIds, setAppliedIds] = useState(new Set());
 
   const readUserFromStorage = useCallback(() => {
     const token = getStoredItem("authToken");
@@ -88,21 +89,31 @@ export default function Internships() {
       const data = JSON.parse(text);
       
       // Mapear los datos del backend al formato esperado por el frontend
-      const mappedData = Array.isArray(data) ? data.map((p) => ({
-        id: p.idPasantia,
-        titulo: p.titulo || "",
-        empresa: p.nombreEmpresa || "Empresa no especificada",
-        ciudad: p.ciudad || "",
-        modalidad: p.modalidad || "",
-        carrera: "Varias", // PasantiaResponseDTO no incluye carreras, usar placeholder
-        publicada: formatRelativeDate(p.fechaPublicacion),
-        estado: p.estado,
-        puestoACubrir: p.puestoACubrir,
-        asignacionEstimulo: p.asignacionEstimulo,
-        emailContacto: p.emailContacto,
-        aceptaPostulaciones: p.aceptaPostulaciones,
-        diasRestantes: p.diasRestantes
-      })) : [];
+      const mappedData = Array.isArray(data) ? data.map((p) => {
+        const carreras = (() => {
+          const fromArray = Array.isArray(p.carreras)
+            ? p.carreras.map((c) => c?.nombre || c).filter(Boolean)
+            : [];
+          const extra = [p.carrera, p.carreraNombre, p.nombreCarrera].filter(Boolean);
+          return Array.from(new Set([...fromArray, ...extra]));
+        })();
+        return {
+          id: p.idPasantia,
+          titulo: p.titulo || "",
+          empresa: p.nombreEmpresa || "Empresa no especificada",
+          ciudad: p.ciudad || "",
+          modalidad: p.modalidad || "",
+          carreras,
+          carreraLabel: carreras.length ? carreras.join(", ") : "Varias",
+          publicada: formatRelativeDate(p.fechaPublicacion),
+          estado: p.estado,
+          puestoACubrir: p.puestoACubrir,
+          asignacionEstimulo: p.asignacionEstimulo,
+          emailContacto: p.emailContacto,
+          aceptaPostulaciones: p.aceptaPostulaciones,
+          diasRestantes: p.diasRestantes
+        };
+      }) : [];
       
       setJobs(mappedData);
     } catch (err) {
@@ -116,6 +127,7 @@ export default function Internships() {
   useEffect(() => {
     load();
   }, []);
+
 
   // Prefill filters from query params (e.g. searches from Home)
   useEffect(() => {
@@ -152,7 +164,13 @@ export default function Internships() {
         j.empresa.toLowerCase().includes(t) || 
         j.ciudad.toLowerCase().includes(t) ||
         (j.puestoACubrir && j.puestoACubrir.toLowerCase().includes(t));
-      const byCarrera = !filters.carrera || j.carrera === filters.carrera;
+      const byCarrera = (() => {
+        if (!filters.carrera) return true;
+        const carreras = Array.isArray(j.carreras) ? j.carreras : [];
+        if (carreras.length === 0) return false; // si no hay info de carreras, no coincide
+        const filterLower = filters.carrera.toLowerCase();
+        return carreras.some((c) => String(c).toLowerCase() === filterLower);
+      })();
       const byModalidad = !filters.modalidad || j.modalidad === filters.modalidad;
       return byTexto && byCarrera && byModalidad;
     });
@@ -161,6 +179,53 @@ export default function Internships() {
   const hasActiveFilters = Boolean(
     filters.texto.trim() || filters.carrera || filters.modalidad
   );
+
+  // Verificar pasantías ya postuladas por el estudiante autenticado
+  useEffect(() => {
+    async function loadApplied() {
+      if (!user || user.rol !== "ESTUDIANTE") {
+        setAppliedIds(new Set());
+        return;
+      }
+
+      const token = getStoredItem("authToken");
+      if (!token) {
+        setAppliedIds(new Set());
+        return;
+      }
+
+      const ids = jobs.map((j) => j.id).filter(Boolean);
+      if (ids.length === 0) {
+        setAppliedIds(new Set());
+        return;
+      }
+
+      const headers = {
+        Accept: "application/json;charset=UTF-8",
+        "Content-Type": "application/json;charset=UTF-8",
+        Authorization: `Bearer ${token}`,
+      };
+
+      const applied = new Set();
+      await Promise.all(ids.map(async (pasantiaId) => {
+        try {
+          const res = await fetch(`${API}/postulaciones/porPasantia/${pasantiaId}`, { headers });
+          if (!res.ok) return;
+          const text = await res.text();
+          const data = JSON.parse(text);
+          if (data?.codigo === 0 && data.data) {
+            applied.add(pasantiaId);
+          }
+        } catch (err) {
+          console.error("Error al verificar postulación del usuario:", err);
+        }
+      }));
+
+      setAppliedIds(applied);
+    }
+
+    loadApplied();
+  }, [user, jobs]);
 
   function handleFiltersChange(event) {
     const { name, value } = event.target;
@@ -295,12 +360,21 @@ export default function Internships() {
               Explora las pasantias disponibles y filtra por carrera y modalidad.
             </p>
           </div>
-          <div className="section-head__meta">
+          <div className="section-head__meta" style={{ display: "flex", gap: "0.75rem", alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
             <span className="section-head__badge">
               {loading ? "Cargando..." :
                 error ? "—" :
                 `${filtered.length} resultado${filtered.length !== 1 ? "s" : ""}${(filters.texto || filters.carrera || filters.modalidad) ? " (filtrado)" : ""}`}
             </span>
+            {user?.rol === "EMPRESA" && (
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => navigate("/registrar-pasantia")}
+              >
+                + Nueva pasantía
+              </button>
+            )}
           </div>
         </header>
         <FilterBar
@@ -378,13 +452,13 @@ export default function Internships() {
             ) : (
               <div className="results-grid">
                 {filtered.map(j => (
-                  <article key={j.id} className="job-card">
+                    <article key={j.id} className="job-card">
                     <header>
                       <h3>{j.titulo}</h3>
                       <span className="badge">{j.modalidad}</span>
                     </header>
                     <p className="meta">
-                      {j.empresa} · {j.ciudad} · {j.carrera}
+                      {j.empresa} · {j.ciudad} · {j.carreraLabel || "Varias"}
                     </p>
                     {j.puestoACubrir && (
                       <p className="meta" style={{ fontSize: "0.9em", color: "#666", marginTop: "0.25rem" }}>
@@ -401,7 +475,7 @@ export default function Internships() {
                         >
                           Ver detalles
                         </button>
-                        {j.aceptaPostulaciones && (!user || user?.rol === "ESTUDIANTE") && (
+                        {j.aceptaPostulaciones && (!user || user?.rol === "ESTUDIANTE") && !appliedIds.has(j.id) && (
                           <a className="btn btn-ghost" href={`/pasantias/${j.id}`}>
                             Postular
                           </a>

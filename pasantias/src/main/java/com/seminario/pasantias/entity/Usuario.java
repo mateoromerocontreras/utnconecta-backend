@@ -17,9 +17,4 @@ public class Usuario {
     private Rol rol; // Para carga eager de datos del rol
     private Boolean activo;
     private LocalDateTime fechaCreacion;
-    
-    // Campos para verificación de email
-    private Boolean emailVerificado;
-    private String tokenVerificacion;
-    private LocalDateTime fechaExpiracionToken;
 }

@@ -24,12 +24,6 @@ public class UsuarioService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-    
-    @Autowired
-    private EmailService emailService;
-    
-    @Autowired
-    private TokenService tokenService;
 
     public Optional<Usuario> findByUsername(String username) {
         return usuarioMapper.findByUsername(username);
@@ -44,6 +38,10 @@ public class UsuarioService {
     }
 
     public Usuario createUsuario(String username, String email, String password, String rolNombre) {
+        return createUsuario(username, email, password, rolNombre, true);
+    }
+
+    public Usuario createUsuario(String username, String email, String password, String rolNombre, boolean activoInicial) {
         if (usuarioMapper.findByUsername(username).isPresent()) {
             throw new RuntimeException("El username ya existe");
         }
@@ -62,30 +60,19 @@ public class UsuarioService {
         usuario.setEmail(email);
         usuario.setPassword(passwordEncoder.encode(password));
         usuario.setIdRol(rolOpt.get().getIdRol());
-        usuario.setActivo(true);
+        usuario.setActivo(activoInicial);
         usuario.setFechaCreacion(LocalDateTime.now());
-        
-        // Configurar verificación de email
-        usuario.setEmailVerificado(false);
-        String token = tokenService.generarToken();
-        usuario.setTokenVerificacion(token);
-        usuario.setFechaExpiracionToken(tokenService.calcularExpiracionVerificacion());
 
         usuarioMapper.insert(usuario);
-        
-        // Enviar email de confirmación
-        try {
-            emailService.enviarEmailConfirmacion(email, token);
-        } catch (Exception e) {
-            // Log el error pero no fallar la creación del usuario
-            System.err.println("Error al enviar email de confirmación: " + e.getMessage());
-        }
-        
         return usuario;
     }
 
     public void deactivateUsuario(Integer id) {
         usuarioMapper.deactivate(id);
+    }
+
+    public void activateUsuario(Integer id) {
+        usuarioMapper.activate(id);
     }
 
     public boolean verifyPassword(String rawPassword, String encodedPassword) {
@@ -150,40 +137,5 @@ public class UsuarioService {
         
         // Eliminar usuario de la base de datos
         usuarioMapper.deleteByUsername(nombre);
-    }
-    
-    /**
-     * Verifica el email del usuario usando el token
-     * 
-     * @param token Token de verificación
-     * @throws RuntimeException si el token es inválido o ha expirado
-     */
-    public void verificarEmail(String token) {
-        System.out.println("=== INICIO VERIFICACIÓN DE EMAIL ===");
-        System.out.println("Token recibido (primeros 10 caracteres): " + (token != null && token.length() > 10 ? token.substring(0, 10) + "..." : "token nulo o muy corto"));
-        
-        Optional<Usuario> usuarioOpt = usuarioMapper.findByTokenVerificacion(token);
-        if (usuarioOpt.isEmpty()) {
-            System.err.println("ERROR: Token de verificación inválido - no se encontró usuario con este token");
-            throw new RuntimeException("Token de verificación inválido");
-        }
-        
-        Usuario usuario = usuarioOpt.get();
-        System.out.println("Usuario encontrado: " + usuario.getEmail() + " (ID: " + usuario.getIdUsuario() + ")");
-        
-        // Verificar que el token no haya expirado
-        if (tokenService.tokenExpirado(usuario.getFechaExpiracionToken())) {
-            System.err.println("ERROR: Token expirado para usuario: " + usuario.getEmail());
-            System.err.println("Fecha de expiración: " + usuario.getFechaExpiracionToken());
-            throw new RuntimeException("El token de verificación ha expirado");
-        }
-        
-        System.out.println("Token válido y no expirado. Procediendo a marcar email como verificado...");
-        
-        // Marcar email como verificado
-        usuarioMapper.marcarEmailVerificado(usuario.getIdUsuario());
-        
-        System.out.println("✓ Email verificado exitosamente para usuario: " + usuario.getEmail() + " (ID: " + usuario.getIdUsuario() + ")");
-        System.out.println("=== FIN VERIFICACIÓN DE EMAIL ===");
     }
 }

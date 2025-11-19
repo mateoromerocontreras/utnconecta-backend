@@ -60,7 +60,7 @@ public class UsuarioController {
             usuarioService.createUsuario(request.getUsername(), request.getEmail(), request.getPassword(), request.getRol());
             
             response.setCode(0);
-            response.setMessage("Usuario creado exitosamente. Por favor verifica tu email para activar tu cuenta.");
+            response.setMessage(null);
             return response;
 
         } catch (Exception e) {

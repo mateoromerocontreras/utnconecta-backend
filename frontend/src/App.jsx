@@ -19,9 +19,8 @@ import ModificarPerfil from "./pages/ModificarPerfil.jsx";
 import RegistrarPasantia from "./pages/RegistrarPasantia.jsx";
 import PasantiaDetalle from "./pages/PasantiaDetalle.jsx";
 import PasantiasPublicadas from "./pages/PasantiasPublicadas.jsx";
-import ConfirmarCuenta from "./pages/ConfirmarCuenta.jsx"; // Combined
-import PostulacionDetalle from "./pages/PostulacionDetalle.jsx"; // Combined
-import "./styles/admin-layout.css"; // Combined
+import PostulacionDetalle from "./pages/PostulacionDetalle.jsx";
+import "./styles/admin-layout.css";
 
 function getStoredItem(key) {
   const persisted = localStorage.getItem(key);
@@ -84,7 +83,6 @@ export default function App() {
       <Route path="/administrar-usuarios" element={<RegistrarUsuario />} />
       <Route path="/registrarse" element={<RegistrarEstudiante />} />
       <Route path="/login" element={<Login />} />
-      <Route path="/confirmar-cuenta" element={<ConfirmarCuenta />} /> {/* Manually added route */}
       <Route path="/empresa-list" element={<Empresas />} />
       <Route path="/registrar-empresa" element={<RegistrarEmpresa />} />
       <Route path="/carreras" element={<Carreras />} />

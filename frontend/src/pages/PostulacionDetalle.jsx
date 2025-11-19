@@ -1,8 +1,14 @@
-import { useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../styles/pasantias.css";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:8080").replace(/\/+$/, "");
+
+function getStoredItem(key) {
+  const persisted = localStorage.getItem(key);
+  if (persisted !== null) return persisted;
+  return sessionStorage.getItem(key);
+}
 
 export default function PostulacionDetalle() {
   const { pasantiaId } = useParams();
@@ -11,6 +17,30 @@ export default function PostulacionDetalle() {
   const [pasantia, setPasantia] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [estadoFilter, setEstadoFilter] = useState("todas");
+
+  const storedUserInfo = getStoredItem("userInfo");
+  const userInfo = storedUserInfo ? JSON.parse(storedUserInfo) : null;
+  const isStudent = userInfo?.rol === "ESTUDIANTE";
+
+  if (isStudent) {
+    return (
+      <section className="pasantias-page">
+        <div className="container">
+          <div className="job-card" style={{ padding: "1.5rem", textAlign: "center" }}>
+            <h2 style={{ marginBottom: "8px" }}>Acceso restringido</h2>
+            <p className="muted" style={{ marginBottom: "16px" }}>
+              Solo administradores o empresas pueden ver las postulaciones.
+            </p>
+            <button className="btn btn-primary" onClick={() => navigate("/pasantias")}>
+              Volver a pasantías
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   useEffect(() => {
     async function load() {
@@ -74,11 +104,41 @@ export default function PostulacionDetalle() {
     }
   }, [pasantiaId]);
 
+  const estadosDisponibles = useMemo(() => {
+    const set = new Set(
+      postulaciones
+        .map((p) => (p.estado || "").trim())
+        .filter(Boolean)
+    );
+    return ["todas", ...Array.from(set)];
+  }, [postulaciones]);
+
+  const filteredPostulaciones = useMemo(() => {
+    const term = search.toLowerCase().trim();
+    return postulaciones
+      .filter((p) => {
+        const matchEstado = estadoFilter === "todas" || (p.estado || "").trim() === estadoFilter;
+        const matchTerm =
+          term === "" ||
+          [p.nombreEstudiante, p.apellidoEstudiante, p.dniEstudiante, p.legajoEstudiante]
+            .filter(Boolean)
+            .some((value) => String(value).toLowerCase().includes(term));
+        return matchEstado && matchTerm;
+      })
+      .sort((a, b) => {
+        const fechaA = a.fechaPostulacion ? new Date(a.fechaPostulacion).getTime() : 0;
+        const fechaB = b.fechaPostulacion ? new Date(b.fechaPostulacion).getTime() : 0;
+        return fechaB - fechaA;
+      });
+  }, [postulaciones, search, estadoFilter]);
+
   if (loading) {
     return (
       <section className="pasantias-page">
         <div className="container">
-          <p>Cargando postulaciones...</p>
+          <div className="job-card" style={{ padding: "1.5rem" }}>
+            <p className="muted">Cargando postulaciones...</p>
+          </div>
         </div>
       </section>
     );
@@ -108,6 +168,13 @@ export default function PostulacionDetalle() {
     return "badge";
   };
 
+  const formatDate = (value) => {
+    if (!value) return "No informado";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "No informado";
+    return date.toLocaleDateString();
+  };
+
   return (
     <section className="pasantias-page">
       <div className="container">
@@ -127,149 +194,192 @@ export default function PostulacionDetalle() {
           )}
         </header>
 
-        {postulaciones.length === 0 ? (
-          <div className="job-card" style={{ padding: "2rem", textAlign: "center" }}>
-            <p>No hay postulaciones para esta pasantía.</p>
-          </div>
-        ) : (
-          <>
-            {pasantia && (
-              <div className="job-card" style={{ padding: "1.5rem", marginBottom: "2rem" }}>
-                <h2 style={{ fontSize: "1.2em", marginBottom: "1rem" }}>Información de la Pasantía</h2>
-                <dl style={{ display: "grid", gap: "0.75rem", gridTemplateColumns: "auto 1fr" }}>
-                  <dt style={{ fontWeight: "bold" }}>Título:</dt>
-                  <dd>{pasantia.titulo}</dd>
-                  {pasantia.empresa?.nombre && (
-                    <>
-                      <dt style={{ fontWeight: "bold" }}>Empresa:</dt>
-                      <dd>{pasantia.empresa.nombre}</dd>
-                    </>
-                  )}
-                  {pasantia.ciudad && (
-                    <>
-                      <dt style={{ fontWeight: "bold" }}>Ciudad:</dt>
-                      <dd>{pasantia.ciudad}</dd>
-                    </>
-                  )}
-                  {pasantia.modalidad && (
-                    <>
-                      <dt style={{ fontWeight: "bold" }}>Modalidad:</dt>
-                      <dd>{pasantia.modalidad}</dd>
-                    </>
-                  )}
-                </dl>
+        <div className="postulaciones-toolbar">
+          <div className="postulaciones-summary">
+            <div className="summary-card">
+              <div className="summary-label">Total</div>
+              <div className="summary-value">{postulaciones.length}</div>
+            </div>
+            <div className="summary-card">
+              <div className="summary-label">Mostrando</div>
+              <div className="summary-value">{filteredPostulaciones.length}</div>
+            </div>
+            {pasantia?.estado && (
+              <div className="summary-card">
+                <div className="summary-label">Estado de pasantía</div>
+                <span className={getEstadoBadgeClass(pasantia.estado)}>{pasantia.estado}</span>
               </div>
             )}
+          </div>
 
-            <div style={{ display: "grid", gap: "1.5rem" }}>
-              {postulaciones.map((postulacion) => (
-                <div key={postulacion.idPostulacion} className="job-card" style={{ padding: "2rem" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: "1.5rem" }}>
-                    <div>
-                      <h3 style={{ fontSize: "1.3em", marginBottom: "0.5rem" }}>
-                        {postulacion.nombreEstudiante} {postulacion.apellidoEstudiante}
-                      </h3>
-                      <p className="muted" style={{ marginBottom: "0.5rem" }}>
-                        Postulación #{postulacion.idPostulacion}
-                      </p>
-                      <span className={getEstadoBadgeClass(postulacion.estado)}>
-                        {postulacion.estado}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div style={{ display: "grid", gap: "1.5rem", gridTemplateColumns: "1fr 1fr" }}>
-                    <div>
-                      <h4 style={{ fontSize: "1em", marginBottom: "0.75rem", fontWeight: "bold" }}>Información de la Postulación</h4>
-                      <dl style={{ display: "grid", gap: "0.5rem" }}>
-                        {postulacion.fechaPostulacion && (
-                          <>
-                            <dt style={{ fontWeight: "600" }}>Fecha de Postulación:</dt>
-                            <dd>{new Date(postulacion.fechaPostulacion).toLocaleDateString()}</dd>
-                          </>
-                        )}
-                        {postulacion.fechaInicioContrato && (
-                          <>
-                            <dt style={{ fontWeight: "600" }}>Fecha de Inicio:</dt>
-                            <dd>{new Date(postulacion.fechaInicioContrato).toLocaleDateString()}</dd>
-                          </>
-                        )}
-                        {postulacion.duracionMeses && (
-                          <>
-                            <dt style={{ fontWeight: "600" }}>Duración:</dt>
-                            <dd>{postulacion.duracionMeses} meses</dd>
-                          </>
-                        )}
-                        {postulacion.observaciones && (
-                          <>
-                            <dt style={{ fontWeight: "600" }}>Observaciones:</dt>
-                            <dd style={{ whiteSpace: "pre-wrap" }}>{postulacion.observaciones}</dd>
-                          </>
-                        )}
-                      </dl>
-                    </div>
-
-                    <div>
-                      <h4 style={{ fontSize: "1em", marginBottom: "0.75rem", fontWeight: "bold" }}>Información del Estudiante</h4>
-                      <dl style={{ display: "grid", gap: "0.5rem" }}>
-                        {postulacion.emailEstudiante && (
-                          <>
-                            <dt style={{ fontWeight: "600" }}>Email:</dt>
-                            <dd>
-                              <a href={`mailto:${postulacion.emailEstudiante}`}>
-                                {postulacion.emailEstudiante}
-                              </a>
-                            </dd>
-                          </>
-                        )}
-                        {postulacion.dniEstudiante && (
-                          <>
-                            <dt style={{ fontWeight: "600" }}>DNI:</dt>
-                            <dd>{postulacion.dniEstudiante}</dd>
-                          </>
-                        )}
-                        {postulacion.legajoEstudiante && (
-                          <>
-                            <dt style={{ fontWeight: "600" }}>Legajo:</dt>
-                            <dd>{postulacion.legajoEstudiante}</dd>
-                          </>
-                        )}
-                        {postulacion.telefonoEstudiante && (
-                          <>
-                            <dt style={{ fontWeight: "600" }}>Teléfono Celular:</dt>
-                            <dd>{postulacion.telefonoEstudiante}</dd>
-                          </>
-                        )}
-                        {postulacion.telefonoFijoEstudiante && (
-                          <>
-                            <dt style={{ fontWeight: "600" }}>Teléfono Fijo:</dt>
-                            <dd>{postulacion.telefonoFijoEstudiante}</dd>
-                          </>
-                        )}
-                        {postulacion.especialidadEstudiante && (
-                          <>
-                            <dt style={{ fontWeight: "600" }}>Especialidad:</dt>
-                            <dd>{postulacion.especialidadEstudiante}</dd>
-                          </>
-                        )}
-                        {(postulacion.calleEstudiante || postulacion.nroCalleEstudiante) && (
-                          <>
-                            <dt style={{ fontWeight: "600" }}>Dirección:</dt>
-                            <dd>
-                              {postulacion.calleEstudiante} {postulacion.nroCalleEstudiante}
-                              {postulacion.barrioEstudiante && `, ${postulacion.barrioEstudiante}`}
-                              {postulacion.localidadEstudiante && `, ${postulacion.localidadEstudiante}`}
-                              {postulacion.provinciaEstudiante && `, ${postulacion.provinciaEstudiante}`}
-                            </dd>
-                          </>
-                        )}
-                      </dl>
-                    </div>
-                  </div>
-                </div>
+          <div className="postulaciones-filters">
+            <input
+              type="search"
+              className="filter-input"
+              placeholder="Buscar por nombre, DNI o legajo..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <select
+              className="filter-input"
+              value={estadoFilter}
+              onChange={(e) => setEstadoFilter(e.target.value)}
+            >
+              {estadosDisponibles.map((estado) => (
+                <option key={estado} value={estado}>
+                  {estado === "todas" ? "Todos los estados" : estado}
+                </option>
               ))}
+            </select>
+          </div>
+        </div>
+
+        {pasantia && (
+          <div className="job-card" style={{ padding: "1.5rem", marginBottom: "1.5rem" }}>
+            <div className="pasantia-head">
+              <div>
+                <p className="muted" style={{ marginBottom: "6px" }}>Pasantía</p>
+                <h2 style={{ fontSize: "1.1rem", margin: 0 }}>{pasantia.titulo}</h2>
+              </div>
+              {pasantia.estado && (
+                <span className={getEstadoBadgeClass(pasantia.estado)}>{pasantia.estado}</span>
+              )}
             </div>
-          </>
+            <dl className="pasantia-grid">
+              {pasantia.empresa?.nombre && (
+                <>
+                  <dt>Empresa</dt>
+                  <dd>{pasantia.empresa.nombre}</dd>
+                </>
+              )}
+              {pasantia.ciudad && (
+                <>
+                  <dt>Ciudad</dt>
+                  <dd>{pasantia.ciudad}</dd>
+                </>
+              )}
+              {pasantia.modalidad && (
+                <>
+                  <dt>Modalidad</dt>
+                  <dd>{pasantia.modalidad}</dd>
+                </>
+              )}
+            </dl>
+          </div>
+        )}
+
+        {filteredPostulaciones.length === 0 ? (
+          <div className="job-card" style={{ padding: "2rem", textAlign: "center" }}>
+            <p style={{ marginBottom: "0.3rem" }}>
+              {postulaciones.length === 0
+                ? "No hay postulaciones para esta pasantía."
+                : "No se encontraron postulaciones con ese filtro."}
+            </p>
+            {postulaciones.length > 0 && (
+              <button className="btn btn-outline sm" onClick={() => { setSearch(""); setEstadoFilter("todas"); }}>
+                Limpiar filtros
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="postulaciones-grid">
+            {filteredPostulaciones.map((postulacion) => (
+              <article key={postulacion.idPostulacion} className="postulacion-card">
+                <div className="postulacion-card__head">
+                  <div>
+                    <h3 className="postulacion-card__title">
+                      {postulacion.nombreEstudiante} {postulacion.apellidoEstudiante}
+                    </h3>
+                    <p className="muted">Postulación #{postulacion.idPostulacion}</p>
+                  </div>
+                  <span className={getEstadoBadgeClass(postulacion.estado)}>
+                    {postulacion.estado || "Sin estado"}
+                  </span>
+                </div>
+
+                <div className="postulacion-card__grid">
+                  <section>
+                    <h4>Datos de la postulación</h4>
+                    <dl>
+                      <dt>Fecha de postulación</dt>
+                      <dd>{formatDate(postulacion.fechaPostulacion)}</dd>
+                      {postulacion.fechaInicioContrato && (
+                        <>
+                          <dt>Fecha de inicio</dt>
+                          <dd>{formatDate(postulacion.fechaInicioContrato)}</dd>
+                        </>
+                      )}
+                      {postulacion.duracionMeses && (
+                        <>
+                          <dt>Duración</dt>
+                          <dd>{postulacion.duracionMeses} meses</dd>
+                        </>
+                      )}
+                      {postulacion.observaciones && (
+                        <>
+                          <dt>Observaciones</dt>
+                          <dd style={{ whiteSpace: "pre-wrap" }}>{postulacion.observaciones}</dd>
+                        </>
+                      )}
+                    </dl>
+                  </section>
+
+                  <section>
+                    <h4>Datos del estudiante</h4>
+                    <dl>
+                      {postulacion.emailEstudiante && (
+                        <>
+                          <dt>Email</dt>
+                          <dd><a href={`mailto:${postulacion.emailEstudiante}`}>{postulacion.emailEstudiante}</a></dd>
+                        </>
+                      )}
+                      {postulacion.telefonoEstudiante && (
+                        <>
+                          <dt>Teléfono celular</dt>
+                          <dd><a href={`tel:${postulacion.telefonoEstudiante}`}>{postulacion.telefonoEstudiante}</a></dd>
+                        </>
+                      )}
+                      {postulacion.telefonoFijoEstudiante && (
+                        <>
+                          <dt>Teléfono fijo</dt>
+                          <dd>{postulacion.telefonoFijoEstudiante}</dd>
+                        </>
+                      )}
+                      {postulacion.dniEstudiante && (
+                        <>
+                          <dt>DNI</dt>
+                          <dd>{postulacion.dniEstudiante}</dd>
+                        </>
+                      )}
+                      {postulacion.legajoEstudiante && (
+                        <>
+                          <dt>Legajo</dt>
+                          <dd>{postulacion.legajoEstudiante}</dd>
+                        </>
+                      )}
+                      {postulacion.especialidadEstudiante && (
+                        <>
+                          <dt>Especialidad</dt>
+                          <dd>{postulacion.especialidadEstudiante}</dd>
+                        </>
+                      )}
+                      {(postulacion.calleEstudiante || postulacion.nroCalleEstudiante) && (
+                        <>
+                          <dt>Dirección</dt>
+                          <dd>
+                            {postulacion.calleEstudiante} {postulacion.nroCalleEstudiante}
+                            {postulacion.barrioEstudiante && `, ${postulacion.barrioEstudiante}`}
+                            {postulacion.localidadEstudiante && `, ${postulacion.localidadEstudiante}`}
+                            {postulacion.provinciaEstudiante && `, ${postulacion.provinciaEstudiante}`}
+                          </dd>
+                        </>
+                      )}
+                    </dl>
+                  </section>
+                </div>
+              </article>
+            ))}
+          </div>
         )}
       </div>
     </section>
