@@ -71,6 +71,12 @@
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
+		<!-- Email -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-mail</artifactId>
+		</dependency>
+
 		<!-- JWT -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
@@ -128,6 +134,38 @@
 						</exclude>
 					</excludes>
 				</configuration>
+			</plugin>
+			<!-- PlantUML Plugin -->
+			<plugin>
+				<groupId>com.github.funthomas424242</groupId>
+				<artifactId>plantuml-maven-plugin</artifactId>
+				<version>1.5.2</version>
+				<configuration>
+					<sourceFiles>
+						<directory>${basedir}/../docs/diagrams</directory>
+						<includes>
+							<include>**/*.puml</include>
+						</includes>
+					</sourceFiles>
+					<outputDirectory>${basedir}/../docs/diagrams/generated</outputDirectory>
+					<outputInSourceDirectory>false</outputInSourceDirectory>
+					<format>png</format>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>net.sourceforge.plantuml</groupId>
+						<artifactId>plantuml</artifactId>
+						<version>1.2024.8</version>
+					</dependency>
+				</dependencies>
 			</plugin>
 		</plugins>
 	</build>

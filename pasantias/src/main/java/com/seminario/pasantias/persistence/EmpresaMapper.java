@@ -18,11 +18,14 @@ public interface EmpresaMapper {
 	@Select("SELECT * FROM Empresa WHERE nombre = #{nombre}")
 	List<Empresa> findByNombre(@Param("nombre") String nombre);
 
-	@Insert("INSERT INTO Empresa(nombre, ciudad, direccion, email, cuit, razon_social) VALUES(#{nombre}, #{ciudad}, #{direccion}, #{email}, #{cuit}, #{razonSocial})")
+	@Select("SELECT * FROM Empresa WHERE id_usuario = #{idUsuario}")
+	Empresa findByIdUsuario(@Param("idUsuario") Integer idUsuario);
+
+	@Insert("INSERT INTO Empresa(nombre, ciudad, calle, nro_calle, piso, departamento, barrio, email, cuit, razon_social, id_usuario, activo, fecha_creacion) VALUES(#{nombre}, #{ciudad}, #{calle}, #{nroCalle}, #{piso}, #{departamento}, #{barrio}, #{email}, #{cuit}, #{razonSocial}, #{idUsuario}, #{activo}, #{fechaCreacion})")
 	@Options(useGeneratedKeys = true, keyProperty = "idEmpresa")
 	void insert(Empresa empresa);
 
-	@Update("UPDATE Empresa SET nombre=#{nombre}, ciudad=#{ciudad}, direccion=#{direccion}, email=#{email}, cuit=#{cuit}, razon_social=#{razonSocial} WHERE id_empresa=#{idEmpresa}")
+	@Update("UPDATE Empresa SET nombre=#{nombre}, ciudad=#{ciudad}, calle=#{calle}, nro_calle=#{nroCalle}, piso=#{piso}, departamento=#{departamento}, barrio=#{barrio}, email=#{email}, cuit=#{cuit}, razon_social=#{razonSocial}, id_usuario=#{idUsuario}, activo=#{activo} WHERE id_empresa=#{idEmpresa}")
 	void update(Empresa empresa);
 
 	@Delete("DELETE FROM Empresa WHERE id_empresa = #{id}")

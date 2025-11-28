@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
+import FilterBar from "../components/FilterBar.jsx";
 import "../styles/empresas.css";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:8080").replace(/\/+$/,"");
@@ -187,45 +188,53 @@ export default function Empresas() {
 
   return (
     <section className="empresas-page">
-      <div className="empresas-bar">
-        <div className="container empresas-bar-inner">
+      <div className="container empresas-wrap">
+        <header className="section-head emp-head">
+          <div>
+            <p className="section-head__eyebrow">Directorio</p>
+            <h1>Empresas</h1>
+            <p className="muted">
+              Gestiona los perfiles de las empresas registradas y accede a sus datos de contacto.
+            </p>
+          </div>
+          <div className="section-head__meta">
+            <span className="section-head__badge">
+              {loading ? "Cargando..." :
+                error ? "—" :
+                `${filtered.length} resultado${filtered.length !== 1 ? "s" : ""}`}
+            </span>
+          </div>
+        </header>
+        <FilterBar
+          actions={
+            <>
+              <button
+                className="btn btn-outline sm"
+                onClick={() => {
+                  setQ("");
+                  load();
+                }}
+                disabled={loading && q === ""}
+              >
+                {loading && q === "" ? "Limpiando…" : "Limpiar"}
+              </button>
+              {isAdmin && (
+                <Link to="/registrar-empresa" className="btn btn-primary sm">
+                  + Registrar empresa
+                </Link>
+              )}
+            </>
+          }
+        >
           <input
             type="search"
-            className="emp-search"
+            className="filter-bar-input"
             placeholder="Buscar por nombre, ciudad, CUIT o email…"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             enterKeyHint="search"
           />
-          <div className="empresas-actions">
-            <button
-              className="btn btn-outline sm"
-              onClick={() => {
-                setQ("");
-                load();
-              }}
-              disabled={loading && q === ""}
-            >
-              {loading && q === "" ? "Limpiando…" : "Limpiar"}
-            </button>
-            {isAdmin && (
-              <Link to="/registrar-empresa" className="btn btn-primary sm">
-                + Registrar empresa
-              </Link>
-            )}
-          </div>
-        </div>
-      </div>
-
-      <div className="container empresas-wrap">
-        <header className="emp-head">
-          <h1>Empresas</h1>
-          <p className="muted">
-            {loading ? "Cargando…" :
-              error ? "—" :
-              `${filtered.length} resultado${filtered.length !== 1 ? "s" : ""}`}
-          </p>
-        </header>
+        </FilterBar>
 
         {error && (
           <div className="emp-alert error">
@@ -266,13 +275,17 @@ export default function Empresas() {
                       <h3 className="emp-name">{e.nombre || e.razonSocial || "Empresa"}</h3>
                       <p className="emp-meta">
                         {(e.ciudad || "—")}
-                        {e.ciudad && e.direccion ? " · " : ""}
-                        {e.direccion || ""}
+                        {(e.calle || e.nroCalle || e.barrio) && " · "}
+                        {e.calle && `${e.calle}`}
+                        {e.nroCalle && ` ${e.nroCalle}`}
+                        {e.piso && `, Piso ${e.piso}`}
+                        {e.departamento && ` Depto ${e.departamento}`}
+                        {e.barrio && ` - ${e.barrio}`}
                       </p>
                       <p className="emp-email">
-                        {e.emailContacto ? (
-                          <a href={`mailto:${e.emailContacto}`} className="link">
-                            {e.emailContacto}
+                        {e.emailContacto || e.email ? (
+                          <a href={`mailto:${e.emailContacto || e.email}`} className="link">
+                            {e.emailContacto || e.email}
                           </a>
                         ) : (
                           <span className="muted">Sin email</span>
@@ -281,11 +294,11 @@ export default function Empresas() {
                     </div>
 
                     <div className="emp-actions">
-                      <button className="btn btn-ghost" onClick={() => alert("Perfil aún no implementado")}>
+                      <button className="btn btn-primary " onClick={() => alert("Perfil aún no implementado")}>
                         Ver perfil
                       </button>
-                      {e.emailContacto && (
-                        <a href={`mailto:${e.emailContacto}`} className="btn btn-primary sm">
+                      {(e.emailContacto || e.email) && (
+                        <a href={`mailto:${e.emailContacto || e.email}`} className="btn btn-secondary ">
                           Contactar
                         </a>
                       )}

@@ -1,0 +1,185 @@
+@startuml DTOs - Request y Response
+!theme plain
+skinparam packageStyle rectangle
+
+package "dto.request" {
+    class PasantiaRequestDTO {
+        + String titulo
+        + String puestoACubrir
+        + String ciudad
+        + String modalidad
+        + Float asignacionEstimulo
+        + Integer cantidadDePasantes
+        + LocalDate fechaPublicacion
+        + LocalDate fechaCaducidad
+        + EstadoPasantia estado
+        + Integer idEmpresa
+        + List<Integer> idsCarreras
+        + String emailContacto
+        --
+        + isFechaCaducidadValida(): boolean
+    }
+
+    class PostulacionRequestDTO {
+        + LocalDate fechaPostulacion
+        + LocalDate fechaInicioContrato
+        + Integer duracionMeses
+        + EstadoPostulacion estado
+        + Integer idPasantia
+        + Integer idEstudiante
+        --
+        + isContratoCompleto(): boolean
+    }
+
+    class ActualizarEstadoPasantiaDTO {
+        + EstadoPasantia estado
+        + String motivo
+    }
+
+    class ActualizarEstadoPostulacionDTO {
+        + EstadoPostulacion estado
+        + LocalDate fechaInicioContrato
+        + Integer duracionMeses
+        + String observaciones
+    }
+
+    class PasantiaFiltroDTO {
+        + String busqueda
+        + String ciudad
+        + String modalidad
+        + EstadoPasantia estado
+        + Integer idEmpresa
+        + List<Integer> idsCarreras
+        + Float asignacionMinima
+        + Float asignacionMaxima
+        + LocalDate fechaPublicacionDesde
+        + LocalDate fechaPublicacionHasta
+        + Boolean soloActivas
+        + String ordenarPor
+        + String direccion
+        + Integer pagina
+        + Integer tamanio
+    }
+
+    class PostulacionFiltroDTO {
+        + Integer idEstudiante
+        + Integer idPasantia
+        + EstadoPostulacion estado
+        + LocalDate fechaDesde
+        + LocalDate fechaHasta
+        + Integer idEmpresa
+        + Boolean soloActivas
+        + String ordenarPor
+        + String direccion
+        + Integer pagina
+        + Integer tamanio
+    }
+}
+
+package "dto.response" {
+    class PasantiaResponseDTO {
+        + Integer idPasantia
+        + String titulo
+        + String puestoACubrir
+        + String ciudad
+        + String modalidad
+        + Float asignacionEstimulo
+        + Integer cantidadDePasantes
+        + LocalDate fechaPublicacion
+        + LocalDate fechaCaducidad
+        + EstadoPasantia estado
+        + String emailContacto
+        + Integer idEmpresa
+        + String nombreEmpresa
+        + Integer cantidadPostulaciones
+        + Boolean aceptaPostulaciones
+        + Long diasRestantes
+    }
+
+    class PasantiaDetalleDTO {
+        + Integer idPasantia
+        + String titulo
+        + String puestoACubrir
+        + ... (atributos básicos)
+        + EmpresaSimpleDTO empresa
+        + List<CarreraSimpleDTO> carreras
+        + List<PostulacionSimpleDTO> postulaciones
+        + EstadisticasPostulacionDTO estadisticas
+        + Long diasRestantes
+        + Boolean aceptaPostulaciones
+    }
+
+    class PostulacionResponseDTO {
+        + Integer idPostulacion
+        + LocalDate fechaPostulacion
+        + LocalDate fechaInicioContrato
+        + Integer duracionMeses
+        + EstadoPostulacion estado
+        + Integer idPasantia
+        + String tituloPasantia
+        + Integer idEstudiante
+        + String nombreEstudiante
+        + String nombreEmpresa
+        + String modalidad
+        + Boolean esEditable
+        + LocalDate fechaActualizacion
+    }
+
+    class PostulacionDetalleDTO {
+        + Integer idPostulacion
+        + LocalDate fechaPostulacion
+        + LocalDate fechaInicioContrato
+        + Integer duracionMeses
+        + EstadoPostulacion estado
+        + PasantiaSimpleDTO pasantia
+        + EstudianteSimpleDTO estudiante
+        + Boolean esEditable
+        + LocalDate fechaCreacion
+        + LocalDate fechaActualizacion
+        + String observaciones
+    }
+
+    class "PaginaDTO<T>" {
+        + List<T> contenido
+        + Integer paginaActual
+        + Integer tamanioPagina
+        + Long totalElementos
+        + Integer totalPaginas
+        + Boolean esPrimeraPagina
+        + Boolean esUltimaPagina
+        + Boolean tienePaginaAnterior
+        + Boolean tienePaginaSiguiente
+        + Integer elementosEnPagina
+    }
+}
+
+note right of PasantiaRequestDTO
+  DTO de entrada con validaciones:
+  • @NotBlank, @NotNull
+  • @Email, @Pattern
+  • @FutureOrPresent
+  • Validaciones personalizadas
+end note
+
+note right of PasantiaResponseDTO
+  DTO de salida básico:
+  • Para listados
+  • Información desnormalizada
+  • Campos calculados
+end note
+
+note right of PasantiaDetalleDTO
+  DTO de salida completo:
+  • Para vista de detalle
+  • Incluye relaciones
+  • DTOs internos anidados
+end note
+
+note right of "PaginaDTO<T>"
+  DTO genérico para paginación:
+  • Usa generics <T>
+  • Metadata de paginación
+  • Reutilizable
+end note
+
+@enduml

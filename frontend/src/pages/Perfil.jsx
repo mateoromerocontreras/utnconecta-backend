@@ -113,6 +113,22 @@ export default function Perfil() {
         </div>
 
         <div className="perfil-actions">
+          {user.rol === "ESTUDIANTE" && (
+            <>
+              <button 
+                className="btn btn-secondary" 
+                onClick={() => navigate("/perfil/completar")}
+              >
+                Completar perfil
+              </button>
+              <button 
+                className="btn btn-primary" 
+                onClick={() => navigate("/perfil/modificar")}
+              >
+                Modificar perfil
+              </button>
+            </>
+          )}
           <button className="btn btn-danger" onClick={handleLogout}>
             Cerrar sesión
           </button>

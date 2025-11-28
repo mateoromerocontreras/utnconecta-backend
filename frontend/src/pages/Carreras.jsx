@@ -262,43 +262,50 @@ export default function Carreras() {
 
   return (
     <section className="carreras-page">
-      <div className="carreras-bar">
-        <div className="container carreras-bar-inner">
-          <input
-            type="search"
-            className="carreras-search"
-            placeholder="Buscar carrera por nombre…"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            enterKeyHint="search"
-          />
-          <div className="carreras-actions">
-            <button
-              className="btn btn-outline sm"
-              onClick={() => {
-                setQ("");
-                loadCarreras();
-              }}
-              disabled={loading && q === ""}
-            >
-              {loading && q === "" ? "Limpiando…" : "Limpiar"}
-            </button>
-            <a href="/registrar-carrera" className="btn btn-primary sm">
-              + Nueva Carrera
-            </a>
+      <div className="container carreras-wrap">
+        <header className="section-head carreras-head">
+          <div>
+            <p className="section-head__eyebrow">Oferta academica</p>
+            <h1>Carreras</h1>
+            <p className="muted">
+              Consulta y administra los planes de estudio disponibles para las pasantias.
+            </p>
+          </div>
+          <div className="section-head__meta">
+            <span className="section-head__badge">
+              {loading ? "Cargando..." :
+                error ? "—" :
+                `${filtered.length} carrera${filtered.length !== 1 ? "s" : ""}`}
+            </span>
+          </div>
+        </header>
+        <div className="carreras-bar">
+          <div className="carreras-bar-inner">
+            <input
+              type="search"
+              className="carreras-search"
+              placeholder="Buscar carrera por nombre…"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              enterKeyHint="search"
+            />
+            <div className="carreras-actions">
+              <button
+                className="btn btn-outline sm"
+                onClick={() => {
+                  setQ("");
+                  loadCarreras();
+                }}
+                disabled={loading && q === ""}
+              >
+                {loading && q === "" ? "Limpiando…" : "Limpiar"}
+              </button>
+              <a href="/registrar-carrera" className="btn btn-primary sm">
+                + Nueva Carrera
+              </a>
+            </div>
           </div>
         </div>
-      </div>
-
-      <div className="container carreras-wrap">
-        <header className="carreras-head">
-          <h1>Carreras</h1>
-          <p className="muted">
-            {loading ? "Cargando…" :
-              error ? "—" :
-              `${filtered.length} carrera${filtered.length !== 1 ? "s" : ""}`}
-          </p>
-        </header>
 
         {error && (
           <div className="carreras-alert error">

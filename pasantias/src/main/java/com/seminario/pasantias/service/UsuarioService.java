@@ -38,6 +38,10 @@ public class UsuarioService {
     }
 
     public Usuario createUsuario(String username, String email, String password, String rolNombre) {
+        return createUsuario(username, email, password, rolNombre, true);
+    }
+
+    public Usuario createUsuario(String username, String email, String password, String rolNombre, boolean activoInicial) {
         if (usuarioMapper.findByUsername(username).isPresent()) {
             throw new RuntimeException("El username ya existe");
         }
@@ -56,7 +60,7 @@ public class UsuarioService {
         usuario.setEmail(email);
         usuario.setPassword(passwordEncoder.encode(password));
         usuario.setIdRol(rolOpt.get().getIdRol());
-        usuario.setActivo(true);
+        usuario.setActivo(activoInicial);
         usuario.setFechaCreacion(LocalDateTime.now());
 
         usuarioMapper.insert(usuario);
@@ -65,6 +69,10 @@ public class UsuarioService {
 
     public void deactivateUsuario(Integer id) {
         usuarioMapper.deactivate(id);
+    }
+
+    public void activateUsuario(Integer id) {
+        usuarioMapper.activate(id);
     }
 
     public boolean verifyPassword(String rawPassword, String encodedPassword) {

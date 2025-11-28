@@ -2,8 +2,14 @@ package com.seminario.pasantias.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.converter.HttpMessageConverter;
+import org.springframework.http.converter.StringHttpMessageConverter;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.nio.charset.StandardCharsets;
+import java.util.List;
 
 @Configuration
 public class WebConfig {
@@ -20,6 +26,30 @@ public class WebConfig {
                         .allowCredentials(true)
                         .exposedHeaders("Authorization", "Content-Type", "Accept")
                         .maxAge(3600);
+            }
+            
+            @Override
+            public void extendMessageConverters(@org.springframework.lang.NonNull List<HttpMessageConverter<?>> converters) {
+                // Asegurar que todos los converters usen UTF-8
+                for (HttpMessageConverter<?> converter : converters) {
+                    if (converter instanceof StringHttpMessageConverter) {
+                        StringHttpMessageConverter stringConverter = (StringHttpMessageConverter) converter;
+                        java.nio.charset.Charset currentCharset = stringConverter.getDefaultCharset();
+                        if (currentCharset == null || !StandardCharsets.UTF_8.equals(currentCharset)) {
+                            converters.remove(converter);
+                            StringHttpMessageConverter utf8Converter = new StringHttpMessageConverter(StandardCharsets.UTF_8);
+                            utf8Converter.setWriteAcceptCharset(false);
+                            converters.add(utf8Converter);
+                            break;
+                        }
+                    } else if (converter instanceof MappingJackson2HttpMessageConverter) {
+                        MappingJackson2HttpMessageConverter jsonConverter = (MappingJackson2HttpMessageConverter) converter;
+                        java.nio.charset.Charset currentCharset = jsonConverter.getDefaultCharset();
+                        if (currentCharset == null || !StandardCharsets.UTF_8.equals(currentCharset)) {
+                            jsonConverter.setDefaultCharset(StandardCharsets.UTF_8);
+                        }
+                    }
+                }
             }
         };
     }

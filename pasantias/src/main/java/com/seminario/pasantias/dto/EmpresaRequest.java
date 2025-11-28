@@ -14,7 +14,11 @@ public class EmpresaRequest {
 	private String razonSocial;
 	private String cuit;
 	private String ciudad;
-	private String direccion;
+	private String calle;
+	private Integer nroCalle;
+	private String piso;
+	private String departamento;
+	private String barrio;
 	private String email;
 	private List<Contacto> contacto;
 }

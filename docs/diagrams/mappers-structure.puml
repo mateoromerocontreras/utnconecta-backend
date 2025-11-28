@@ -1,0 +1,225 @@
+@startuml Mappers MyBatis - Arquitectura
+!theme plain
+
+package "MyBatis Persistence Layer" {
+    
+    interface PasantiaMapper <<@Mapper>> {
+        ' Consultas Básicas
+        + findById(Integer id): Optional<Pasantia>
+        + findByIdWithRelations(Integer id): Optional<Pasantia>
+        + findAll(): List<Pasantia>
+        + findAllActive(): List<Pasantia>
+        
+        ' Consultas por Criterio
+        + findByEmpresa(Integer idEmpresa): List<Pasantia>
+        + findByCiudad(String ciudad): List<Pasantia>
+        + findByModalidad(String modalidad): List<Pasantia>
+        
+        ' Consultas Dinámicas (XML)
+        + findWithFilters(PasantiaFiltroDTO): List<Pasantia>
+        + countWithFilters(PasantiaFiltroDTO): Long
+        
+        ' CRUD
+        + insert(Pasantia): void
+        + update(Pasantia): void
+        + updateEstado(Integer, String): void
+        + delete(Integer id): void
+        + existsById(Integer id): boolean
+        
+        ' Relación con Carreras
+        + findCarrerasByPasantiaId(Integer): List<Carrera>
+        + insertPasantiaCarrera(Integer, Integer): void
+        + deleteAllCarrerasByPasantiaId(Integer): void
+        
+        ' Estadísticas
+        + countPostulaciones(Integer): Integer
+        + countPostulacionesByEstado(Integer, String): Integer
+    }
+    
+    interface PostulacionMapper <<@Mapper>> {
+        ' Consultas Básicas
+        + findById(Integer id): Optional<Postulacion>
+        + findByIdWithRelations(Integer id): Optional<Postulacion>
+        + findAll(): List<Postulacion>
+        
+        ' Consultas por Criterio
+        + findByEstudiante(Integer): List<Postulacion>
+        + findByPasantiaId(Integer): List<Postulacion>
+        + findByEstado(String): List<Postulacion>
+        + findActiveByEstudiante(Integer): List<Postulacion>
+        
+        ' Consultas Dinámicas (XML)
+        + findWithFilters(PostulacionFiltroDTO): List<Postulacion>
+        + countWithFilters(PostulacionFiltroDTO): Long
+        
+        ' CRUD
+        + insert(Postulacion): void
+        + update(Postulacion): void
+        + updateEstado(Integer, String): void
+        + updateContrato(Integer, String, Integer): void
+        + delete(Integer id): void
+        
+        ' Validaciones
+        + existsById(Integer id): boolean
+        + existsByEstudianteAndPasantia(Integer, Integer): boolean
+        
+        ' Estadísticas
+        + countByEstudiante(Integer): Integer
+        + countByPasantia(Integer): Integer
+    }
+    
+    interface EstudianteMapper <<@Mapper>> {
+        + findById(Integer): Optional<Estudiante>
+        + findByEmail(String): Optional<Estudiante>
+        + findAllActive(): List<Estudiante>
+        + insert(Estudiante): void
+        + update(Estudiante): void
+        + delete(Integer): void
+    }
+    
+    interface EmpresaMapper <<@Mapper>> {
+        + findById(Integer): Optional<Empresa>
+        + findAll(): List<Empresa>
+        + insert(Empresa): void
+        + update(Empresa): void
+    }
+    
+    interface CarreraMapper <<@Mapper>> {
+        + findById(Integer): Optional<Carrera>
+        + findAll(): List<Carrera>
+        + insert(Carrera): void
+        + update(Carrera): void
+    }
+}
+
+package "Entidades" {
+    class Pasantia {
+        - Integer idPasantia
+        - String titulo
+        - String puestoACubrir
+        - LocalDate fechaPublicacion
+        - EstadoPasantia estado
+        - Empresa empresa
+        - List<Carrera> carreras
+        - List<Postulacion> postulaciones
+    }
+    
+    class Postulacion {
+        - Integer idPostulacion
+        - LocalDate fechaPostulacion
+        - LocalDate fechaInicioContrato
+        - Integer duracionMeses
+        - EstadoPostulacion estado
+        - Pasantia pasantia
+        - Estudiante estudiante
+    }
+    
+    class Estudiante {
+        - Integer idEstudiante
+        - String nombre
+        - String apellido
+        - String email
+    }
+    
+    class Empresa {
+        - Integer idEmpresa
+        - String nombre
+        - String cuit
+    }
+    
+    class Carrera {
+        - Integer idCarrera
+        - String nombre
+        - String codigo
+    }
+}
+
+package "DTOs Filtro" {
+    class PasantiaFiltroDTO {
+        + String busqueda
+        + String ciudad
+        + String modalidad
+        + EstadoPasantia estado
+        + Integer idEmpresa
+        + List<Integer> idsCarreras
+        + Float asignacionMinima
+        + Float asignacionMaxima
+        + Boolean soloActivas
+        + String ordenarPor
+        + Integer pagina
+        + Integer tamanio
+    }
+    
+    class PostulacionFiltroDTO {
+        + Integer idEstudiante
+        + Integer idPasantia
+        + EstadoPostulacion estado
+        + LocalDate fechaDesde
+        + LocalDate fechaHasta
+        + Boolean soloActivas
+        + String ordenarPor
+        + Integer pagina
+        + Integer tamanio
+    }
+}
+
+package "XML Mappers" {
+    file PasantiaMapper.xml {
+        - findWithFilters
+        - countWithFilters
+        - ResultMap con Empresa
+        - SQL dinámico
+    }
+    
+    file PostulacionMapper.xml {
+        - findWithFilters
+        - countWithFilters
+        - ResultMap completo
+        - SQL dinámico
+    }
+}
+
+' Relaciones
+PasantiaMapper ..> Pasantia : mapea
+PostulacionMapper ..> Postulacion : mapea
+EstudianteMapper ..> Estudiante : mapea
+EmpresaMapper ..> Empresa : mapea
+CarreraMapper ..> Carrera : mapea
+
+PasantiaMapper ..> PasantiaFiltroDTO : usa
+PostulacionMapper ..> PostulacionFiltroDTO : usa
+
+PasantiaMapper.xml ..> PasantiaMapper : implementa
+PostulacionMapper.xml ..> PostulacionMapper : implementa
+
+Pasantia --> Empresa
+Pasantia --> Carrera
+Pasantia --> Postulacion
+Postulacion --> Pasantia
+Postulacion --> Estudiante
+
+note right of PasantiaMapper
+  Mapper principal para Pasantía
+  - Consultas con anotaciones
+  - Consultas dinámicas en XML
+  - Gestión de relaciones N:M con Carrera
+  - Estadísticas de postulaciones
+end note
+
+note right of PostulacionMapper
+  Mapper principal para Postulación
+  - Validación de duplicados
+  - Consultas por estudiante/pasantía
+  - Actualización de contrato
+  - Filtros avanzados en XML
+end note
+
+note bottom of "XML Mappers"
+  Archivos XML para consultas dinámicas
+  - <where> con múltiples <if>
+  - <foreach> para colecciones
+  - <choose> para ordenamiento
+  - ResultMap con asociaciones
+end note
+
+@enduml

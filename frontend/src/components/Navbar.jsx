@@ -1,4 +1,4 @@
-import { Link, NavLink } from "react-router-dom";
+﻿import { Link, NavLink } from "react-router-dom";
 import { useState, useEffect, useCallback } from "react";
 import "../styles/navbar.css";
 
@@ -55,7 +55,7 @@ export default function Navbar(){
         </Link>
         <nav className="links">
           <NavLink to="/" end>Inicio</NavLink>
-          <NavLink to="/pasantias">Pasantías</NavLink>
+          <NavLink to="/pasantias">Pasantias</NavLink>
           <NavLink to={user?.rol === "ADMINISTRADOR" ? "/empresa-list" : "/empresas"}>
             Empresas
           </NavLink>
@@ -65,7 +65,6 @@ export default function Navbar(){
         </nav>
         <div className="actions">
           {user ? (
-            // Usuario logueado
             <div className="user-menu">
               <span className="user-greeting">
                 Hola, <strong>{user.username}</strong> ({user.rol})
@@ -79,10 +78,9 @@ export default function Navbar(){
               </Link>
             </div>
           ) : (
-            // Usuario no logueado
             <>
               <Link to="/registrarse" className="btn-register">Registrarse</Link>
-              <Link to="/login" className="btn login">Iniciar Sesión</Link>
+              <Link to="/login" className="btn login">Iniciar Sesion</Link>
             </>
           )}
         </div>

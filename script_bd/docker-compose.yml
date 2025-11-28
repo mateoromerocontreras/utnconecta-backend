@@ -1,23 +1,69 @@
-version: '3.8'
+version: "3.8"
 
 services:
   db:
     image: mysql:8.0
     container_name: db_pasantias
-    restart: always
+    restart: unless-stopped
     environment:
-      # Credenciales para el usuario root
       MYSQL_ROOT_PASSWORD: my-secret-pw
-      # Nombre de la base de datos que se creará al inicio
       MYSQL_DATABASE: db_pasantias
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_unicode_ci
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     ports:
-      # Mapeo de puertos: host_port:container_port
       - "3306:3306"
     volumes:
-      # Este volumen persistirá los datos de la base de datos en tu máquina
       - db_data:/var/lib/mysql
-      # Copia tu archivo .sql al directorio de inicialización de MySQL en el contenedor
       - ./sql:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-pmy-secret-pw"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - pasantias-network
+
+  backend:
+     build:
+       context: ../pasantias
+       dockerfile: Dockerfile
+     container_name: pasantias_backend
+     restart: unless-stopped
+     ports:
+       - "8080:8080"
+     environment:
+       SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/db_pasantias?useSSL=false&serverTimezone=America/Argentina/Buenos_Aires&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&useUnicode=true
+       SPRING_DATASOURCE_USERNAME: root
+       SPRING_DATASOURCE_PASSWORD: my-secret-pw
+       JWT_SECRET: ${JWT_SECRET:-myVerySecretKeyForJWTTokenGenerationThatShouldBeLongEnoughAndSecure123456789}
+       JWT_EXPIRATION: ${JWT_EXPIRATION:-3600}
+       SPRING_APPLICATION_NAME: pasantias
+     depends_on:
+       db:
+         condition: service_healthy
+     networks:
+       - pasantias-network
+
+  frontend:
+     build:
+       context: ../frontend
+       dockerfile: Dockerfile
+     container_name: pasantias_frontend
+     restart: unless-stopped
+     ports:
+       - "5173:5173"
+     environment:
+       VITE_API_URL: http://localhost:8080
+     depends_on:
+       - backend
+     networks:
+       - pasantias-network
+
+networks:
+  pasantias-network:
+    driver: bridge
 
 volumes:
   db_data:

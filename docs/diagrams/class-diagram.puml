@@ -1,0 +1,98 @@
+@startuml Diagrama de Clases Principal
+!theme plain
+
+class Usuario {
+    - Long id
+    - String username
+    - String password
+    - String rol
+    - Boolean activo
+    + login()
+    + logout()
+}
+
+class Estudiante {
+    - Long id
+    - String nombre
+    - String apellido
+    - String email
+    - String telefono
+    - Long carreraId
+    + completarPerfil()
+    + modificarPerfil()
+    + postularPasantia()
+}
+
+class Empresa {
+    - Long id
+    - String nombre
+    - String cuit
+    - String direccion
+    - String email
+    - String telefono
+    + publicarPasantia()
+    + modificarPasantia()
+}
+
+class Carrera {
+    - Long id
+    - String nombre
+    - String codigo
+    - String facultad
+    + agregarEstudiante()
+}
+
+class Pasantia {
+    - Integer idPasantia
+    - String titulo
+    - String puestoACubrir
+    - String ciudad
+    - String modalidad
+    - Float asignacionEstimulo
+    - Integer cantidadDePasantes
+    - LocalDate fechaPublicacion
+    - LocalDate fechaCaducidad
+    - EstadoPasantia estado
+    - String emailContacto
+    + publicar()
+    + cerrar()
+    + expirar()
+}
+
+class Postulacion {
+    - Integer idPostulacion
+    - LocalDate fechaPostulacion
+    - LocalDate fechaInicioContrato
+    - Integer duracionMeses
+    - EstadoPostulacion estado
+    + aceptar()
+    + rechazar()
+    + cambiarEstado()
+}
+
+enum EstadoPostulacion {
+    BORRADOR
+    PENDIENTE_APROBACION
+    PUBLICADA
+    CUBIERTA
+    FINALIZADA
+}
+
+enum EstadoPasantia {
+    PUBLICADA
+    FINALIZADA
+    DADA_DE_BAJA
+    PENDIENTE_DE_APROBACION
+    EXPIRADA
+}
+
+Usuario "1" -- "1" Estudiante : tiene >
+Estudiante "n" -- "1" Carrera : estudia >
+Empresa "1" -- "n" Pasantia : publica >
+Pasantia "1" *-- "n" Postulacion : tiene >
+Postulacion "n" -- "1" Estudiante : realizada por >
+Pasantia "n" -- "n" Carrera : requiere >
+Postulacion --> EstadoPostulacion : tiene
+Pasantia --> EstadoPasantia : tiene
+
+@enduml

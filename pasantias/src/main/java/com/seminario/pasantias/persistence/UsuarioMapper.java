@@ -67,6 +67,9 @@ public interface UsuarioMapper {
     
     @Update("UPDATE Usuario SET activo = FALSE WHERE id_usuario = #{id}")
     void deactivate(@Param("id") Integer id);
+
+    @Update("UPDATE Usuario SET activo = TRUE WHERE id_usuario = #{id}")
+    void activate(@Param("id") Integer id);
     
     @Delete("DELETE FROM Usuario WHERE id_usuario = #{id}")
     void delete(@Param("id") Integer id);

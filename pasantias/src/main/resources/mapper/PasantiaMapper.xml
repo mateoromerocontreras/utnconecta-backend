@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.seminario.pasantias.persistence.PasantiaMapper">
+
+    <!-- ResultMap para Pasantia con Empresa -->
+    <resultMap id="pasantiaWithEmpresaMap" type="com.seminario.pasantias.entity.Pasantia">
+        <id property="idPasantia" column="id_pasantia"/>
+        <result property="titulo" column="titulo"/>
+        <result property="puestoACubrir" column="puesto_a_cubrir"/>
+        <result property="ciudad" column="ciudad"/>
+        <result property="modalidad" column="modalidad"/>
+        <result property="asignacionEstimulo" column="asignacion_estimulo"/>
+        <result property="cantidadDePasantes" column="cantidad_de_pasantes"/>
+        <result property="fechaPublicacion" column="fecha_publicacion"/>
+        <result property="fechaCaducidad" column="fecha_caducidad"/>
+        <result property="estado" column="estado"/>
+        <result property="emailContacto" column="email_contacto"/>
+        <result property="conocimientos" column="conocimientos"/>
+        <result property="otrosRequisitos" column="otros_requisitos"/>
+        <result property="beneficios" column="beneficios"/>
+        
+        <!-- Empresa anidada -->
+        <association property="empresa" javaType="com.seminario.pasantias.entity.Empresa">
+            <id property="idEmpresa" column="empresa_id"/>
+            <result property="nombre" column="empresa_nombre"/>
+            <result property="cuit" column="empresa_cuit"/>
+            <result property="email" column="empresa_email"/>
+        </association>
+    </resultMap>
+
+    <!-- Consulta con filtros dinámicos -->
+    <select id="findWithFilters" parameterType="com.seminario.pasantias.dto.request.PasantiaFiltroDTO"
+            resultMap="pasantiaWithEmpresaMap">
+        SELECT 
+            p.id_pasantia,
+            p.titulo,
+            p.puesto_a_cubrir,
+            p.ciudad,
+            p.modalidad,
+            p.asignacion_estimulo,
+            p.cantidad_de_pasantes,
+            p.fecha_publicacion,
+            p.fecha_caducidad,
+            p.estado,
+            p.email_contacto,
+            p.conocimientos,
+            p.otros_requisitos,
+            p.beneficios,
+            e.id_empresa AS empresa_id,
+            e.nombre AS empresa_nombre,
+            e.cuit AS empresa_cuit,
+            e.email AS empresa_email
+        FROM Pasantia p
+        LEFT JOIN Empresa e ON p.id_empresa = e.id_empresa
+        <where>
+            <if test="busqueda != null and busqueda != ''">
+                AND (
+                    p.titulo LIKE CONCAT('%', #{busqueda}, '%')
+                    OR p.puesto_a_cubrir LIKE CONCAT('%', #{busqueda}, '%')
+                )
+            </if>
+            <if test="ciudad != null and ciudad != ''">
+                AND p.ciudad = #{ciudad}
+            </if>
+            <if test="modalidad != null and modalidad != ''">
+                AND p.modalidad = #{modalidad}
+            </if>
+            <if test="estado != null">
+                AND p.estado = #{estado}
+            </if>
+            <if test="idEmpresa != null">
+                AND p.id_empresa = #{idEmpresa}
+            </if>
+            <if test="idsCarreras != null and idsCarreras.size() > 0">
+                AND EXISTS (
+                    SELECT 1 FROM Pasantia_Carrera pc
+                    WHERE pc.id_pasantia = p.id_pasantia
+                    AND pc.id_carrera IN
+                    <foreach collection="idsCarreras" item="idCarrera" open="(" separator="," close=")">
+                        #{idCarrera}
+                    </foreach>
+                )
+            </if>
+            <if test="asignacionMinima != null">
+                AND p.asignacion_estimulo &gt;= #{asignacionMinima}
+            </if>
+            <if test="asignacionMaxima != null">
+                AND p.asignacion_estimulo &lt;= #{asignacionMaxima}
+            </if>
+            <if test="fechaPublicacionDesde != null">
+                AND p.fecha_publicacion &gt;= #{fechaPublicacionDesde}
+            </if>
+            <if test="fechaPublicacionHasta != null">
+                AND p.fecha_publicacion &lt;= #{fechaPublicacionHasta}
+            </if>
+            <if test="soloActivas != null and soloActivas == true">
+                AND p.estado = 'PUBLICADA'
+            </if>
+        </where>
+        <choose>
+            <when test="ordenarPor != null and ordenarPor == 'titulo'">
+                ORDER BY p.titulo
+            </when>
+            <when test="ordenarPor != null and ordenarPor == 'fechaPublicacion'">
+                ORDER BY p.fecha_publicacion
+            </when>
+            <when test="ordenarPor != null and ordenarPor == 'asignacionEstimulo'">
+                ORDER BY p.asignacion_estimulo
+            </when>
+            <when test="ordenarPor != null and ordenarPor == 'ciudad'">
+                ORDER BY p.ciudad
+            </when>
+            <otherwise>
+                ORDER BY p.fecha_publicacion DESC
+            </otherwise>
+        </choose>
+        <if test="direccion != null and direccion == 'ASC'">
+            ASC
+        </if>
+        <if test="direccion == null or direccion == 'DESC'">
+            DESC
+        </if>
+        <if test="pagina != null and tamanio != null">
+            LIMIT #{tamanio} OFFSET #{pagina}
+        </if>
+    </select>
+
+    <!-- Contar con filtros -->
+    <select id="countWithFilters" parameterType="com.seminario.pasantias.dto.request.PasantiaFiltroDTO"
+            resultType="long">
+        SELECT COUNT(DISTINCT p.id_pasantia)
+        FROM Pasantia p
+        LEFT JOIN Empresa e ON p.id_empresa = e.id_empresa
+        <where>
+            <if test="busqueda != null and busqueda != ''">
+                AND (
+                    p.titulo LIKE CONCAT('%', #{busqueda}, '%')
+                    OR p.puesto_a_cubrir LIKE CONCAT('%', #{busqueda}, '%')
+                )
+            </if>
+            <if test="ciudad != null and ciudad != ''">
+                AND p.ciudad = #{ciudad}
+            </if>
+            <if test="modalidad != null and modalidad != ''">
+                AND p.modalidad = #{modalidad}
+            </if>
+            <if test="estado != null">
+                AND p.estado = #{estado}
+            </if>
+            <if test="idEmpresa != null">
+                AND p.id_empresa = #{idEmpresa}
+            </if>
+            <if test="idsCarreras != null and idsCarreras.size() > 0">
+                AND EXISTS (
+                    SELECT 1 FROM Pasantia_Carrera pc
+                    WHERE pc.id_pasantia = p.id_pasantia
+                    AND pc.id_carrera IN
+                    <foreach collection="idsCarreras" item="idCarrera" open="(" separator="," close=")">
+                        #{idCarrera}
+                    </foreach>
+                )
+            </if>
+            <if test="asignacionMinima != null">
+                AND p.asignacion_estimulo &gt;= #{asignacionMinima}
+            </if>
+            <if test="asignacionMaxima != null">
+                AND p.asignacion_estimulo &lt;= #{asignacionMaxima}
+            </if>
+            <if test="fechaPublicacionDesde != null">
+                AND p.fecha_publicacion &gt;= #{fechaPublicacionDesde}
+            </if>
+            <if test="fechaPublicacionHasta != null">
+                AND p.fecha_publicacion &lt;= #{fechaPublicacionHasta}
+            </if>
+            <if test="soloActivas != null and soloActivas == true">
+                AND p.estado = 'PUBLICADA'
+            </if>
+        </where>
+    </select>
+
+</mapper>

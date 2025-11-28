@@ -1,0 +1,82 @@
+@startuml Modelo de Postulacion Detallado
+!theme plain
+skinparam classAttributeIconSize 0
+
+class Postulacion {
+    - Integer idPostulacion
+    - LocalDate fechaPostulacion
+    - LocalDate fechaInicioContrato
+    - Integer duracionMeses
+    - EstadoPostulacion estado
+    --
+    + Pasantia pasantia
+    + Estudiante estudiante
+    --
+    + getId(): Integer
+    + setId(Integer id): void
+    + getFechaPostulacion(): LocalDate
+    + setFechaPostulacion(LocalDate fecha): void
+    + getFechaInicioContrato(): LocalDate
+    + setFechaInicioContrato(LocalDate fecha): void
+    + getDuracionMeses(): Integer
+    + setDuracionMeses(Integer duracion): void
+    + getEstado(): EstadoPostulacion
+    + setEstado(EstadoPostulacion estado): void
+    + getPasantia(): Pasantia
+    + setPasantia(Pasantia pasantia): void
+    + getEstudiante(): Estudiante
+    + setEstudiante(Estudiante estudiante): void
+}
+
+enum EstadoPostulacion {
+    BORRADOR
+    PENDIENTE_APROBACION
+    PUBLICADA
+    CUBIERTA
+    FINALIZADA
+    --
+    + name(): String
+    + ordinal(): int
+}
+
+class Pasantia {
+    - Integer idPasantia
+    - String puestoArea
+    - String modalidad
+    - EstadoPasantia estado
+    + getId(): Integer
+    + getPuestoArea(): String
+}
+
+class Estudiante {
+    - Integer idEstudiante
+    - String nombre
+    - String apellido
+    - String email
+    + getId(): Integer
+    + getNombreCompleto(): String
+}
+
+Postulacion "n" --> "1" EstadoPostulacion : estado
+Postulacion "n" --> "1" Pasantia : pasantia
+Postulacion "n" --> "1" Estudiante : estudiante
+
+note right of Postulacion
+  Representa una postulación de un 
+  estudiante a una pasantía específica.
+  
+  Estados posibles:
+  • BORRADOR: Guardado pero no enviado
+  • PENDIENTE_APROBACION: Enviado, esperando revisión
+  • PUBLICADA: Aprobado y visible
+  • CUBIERTA: Pasantía asignada
+  • FINALIZADA: Proceso completado
+end note
+
+note right of EstadoPostulacion
+  Enum que define los estados
+  del ciclo de vida de una
+  postulación.
+end note
+
+@enduml
