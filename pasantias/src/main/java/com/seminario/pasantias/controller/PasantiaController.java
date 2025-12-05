@@ -289,6 +289,107 @@ public class PasantiaController {
     }
 
     /**
+     * Actualiza los datos de una pasantía existente.
+     * 
+     * <p>Este endpoint requiere autenticación y valida que el usuario tenga permisos
+     * para modificar la pasantía especificada. Las pasantías en estado FINALIZADA o
+     * DADA_DE_BAJA no pueden ser modificadas.
+     * 
+     * <p>El proceso incluye:
+     * <ul>
+     *   <li>Validación de permisos del usuario autenticado</li>
+     *   <li>Validación de existencia de la pasantía</li>
+     *   <li>Validación de que la pasantía no esté en estado FINALIZADA o DADA_DE_BAJA</li>
+     *   <li>Validación de existencia de la empresa (si se modifica)</li>
+     *   <li>Validación de existencia de las carreras asociadas (si se modifican)</li>
+     *   <li>Validación de fechas (fecha de caducidad no puede ser anterior a hoy)</li>
+     *   <li>Actualización en la base de datos</li>
+     *   <li>Actualización de las carreras asociadas (si se especifican)</li>
+     * </ul>
+     * 
+     * <p>Reglas de permisos:
+     * <ul>
+     *   <li>ADMINISTRADOR: Puede modificar cualquier pasantía</li>
+     *   <li>EMPRESA: Solo puede modificar pasantías de su propia empresa</li>
+     * </ul>
+     * 
+     * @param id ID único de la pasantía a actualizar
+     * @param request DTO con los datos de la pasantía a actualizar.
+     *                Debe incluir: título, puesto, ciudad, modalidad, empresa, etc.
+     *                Las validaciones se realizan mediante @Valid
+     * @return ResponseEntity con código HTTP 200 (OK) y el objeto PasantiaResponseDTO
+     *         actualizado si la operación es exitosa,
+     *         o código HTTP 403 (FORBIDDEN) si el usuario no tiene permisos,
+     *         o código HTTP 400 (BAD_REQUEST) si los datos son inválidos o la pasantía
+     *         no puede ser modificada (estado inválido),
+     *         o código HTTP 404 (NOT_FOUND) si la pasantía no existe,
+     *         o código HTTP 500 (INTERNAL_SERVER_ERROR) en caso de error
+     * @throws SecurityException si el usuario no tiene permisos para modificar esta pasantía
+     * @throws IllegalArgumentException si los datos proporcionados son inválidos
+     *                                  (empresa no existe, carrera no existe, fechas inválidas)
+     * @throws IllegalStateException si la pasantía está en un estado que no permite modificaciones
+     * @see PasantiaRequestDTO
+     * @see PasantiaResponseDTO
+     */
+    @PutMapping("/{id}")
+    @SecurityRequirement(name = "Bearer Authentication")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'EMPRESA')")
+    public ResponseEntity<?> actualizarPasantia(
+            @PathVariable Integer id,
+            @Valid @RequestBody PasantiaRequestDTO request) {
+        try {
+            // Validar que el usuario autenticado tiene permiso para modificar esta pasantía
+            securityService.validarPermisoModificarPasantia(id);
+            
+            // Actualizar la pasantía en la base de datos
+            PasantiaResponseDTO pasantia = pasantiaService.actualizarPasantia(id, request);
+            
+            // Construir respuesta exitosa
+            Map<String, Object> response = new HashMap<>();
+            response.put("codigo", 0);
+            response.put("mensaje", "Pasantía actualizada exitosamente");
+            response.put("data", pasantia);
+            
+            return ResponseEntity.ok()
+                    .header("Content-Type", "application/json;charset=UTF-8")
+                    .body(response);
+        } catch (SecurityException | AccessDeniedException e) {
+            // Usuario no tiene permisos para realizar esta acción
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("codigo", -1);
+            errorResponse.put("mensaje", e.getMessage());
+            
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+        } catch (IllegalArgumentException e) {
+            // Datos inválidos o pasantía no existe
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("codigo", -1);
+            errorResponse.put("mensaje", e.getMessage());
+            
+            // Verificar si es porque no existe la pasantía
+            if (e.getMessage().contains("no encontrada") || e.getMessage().contains("no existe")) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+            }
+            
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        } catch (IllegalStateException e) {
+            // La pasantía está en un estado que no permite modificaciones
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("codigo", -1);
+            errorResponse.put("mensaje", e.getMessage());
+            
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        } catch (Exception e) {
+            // Error inesperado del servidor
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("codigo", -1);
+            errorResponse.put("mensaje", "Error al actualizar la pasantía: " + e.getMessage());
+            
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    /**
      * Finaliza una pasantía cambiando su estado a FINALIZADA.
      * 
      * <p>Este endpoint está restringido exclusivamente a usuarios con rol ADMINISTRADOR.
