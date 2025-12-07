@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: pasantias_backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      # Note: 'db_pasantias' matches the container_name in script_bd/docker-compose.yml
+      SPRING_DATASOURCE_URL: jdbc:mysql://db_pasantias:3306/db_pasantias?useSSL=false&serverTimezone=America/Argentina/Buenos_Aires&allowPublicKeyRetrieval=true&characterEncoding=UTF-8&useUnicode=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: my-secret-pw
+      JWT_SECRET: ${JWT_SECRET:-myVerySecretKeyForJWTTokenGenerationThatShouldBeLongEnoughAndSecure123456789}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-3600}
+      SPRING_APPLICATION_NAME: pasantias
+      # Email configuration for MailHog
+      MAIL_HOST: mailhog
+      MAIL_PORT: 1025
+      MAIL_USERNAME: ""
+      MAIL_PASSWORD: ""
+      MAIL_SMTP_AUTH: "false"
+      MAIL_SMTP_STARTTLS: "false"
+    networks:
+      - pasantias-network
+    depends_on:
+      - mailhog
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: pasantias_mailhog
+    ports:
+      - "1025:1025" # SMTP port
+      - "8025:8025" # Web UI
+    networks:
+      - pasantias-network
+
+networks:
+  pasantias-network:
+    external: true
+    name: script_bd_pasantias-network

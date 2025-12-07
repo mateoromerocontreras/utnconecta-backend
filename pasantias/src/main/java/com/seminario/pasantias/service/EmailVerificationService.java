@@ -6,8 +6,6 @@ import com.seminario.pasantias.persistence.EmailVerificationTokenMapper;
 import com.seminario.pasantias.persistence.UsuarioMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -24,16 +22,13 @@ public class EmailVerificationService {
     private UsuarioMapper usuarioMapper;
 
     @Autowired
-    private JavaMailSender mailSender;
+    private EmailService emailService;
 
     @Value("${app.verification.base-url:http://localhost:8080/auth/confirmar?token=}")
     private String verificationBaseUrl;
 
     @Value("${app.verification.expiration-hours:24}")
     private long expirationHours;
-
-    @Value("${app.mail.from:no-reply@pasantias.local}")
-    private String defaultFrom;
 
     public void enviarCorreoDeVerificacion(Usuario usuario) {
         EmailVerificationToken verificationToken = new EmailVerificationToken();
@@ -46,18 +41,7 @@ public class EmailVerificationService {
 
         String verificationLink = verificationBaseUrl + verificationToken.getToken();
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(defaultFrom);
-        message.setTo(usuario.getEmail());
-        message.setSubject("Confirma tu cuenta");
-        message.setText(
-                "Hola " + usuario.getUsername() + ",\n\n" +
-                "Para activar tu cuenta, hacé click o copia el siguiente enlace en tu navegador:\n" +
-                verificationLink + "\n\n" +
-                "Este enlace vence en " + expirationHours + " horas.\n" +
-                "Si no creaste una cuenta, ignorá este correo."
-        );
-        mailSender.send(message);
+        emailService.enviarEmailConfirmacion(usuario.getEmail(), verificationLink);
     }
 
     public void confirmarToken(String token) {
