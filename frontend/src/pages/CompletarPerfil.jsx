@@ -10,6 +10,14 @@ function getStoredItem(key) {
   return sessionStorage.getItem(key);
 }
 
+async function safeJson(res) {
+  try {
+    return await res.json();
+  } catch (err) {
+    return null;
+  }
+}
+
 export default function CompletarPerfil() {
   const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState(null);
@@ -72,7 +80,7 @@ export default function CompletarPerfil() {
         const resEst = await fetch(`${API}/estudiantes/perfil?email=${encodeURIComponent(userInfo.email)}`, {
           headers: { Authorization: `Bearer ${token}`, Accept: "application/json;charset=UTF-8" }
         });
-        const dataEst = await resEst.json();
+        const dataEst = await safeJson(resEst);
         const idEst = dataEst?.idEstudiante || dataEst?.id;
         setStudentId(idEst || null);
         if (!idEst) throw new Error("No se pudo obtener el id del estudiante");
@@ -81,7 +89,7 @@ export default function CompletarPerfil() {
           headers: { Authorization: `Bearer ${token}`, Accept: "application/json;charset=UTF-8" }
         });
         if (!resCv.ok) throw new Error(`HTTP ${resCv.status}`);
-        const cvs = await resCv.json();
+        const cvs = await safeJson(resCv);
         setCvList(Array.isArray(cvs) ? cvs : []);
       } catch (err) {
         setCvError(err.message || "No se pudieron cargar los CVs");
@@ -134,14 +142,14 @@ export default function CompletarPerfil() {
         headers: { Authorization: `Bearer ${token}` },
         body: form
       });
-      const dataUpload = await resUpload.json().catch(() => ({}));
-      if (!resUpload.ok || dataUpload.code === -1) {
-        throw new Error(dataUpload.message || `HTTP ${resUpload.status}`);
+      const dataUpload = await safeJson(resUpload);
+      if (!resUpload.ok || dataUpload?.code === -1) {
+        throw new Error(dataUpload?.message || `HTTP ${resUpload.status}`);
       }
       const resCv = await fetch(`${API}/cvs/getCV?idEstudiante=${studentId}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      const cvs = await resCv.json();
+      const cvs = await safeJson(resCv);
       setCvList(Array.isArray(cvs) ? cvs : []);
     } catch (err) {
       setCvError(err.message || "Error al subir el CV");

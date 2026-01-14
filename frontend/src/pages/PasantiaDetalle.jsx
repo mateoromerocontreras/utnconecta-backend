@@ -10,6 +10,14 @@ function getStoredItem(key) {
   return sessionStorage.getItem(key);
 }
 
+async function safeJson(res) {
+  try {
+    return await res.json();
+  } catch (err) {
+    return null;
+  }
+}
+
 export default function PasantiaDetalle() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -51,14 +59,14 @@ export default function PasantiaDetalle() {
         const resEst = await fetch(`${API}/estudiantes/perfil?email=${encodeURIComponent(user.email)}`, {
           headers: { Authorization: `Bearer ${token}`, Accept: "application/json;charset=UTF-8" }
         });
-        const dataEst = await resEst.json();
+        const dataEst = await safeJson(resEst);
         const idEst = dataEst?.idEstudiante || dataEst?.id;
         if (idEst) setStudentId(idEst);
         const resCv = await fetch(`${API}/cvs/getCV?idEstudiante=${idEst}`, {
           headers: { Authorization: `Bearer ${token}`, Accept: "application/json;charset=UTF-8" }
         });
         if (resCv.ok) {
-          const cvs = await resCv.json();
+          const cvs = await safeJson(resCv);
           const list = Array.isArray(cvs) ? cvs : [];
           setCvList(list);
           if (list.length > 0) setSelectedCv(String(list[0].idCv));
@@ -438,12 +446,12 @@ export default function PasantiaDetalle() {
     <section className="pasantias-page">
       <div className="container">
         <header style={{ margin: "28px 0 2rem" }}>
-          <button 
-            className="back-link" 
+          <button
+            className="back-link"
             onClick={() => navigate("/pasantias")}
             style={{ marginBottom: "1rem" }}
           >
-            <span aria-hidden="true">←</span> Volver
+            <span aria-hidden="true">&larr;</span> Volver a Pasantia
           </button>
           <h1>{pasantia.titulo}</h1>
           <p className="muted">

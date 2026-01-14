@@ -99,16 +99,18 @@ export default function Perfil() {
     <section className="perfil-page">
       <div className="perfil-card">
         <div className="perfil-header">
-          <div className="perfil-avatar" aria-hidden="true">
-            {photo ? (
-              <img src={photo} alt="" />
-            ) : (
-              (user.username || "?").substring(0, 1).toUpperCase()
-            )}
-          </div>
-          <div>
-            <h1>{user.username}</h1>
-            <p className="perfil-role">{user.rol}</p>
+          <div className="perfil-head-main">
+            <div className="perfil-avatar" aria-hidden="true">
+              {photo ? (
+                <img src={photo} alt="" />
+              ) : (
+                (user.username || "?").substring(0, 1).toUpperCase()
+              )}
+            </div>
+            <div>
+              <h1>{user.username}</h1>
+              <p className="perfil-role">{user.rol}</p>
+            </div>
           </div>
         </div>
 
