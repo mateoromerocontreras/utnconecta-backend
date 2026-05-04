@@ -1,14 +1,25 @@
--- Elimina la base de datos si ya existe para empezar de cero
--- IMPORTANTE: Este archivo debe estar codificado en UTF-8
--- Para asegurar la correcta interpretación de caracteres especiales en español
-
-DROP DATABASE IF EXISTS db_pasantias;
-CREATE DATABASE db_pasantias CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE db_pasantias;
+-- IMPORTANTE: este script se ejecuta dentro del schema indicado por el datasource de tests
+-- (ver `application-test.properties`). No debe crear/eliminar bases, para que funcione sin root.
 
 -- Configurar la conexión para usar UTF-8
 SET NAMES utf8mb4;
 SET CHARACTER SET utf8mb4;
+
+-- Reset del schema (orden seguro para FK)
+SET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS Notificacion;
+DROP TABLE IF EXISTS Postulacion;
+DROP TABLE IF EXISTS Pasantia_Carrera;
+DROP TABLE IF EXISTS Pasantia;
+DROP TABLE IF EXISTS CV;
+DROP TABLE IF EXISTS Estudiante;
+DROP TABLE IF EXISTS Contacto;
+DROP TABLE IF EXISTS Empresa;
+DROP TABLE IF EXISTS EmailVerificationToken;
+DROP TABLE IF EXISTS Usuario;
+DROP TABLE IF EXISTS Rol;
+DROP TABLE IF EXISTS Carrera;
+SET FOREIGN_KEY_CHECKS = 1;
 
 --
 -- Estructura de la tabla `Rol`

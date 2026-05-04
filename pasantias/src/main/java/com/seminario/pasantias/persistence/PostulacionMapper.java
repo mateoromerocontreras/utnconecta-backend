@@ -457,7 +457,7 @@ public interface PostulacionMapper {
             e.localidad AS localidadEstudiante,
             e.provincia AS provinciaEstudiante
         FROM Postulacion po
-        LEFT JOIN Estudiante e ON po.id_estudiante = e.id_estudiante
+        LEFT JOIN Estudiante e ON po.estudiante_id = e.id_estudiante
         LEFT JOIN Pasantia pa ON po.id_pasantia = pa.id_pasantia
         LEFT JOIN Empresa em ON pa.id_empresa = em.id_empresa
         WHERE pa.id_empresa = #{empresaId}

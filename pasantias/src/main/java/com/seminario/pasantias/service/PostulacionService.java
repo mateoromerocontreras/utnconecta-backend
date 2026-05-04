@@ -67,7 +67,20 @@ public class PostulacionService {
         }
 
         Pasantia pasantia = pasantiaOpt.get();
+        Estudiante estudiante = estudianteOpt.get();
         System.out.println("AGUSTIN PASANTIA " + pasantia.toString() );
+
+        // TS-05 Cross-Career Guard: el estudiante solo puede postular a pasantías de su carrera/especialidad
+        // La especialidad del estudiante se compara con los nombres de carreras habilitadas para la pasantía.
+        if (estudiante.getEspecialidad() != null && !estudiante.getEspecialidad().isBlank()) {
+            List<Carrera> carrerasHabilitadas = pasantiaMapper.findCarrerasByPasantiaId(pasantia.getIdPasantia());
+            boolean pertenece = carrerasHabilitadas.stream()
+                    .anyMatch(c -> c.getNombre() != null && c.getNombre().equalsIgnoreCase(estudiante.getEspecialidad()));
+            if (!pertenece) {
+                throw new IllegalArgumentException("Carrera no permitida");
+            }
+        }
+
         // Verificar que la pasantía esté en estado PUBLICADA
         if (pasantia.getEstado() != EstadoPasantia.PUBLICADA) {
             throw new IllegalStateException("La pasantía no está disponible para postulaciones. Estado actual: " + pasantia.getEstado());
@@ -91,7 +104,7 @@ public class PostulacionService {
         // Convertir DTO a Entity
         Postulacion postulacion = mapperUtil.requestDtoToEntity(request);
         postulacion.setPasantia(pasantia);
-        postulacion.setEstudiante(estudianteOpt.get());
+        postulacion.setEstudiante(estudiante);
 
         // Insertar en BD
         postulacionMapper.insert(postulacion);
@@ -160,6 +173,60 @@ public class PostulacionService {
                              " ha cambiado a: " + request.getEstado();
             notificacionService.crearNotificacion(postulacion.getEstudiante().getIdUsuario(), mensaje);
         }
+
+        return mapperUtil.entityToResponseDto(
+                postulacionMapper.findByIdWithRelations(id).orElseThrow()
+        );
+    }
+
+    /**
+     * Finalizar ciclo de pasantía (EMPRESA):
+     * marca una postulación como CUBIERTA (con datos de contrato) y finaliza la pasantía asociada.
+     * Se ejecuta en una única transacción para garantizar atomicidad.
+     */
+    public PostulacionResponseDTO cubrirPostulacionYFinalizarPasantia(Integer id, ActualizarEstadoPostulacionDTO request) {
+        if (request.getEstado() != EstadoPostulacion.CUBIERTA) {
+            throw new IllegalArgumentException("El estado requerido para finalizar ciclo debe ser CUBIERTA");
+        }
+
+        Postulacion postulacion = postulacionMapper.findByIdWithRelations(id)
+                .orElseThrow(() -> new IllegalArgumentException("Postulación no encontrada con ID: " + id));
+
+        // Verificar que el usuario autenticado pertenece a la empresa dueña de la pasantía
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+
+        Usuario usuario = usuarioService.findByUsername(username)
+                .orElseThrow(() -> new SecurityException("Usuario no encontrado: " + username));
+        Empresa empresa = empresaMapper.findByIdUsuario(usuario.getIdUsuario());
+        if (empresa == null) {
+            throw new SecurityException("Empresa no encontrada para el usuario autenticado");
+        }
+
+        if (postulacion.getPasantia() == null || postulacion.getPasantia().getEmpresa() == null) {
+            throw new IllegalStateException("La postulación no tiene pasantía/empresa asociada");
+        }
+        Integer pasantiaEmpresaId = postulacion.getPasantia().getEmpresa().getIdEmpresa();
+        if (!empresa.getIdEmpresa().equals(pasantiaEmpresaId)) {
+            throw new SecurityException("No tienes permiso para finalizar el ciclo de una pasantía que no pertenece a tu empresa");
+        }
+
+        // Validar transición (ej: PUBLICADA -> CUBIERTA)
+        validarTransicionEstado(postulacion.getEstado(), request.getEstado());
+
+        // Validar datos del contrato
+        if (request.getFechaInicioContrato() == null || request.getDuracionMeses() == null) {
+            throw new IllegalArgumentException("Para estado CUBIERTA se requiere fechaInicioContrato y duracionMeses");
+        }
+
+        postulacion.setFechaInicioContrato(request.getFechaInicioContrato());
+        postulacion.setDuracionMeses(request.getDuracionMeses());
+        postulacion.setEstado(EstadoPostulacion.CUBIERTA);
+        postulacionMapper.update(postulacion);
+
+        // Finalizar la pasantía en el mismo commit
+        Integer pasantiaId = postulacion.getPasantia().getIdPasantia();
+        pasantiaMapper.updateEstado(pasantiaId, EstadoPasantia.FINALIZADA.name());
 
         return mapperUtil.entityToResponseDto(
                 postulacionMapper.findByIdWithRelations(id).orElseThrow()

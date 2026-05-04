@@ -1,6 +1,7 @@
 package com.seminario.pasantias.controller;
 
 import com.seminario.pasantias.dto.request.PostulacionRequestDTO;
+import com.seminario.pasantias.dto.request.ActualizarEstadoPostulacionDTO;
 import com.seminario.pasantias.dto.response.PostulacionResponseDTO;
 import com.seminario.pasantias.service.PostulacionService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -68,6 +69,31 @@ public class PostulacionController {
             errorResponse.put("codigo", -1);
             errorResponse.put("mensaje", e.getMessage());
 
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
+    @PutMapping("/{id}/estado")
+    @SecurityRequirement(name = "Bearer Authentication")
+    @PreAuthorize("hasAnyRole('EMPRESA')")
+    public ResponseEntity<?> actualizarEstadoYFinalizarCiclo(
+            @PathVariable Integer id,
+            @Valid @RequestBody ActualizarEstadoPostulacionDTO request
+    ) {
+        try {
+            PostulacionResponseDTO postulacion = postulacionService.cubrirPostulacionYFinalizarPasantia(id, request);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("codigo", 0);
+            response.put("mensaje", "Ciclo finalizado: postulación cubierta y pasantía finalizada");
+            response.put("data", postulacion);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("codigo", -1);
+            errorResponse.put("mensaje", e.getMessage());
+            errorResponse.put("data", null);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
