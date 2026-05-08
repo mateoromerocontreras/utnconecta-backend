@@ -166,7 +166,7 @@ CREATE TABLE Postulacion (
     fecha_postulacion DATE NOT NULL,
     fecha_inicio_contrato DATE,
     duracion_meses INT,
-    estado ENUM('PENDIENTE_APROBACION', 'PUBLICADA', 'CUBIERTA', 'FINALIZADA') NOT NULL DEFAULT 'PENDIENTE_APROBACION',
+    estado ENUM('BORRADOR', 'PENDIENTE_APROBACION', 'PUBLICADA', 'CUBIERTA', 'FINALIZADA') NOT NULL DEFAULT 'BORRADOR',
     observaciones TEXT,
     id_pasantia INT NOT NULL,
     estudiante_id INT NOT NULL,

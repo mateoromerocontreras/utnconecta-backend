@@ -110,7 +110,7 @@ public class PostulacionController {
 
     @GetMapping("/consultarPostulaciones")
     @SecurityRequirement(name = "Bearer Authentication")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'ESTUDIANTE')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR')")
     public ResponseEntity<Map<String, Object>> consultarPostulaciones() {
         try {
             log.debug("Consultar postulaciones");
@@ -174,7 +174,7 @@ public class PostulacionController {
 
     @GetMapping("/pasantia/{pasantiaId}")
     @SecurityRequirement(name = "Bearer Authentication")
-    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'ESTUDIANTE', 'EMPRESA')")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'EMPRESA')")
     public ResponseEntity<Map<String, Object>> obtenerTodasPostulacionesPorPasantia(@PathVariable Integer pasantiaId) {
         try {
             List<PostulacionResponseDTO> postulaciones = postulacionService.obtenerTodasPostulacionesPorPasantia(pasantiaId);
