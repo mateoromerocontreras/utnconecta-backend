@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 @ActiveProfiles("test")
 @Transactional
 @Sql(scripts = "classpath:sql/schema.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD, config = @SqlConfig(transactionMode = SqlConfig.TransactionMode.ISOLATED))
-class PostulacionServiceIntegrationTests {
+class PostulacionServiceIT {
 
     private Integer testPasantiaId;
 
@@ -61,8 +61,43 @@ class PostulacionServiceIntegrationTests {
         pasantia.setEmpresa(empresa);
 
         pasantiaMapper.insert(pasantia);
-        pasantiaMapper.insertPasantiaCarrera(pasantia.getIdPasantia(), 6);
+        // Happy path: el estudiante 2 (María López) tiene especialidad "Ingeniería Industrial" (id_carrera=2 en schema.sql)
+        pasantiaMapper.insertPasantiaCarrera(pasantia.getIdPasantia(), 2);
         testPasantiaId = pasantia.getIdPasantia();
+    }
+
+    @Test
+    void crearPostulacion_shouldRejectWhenCarreraNotAllowed() {
+        // Student 2: "Ingeniería Industrial" (schema.sql -> id_carrera=2)
+        // We create a pasantía that only allows a different career (id_carrera=6 -> "Ingeniería en Sistemas")
+        Pasantia pasantia = new Pasantia();
+        pasantia.setTitulo("Pasantía Integración Postulación (Carrera no permitida)");
+        pasantia.setPuestoACubrir("Backend Junior");
+        pasantia.setCiudad("Córdoba");
+        pasantia.setModalidad("Híbrida");
+        pasantia.setAsignacionEstimulo(75000f);
+        pasantia.setCantidadDePasantes(1);
+        pasantia.setFechaPublicacion(LocalDate.now());
+        pasantia.setFechaCaducidad(LocalDate.now().plusDays(90));
+        pasantia.setEstado(com.seminario.pasantias.entity.EstadoPasantia.PUBLICADA);
+        pasantia.setEmailContacto("rrhh@biofarmaweb.com.ar");
+
+        Empresa empresa = new Empresa();
+        empresa.setIdEmpresa(1);
+        pasantia.setEmpresa(empresa);
+
+        pasantiaMapper.insert(pasantia);
+        pasantiaMapper.insertPasantiaCarrera(pasantia.getIdPasantia(), 6);
+
+        PostulacionRequestDTO request = new PostulacionRequestDTO();
+        request.setFechaPostulacion(LocalDate.now());
+        request.setEstado(EstadoPostulacion.PENDIENTE_APROBACION);
+        request.setIdPasantia(pasantia.getIdPasantia());
+        request.setIdEstudiante(2);
+
+        assertThatThrownBy(() -> postulacionService.crearPostulacion(request))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Carrera no permitida");
     }
 
     @Test

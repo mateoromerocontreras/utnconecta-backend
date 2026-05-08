@@ -42,7 +42,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD,
         config = @SqlConfig(transactionMode = SqlConfig.TransactionMode.ISOLATED)
 )
-class PasantiasIntegrationTests {
+class PasantiasIT {
 
     @Autowired
     private MockMvc mockMvc;
@@ -280,22 +280,6 @@ class PasantiasIntegrationTests {
         return pasantia.getIdPasantia();
     }
 
-    private void createApplicationViaApi(Integer pasantiaId, Integer estudianteId) throws Exception {
-        PostulacionRequestDTO request = new PostulacionRequestDTO();
-        request.setFechaPostulacion(LocalDate.now());
-        request.setEstado(EstadoPostulacion.PENDIENTE_APROBACION);
-        request.setIdPasantia(pasantiaId);
-        request.setIdEstudiante(estudianteId);
-
-        mockMvc.perform(
-                        post("/postulaciones/registrarPostulacion")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
-                )
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.codigo").value(0));
-    }
-
     private Integer createPublishedPostulacion(Integer pasantiaId, Integer estudianteId) {
         return createPostulacion(pasantiaId, estudianteId, EstadoPostulacion.PUBLICADA);
     }
@@ -317,4 +301,3 @@ class PasantiasIntegrationTests {
         return postulacion.getIdPostulacion();
     }
 }
-
