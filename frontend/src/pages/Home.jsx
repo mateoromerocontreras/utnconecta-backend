@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import HomeHero from "../components/HomeHero.jsx";
 import HomeBottom from "../components/HomeBottom.jsx";
+import HomeSearchDock from "../components/HomeSearchDock.jsx";
 import "../styles/home-admin.css";
 
 function getStoredItem(key) {
@@ -67,6 +68,8 @@ export default function Home() {
       <HomeHero />
 
       <HomeBottom />
+
+      <HomeSearchDock />
     </>
   );
 }
