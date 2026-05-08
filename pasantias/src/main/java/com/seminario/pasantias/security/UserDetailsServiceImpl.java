@@ -2,6 +2,8 @@ package com.seminario.pasantias.security;
 
 import com.seminario.pasantias.entity.Usuario;
 import com.seminario.pasantias.service.UsuarioService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -15,6 +17,8 @@ import java.util.Optional;
 
 @Service
 public class UserDetailsServiceImpl implements UserDetailsService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserDetailsServiceImpl.class);
 
     @Autowired
     private UsuarioService usuarioService;
@@ -36,7 +40,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         String roleName = "USER"; // rol por defecto
         if (usuario.getRol() != null && usuario.getRol().getNombre() != null) {
             roleName = usuario.getRol().getNombre();
-            System.out.println("ROLE_" + roleName);
+            log.debug("Granted authority ROLE_{}", roleName);
         }
         
         return User.builder()

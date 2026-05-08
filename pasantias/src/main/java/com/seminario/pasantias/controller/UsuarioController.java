@@ -103,12 +103,11 @@ public class UsuarioController {
             }
             
             // Validación de contraseña si se proporciona (8 caracteres, 1 minúscula, 1 mayúscula, 1 número)
-            if (request.getPassword() != null && !request.getPassword().isEmpty()) {
-                if (!request.getPassword().matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$")) {
-                    response.setCode(-1);
-                    response.setMessage("La contraseña debe tener al menos 8 caracteres, 1 minúscula, 1 mayúscula y 1 número");
-                    return response;
-                }
+            if (request.getPassword() != null && !request.getPassword().isEmpty() &&
+                !request.getPassword().matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,}$")) {
+                response.setCode(-1);
+                response.setMessage("La contraseña debe tener al menos 8 caracteres, 1 minúscula, 1 mayúscula y 1 número");
+                return response;
             }
             
             // Actualizar usuario

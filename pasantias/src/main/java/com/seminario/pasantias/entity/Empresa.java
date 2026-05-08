@@ -48,7 +48,7 @@ public class Empresa {
         // Valores por defecto para nuevos campos
         this.activo = true;
         this.fechaCreacion = LocalDateTime.now();
-        this.idUsuario = null;
+        this.idUsuario = idUsuario;
     }
 }
 

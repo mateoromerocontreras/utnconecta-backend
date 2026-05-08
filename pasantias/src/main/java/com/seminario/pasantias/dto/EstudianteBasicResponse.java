@@ -23,29 +23,6 @@ public class EstudianteBasicResponse {
     // Constructor vacío
     public EstudianteBasicResponse() {}
 
-    // Constructor con todos los campos
-    public EstudianteBasicResponse(Integer idEstudiante, String dni, String apellido, String nombre, 
-                                  String especialidad, String nroLegajo, String calle, Integer nroCalle, 
-                                  String barrio, String localidad, String provincia, String email, 
-                                  String telCelular, String telFijo, Boolean activo, LocalDateTime fechaCreacion) {
-        this.idEstudiante = idEstudiante;
-        this.dni = dni;
-        this.apellido = apellido;
-        this.nombre = nombre;
-        this.especialidad = especialidad;
-        this.nroLegajo = nroLegajo;
-        this.calle = calle;
-        this.nroCalle = nroCalle;
-        this.barrio = barrio;
-        this.localidad = localidad;
-        this.provincia = provincia;
-        this.email = email;
-        this.telCelular = telCelular;
-        this.telFijo = telFijo;
-        this.activo = activo;
-        this.fechaCreacion = fechaCreacion;
-    }
-
     // Getters y Setters
     public Integer getIdEstudiante() {
         return idEstudiante;

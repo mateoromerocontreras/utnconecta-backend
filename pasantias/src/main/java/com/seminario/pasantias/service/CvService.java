@@ -12,10 +12,15 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 public class CvService {
+
+    public static class EstudianteNoEncontradoException extends RuntimeException {
+        public EstudianteNoEncontradoException(String message) {
+            super(message);
+        }
+    }
 
     @Autowired
     private CvMapper cvMapper;
@@ -26,7 +31,7 @@ public class CvService {
     public void subirCv(MultipartFile file, Integer idEstudiante) throws IOException {
         Optional<Estudiante> estudianteOpt = estudianteMapper.findById(idEstudiante);
         if (estudianteOpt.isEmpty()) {
-            throw new RuntimeException("Estudiante no encontrado.");
+            throw new EstudianteNoEncontradoException("Estudiante no encontrado.");
         }
 
         Cv cv = new Cv();
@@ -41,7 +46,7 @@ public class CvService {
         List<Cv> cvs = cvMapper.findByEstudianteId(idEstudiante);
         return cvs.stream()
                 .map(cv -> new CvDto(cv.getIdCv(), cv.getNombreArchivo(), cv.getFechaSubida()))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     public Optional<Cv> descargarCv(Integer idCv) {

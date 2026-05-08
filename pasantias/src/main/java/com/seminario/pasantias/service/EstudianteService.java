@@ -10,15 +10,21 @@ import com.seminario.pasantias.persistence.UsuarioMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class EstudianteService {
+
+    private static final String USUARIO_NO_ENCONTRADO = "Usuario no encontrado";
+
+    public static class EstudianteServiceException extends RuntimeException {
+        public EstudianteServiceException(String message) {
+            super(message);
+        }
+    }
 
     @Autowired
     private EstudianteMapper estudianteMapper;
@@ -53,13 +59,13 @@ public class EstudianteService {
         // Verificar que el usuario existe
         Optional<Usuario> usuarioOpt = usuarioMapper.findById(idUsuario);
         if (usuarioOpt.isEmpty()) {
-            throw new RuntimeException("Usuario no encontrado");
+            throw new EstudianteServiceException(USUARIO_NO_ENCONTRADO);
         }
         
         // Verificar que no existe ya un estudiante para este usuario
         Optional<Estudiante> estudianteExistente = estudianteMapper.findByUsuarioId(idUsuario);
         if (estudianteExistente.isPresent()) {
-            throw new RuntimeException("Ya existe un perfil de estudiante para este usuario");
+            throw new EstudianteServiceException("Ya existe un perfil de estudiante para este usuario");
         }
 
         Estudiante estudiante = new Estudiante();
@@ -77,13 +83,13 @@ public class EstudianteService {
         // Verificar que el usuario existe
         Optional<Usuario> usuarioOpt = usuarioMapper.findById(idUsuario);
         if (usuarioOpt.isEmpty()) {
-            throw new RuntimeException("Usuario no encontrado");
+            throw new EstudianteServiceException(USUARIO_NO_ENCONTRADO);
         }
         
         // Verificar que no existe ya un estudiante para este usuario
         Optional<Estudiante> estudianteExistente = estudianteMapper.findByUsuarioId(idUsuario);
         if (estudianteExistente.isPresent()) {
-            throw new RuntimeException("Ya existe un perfil de estudiante para este usuario");
+            throw new EstudianteServiceException("Ya existe un perfil de estudiante para este usuario");
         }
 
         Estudiante estudiante = new Estudiante();
@@ -104,59 +110,12 @@ public class EstudianteService {
         // Buscar estudiante por idUsuario
         Optional<Estudiante> estudianteOpt = estudianteMapper.findByUsuarioId(idUsuario);
         if (estudianteOpt.isEmpty()) {
-            throw new RuntimeException("Perfil de estudiante no encontrado para el usuario");
+            throw new EstudianteServiceException("Perfil de estudiante no encontrado para el usuario");
         }
         
         Estudiante estudiante = estudianteOpt.get();
         
-        // Actualizar campos si se proporcionan
-        if (request.getDni() != null && !request.getDni().isEmpty()) {
-            estudiante.setDni(request.getDni());
-        }
-        
-        if (request.getApellido() != null && !request.getApellido().isEmpty()) {
-            estudiante.setApellido(request.getApellido());
-        }
-        
-        if (request.getNombre() != null && !request.getNombre().isEmpty()) {
-            estudiante.setNombre(request.getNombre());
-        }
-        
-        if (request.getEspecialidad() != null && !request.getEspecialidad().isEmpty()) {
-            estudiante.setEspecialidad(request.getEspecialidad());
-        }
-        
-        if (request.getNroLegajo() != null && !request.getNroLegajo().isEmpty()) {
-            estudiante.setNroLegajo(request.getNroLegajo());
-        }
-        
-        if (request.getCalle() != null && !request.getCalle().isEmpty()) {
-            estudiante.setCalle(request.getCalle());
-        }
-        
-        if (request.getNroCalle() != null) {
-            estudiante.setNroCalle(request.getNroCalle());
-        }
-        
-        if (request.getBarrio() != null && !request.getBarrio().isEmpty()) {
-            estudiante.setBarrio(request.getBarrio());
-        }
-        
-        if (request.getLocalidad() != null && !request.getLocalidad().isEmpty()) {
-            estudiante.setLocalidad(request.getLocalidad());
-        }
-        
-        if (request.getProvincia() != null && !request.getProvincia().isEmpty()) {
-            estudiante.setProvincia(request.getProvincia());
-        }
-        
-        if (request.getTelCelular() != null && !request.getTelCelular().isEmpty()) {
-            estudiante.setTelCelular(request.getTelCelular());
-        }
-        
-        if (request.getTelFijo() != null && !request.getTelFijo().isEmpty()) {
-            estudiante.setTelFijo(request.getTelFijo());
-        }
+        applyUpdate(estudiante, request);
         
         // Actualizar en base de datos
         estudianteMapper.update(estudiante);
@@ -184,24 +143,24 @@ public class EstudianteService {
     
     // Método para convertir Estudiante a EstudianteBasicResponse (sin datos sensibles)
     private EstudianteBasicResponse toBasicResponse(Estudiante estudiante) {
-        return new EstudianteBasicResponse(
-            estudiante.getIdEstudiante(),
-            estudiante.getDni(),
-            estudiante.getApellido(),
-            estudiante.getNombre(),
-            estudiante.getEspecialidad(),
-            estudiante.getNroLegajo(),
-            estudiante.getCalle(),
-            estudiante.getNroCalle(),
-            estudiante.getBarrio(),
-            estudiante.getLocalidad(),
-            estudiante.getProvincia(),
-            estudiante.getEmail(),
-            estudiante.getTelCelular(),
-            estudiante.getTelFijo(),
-            estudiante.getActivo(),
-            estudiante.getFechaCreacion()
-        );
+        EstudianteBasicResponse response = new EstudianteBasicResponse();
+        response.setIdEstudiante(estudiante.getIdEstudiante());
+        response.setDni(estudiante.getDni());
+        response.setApellido(estudiante.getApellido());
+        response.setNombre(estudiante.getNombre());
+        response.setEspecialidad(estudiante.getEspecialidad());
+        response.setNroLegajo(estudiante.getNroLegajo());
+        response.setCalle(estudiante.getCalle());
+        response.setNroCalle(estudiante.getNroCalle());
+        response.setBarrio(estudiante.getBarrio());
+        response.setLocalidad(estudiante.getLocalidad());
+        response.setProvincia(estudiante.getProvincia());
+        response.setEmail(estudiante.getEmail());
+        response.setTelCelular(estudiante.getTelCelular());
+        response.setTelFijo(estudiante.getTelFijo());
+        response.setActivo(estudiante.getActivo());
+        response.setFechaCreacion(estudiante.getFechaCreacion());
+        return response;
     }
     
     // Método para obtener todos los estudiantes como respuesta básica
@@ -209,7 +168,7 @@ public class EstudianteService {
         List<Estudiante> estudiantes = estudianteMapper.findAllActive();
         return estudiantes.stream()
                 .map(this::toBasicResponse)
-                .collect(java.util.stream.Collectors.toList());
+                .toList();
     }
     
     // Método para buscar estudiante por nombre como respuesta básica
@@ -220,65 +179,105 @@ public class EstudianteService {
     
     // Método para actualizar email y/o contraseña del estudiante
     public void updateEstudianteProfile(String currentEmail, EstudianteUpdateProfileRequest request) {
-        // Buscar usuario por email actual
-        Optional<Usuario> usuarioOpt = usuarioMapper.findByEmail(currentEmail);
-        if (usuarioOpt.isEmpty()) {
-            throw new RuntimeException("Usuario no encontrado");
-        }
-        
-        Usuario usuario = usuarioOpt.get();
-        
-        // Verificar que es un estudiante
-        if (usuario.getRol() == null || !"ESTUDIANTE".equals(usuario.getRol().getNombre())) {
-            throw new RuntimeException("El usuario no es un estudiante");
-        }
-        
+        Usuario usuario = findUsuarioByEmailOrThrow(currentEmail);
+        validateEsEstudiante(usuario);
+
         boolean needsUpdate = false;
-        
-        // Si se proporciona un nuevo email
-        if (request.getEmail() != null && !request.getEmail().trim().isEmpty()) {
-            String newEmail = request.getEmail().trim();
-            
-            // Verificar que el nuevo email no sea el mismo que el actual
-            if (!newEmail.equals(currentEmail)) {
-                // Verificar que no exista otro usuario con ese email
-                Optional<Usuario> existingUser = usuarioMapper.findByEmail(newEmail);
-                if (existingUser.isPresent()) {
-                    throw new RuntimeException("Ya existe un usuario con ese email");
-                }
-                
-                // Actualizar email en Usuario
-                usuario.setEmail(newEmail);
-                usuario.setUsername(newEmail); // Mantener consistencia
-                needsUpdate = true;
-                
-                // También actualizar el email en la tabla Estudiante
-                Optional<Estudiante> estudianteOpt = estudianteMapper.findByUsuarioId(usuario.getIdUsuario());
-                if (estudianteOpt.isPresent()) {
-                    Estudiante estudiante = estudianteOpt.get();
-                    estudiante.setEmail(newEmail);
-                    estudianteMapper.update(estudiante);
-                }
-            }
+        String newEmail = normalize(request.getEmail());
+        if (shouldUpdateEmail(newEmail, currentEmail)) {
+            assertEmailNoUsado(newEmail);
+            updateEmail(usuario, newEmail);
+            updateEmailEnEstudiante(usuario.getIdUsuario(), newEmail);
+            needsUpdate = true;
         }
-        
-        // Si se proporciona una nueva contraseña
-        if (request.getPassword() != null && !request.getPassword().trim().isEmpty()) {
-            String newPassword = request.getPassword().trim();
-            
-            // Validación de seguridad de contraseña: al menos 8 caracteres, 1 minúscula y 1 número
-            if (!newPassword.matches("^(?=.*[a-z])(?=.*\\d).{8,}$")) {
-                throw new RuntimeException("La contraseña debe tener al menos 8 caracteres, una letra minúscula y un número");
-            }
-            
-            // Encriptar nueva contraseña
+
+        String newPassword = normalize(request.getPassword());
+        if (hasText(newPassword)) {
+            validatePassword(newPassword);
             usuario.setPassword(passwordEncoder.encode(newPassword));
             needsUpdate = true;
         }
-        
-        // Actualizar usuario si hay cambios
+
         if (needsUpdate) {
             usuarioMapper.update(usuario);
+        }
+    }
+
+    private static boolean hasText(String value) {
+        return value != null && !value.isEmpty();
+    }
+
+    private static String trimmedOrNull(String value) {
+        return value == null ? null : value.trim();
+    }
+
+    private static void applyUpdate(Estudiante estudiante, EstudianteUpdateRequest request) {
+        setIfHasText(request.getDni(), estudiante::setDni);
+        setIfHasText(request.getApellido(), estudiante::setApellido);
+        setIfHasText(request.getNombre(), estudiante::setNombre);
+        setIfHasText(request.getEspecialidad(), estudiante::setEspecialidad);
+        setIfHasText(request.getNroLegajo(), estudiante::setNroLegajo);
+        setIfHasText(request.getCalle(), estudiante::setCalle);
+
+        if (request.getNroCalle() != null) {
+            estudiante.setNroCalle(request.getNroCalle());
+        }
+
+        setIfHasText(request.getBarrio(), estudiante::setBarrio);
+        setIfHasText(request.getLocalidad(), estudiante::setLocalidad);
+        setIfHasText(request.getProvincia(), estudiante::setProvincia);
+        setIfHasText(request.getTelCelular(), estudiante::setTelCelular);
+        setIfHasText(request.getTelFijo(), estudiante::setTelFijo);
+    }
+
+    private static void setIfHasText(String value, java.util.function.Consumer<String> setter) {
+        if (hasText(value)) {
+            setter.accept(trimmedOrNull(value));
+        }
+    }
+
+    private Usuario findUsuarioByEmailOrThrow(String email) {
+        return usuarioMapper.findByEmail(email)
+                .orElseThrow(() -> new EstudianteServiceException(USUARIO_NO_ENCONTRADO));
+    }
+
+    private static void validateEsEstudiante(Usuario usuario) {
+        if (usuario.getRol() == null || usuario.getRol().getNombre() == null || !"ESTUDIANTE".equals(usuario.getRol().getNombre())) {
+            throw new EstudianteServiceException("El usuario no es un estudiante");
+        }
+    }
+
+    private static String normalize(String value) {
+        if (value == null) return null;
+        String trimmed = value.trim();
+        return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private static boolean shouldUpdateEmail(String newEmail, String currentEmail) {
+        return hasText(newEmail) && !newEmail.equals(currentEmail);
+    }
+
+    private void assertEmailNoUsado(String newEmail) {
+        if (usuarioMapper.findByEmail(newEmail).isPresent()) {
+            throw new EstudianteServiceException("Ya existe un usuario con ese email");
+        }
+    }
+
+    private static void updateEmail(Usuario usuario, String newEmail) {
+        usuario.setEmail(newEmail);
+        usuario.setUsername(newEmail); // Mantener consistencia
+    }
+
+    private void updateEmailEnEstudiante(Integer idUsuario, String newEmail) {
+        estudianteMapper.findByUsuarioId(idUsuario).ifPresent(estudiante -> {
+            estudiante.setEmail(newEmail);
+            estudianteMapper.update(estudiante);
+        });
+    }
+
+    private static void validatePassword(String newPassword) {
+        if (!newPassword.matches("^(?=.*[a-z])(?=.*\\d).{8,}$")) {
+            throw new EstudianteServiceException("La contraseña debe tener al menos 8 caracteres, una letra minúscula y un número");
         }
     }
 }

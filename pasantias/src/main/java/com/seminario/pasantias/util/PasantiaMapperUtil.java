@@ -10,7 +10,6 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Utilidad para conversión entre DTOs y Entities de Pasantia
@@ -190,7 +189,7 @@ public class PasantiaMapperUtil {
                         cDto.setCodigo(carrera.getNombre()); // Ajustar si hay campo código
                         return cDto;
                     })
-                    .collect(Collectors.toList());
+                    .toList();
             dto.setCarreras(carrerasDto);
         }
 
@@ -213,7 +212,7 @@ public class PasantiaMapperUtil {
                         
                         return pDto;
                     })
-                    .collect(Collectors.toList());
+                    .toList();
             dto.setPostulaciones(postulacionesDto);
         } else {
             dto.setPostulaciones(new ArrayList<>());

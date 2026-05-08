@@ -17,6 +17,12 @@ import java.util.UUID;
 @Service
 public class EmailVerificationService {
 
+    public static class EmailVerificationException extends RuntimeException {
+        public EmailVerificationException(String message) {
+            super(message);
+        }
+    }
+
     @Autowired
     private EmailVerificationTokenMapper tokenMapper;
 
@@ -63,16 +69,16 @@ public class EmailVerificationService {
     public void confirmarToken(String token) {
         Optional<EmailVerificationToken> tokenOpt = tokenMapper.findByToken(token);
         if (tokenOpt.isEmpty()) {
-            throw new RuntimeException("Token de verificación inválido");
+            throw new EmailVerificationException("Token de verificación inválido");
         }
 
         EmailVerificationToken storedToken = tokenOpt.get();
         if (Boolean.TRUE.equals(storedToken.getUsado())) {
-            throw new RuntimeException("El token ya fue utilizado");
+            throw new EmailVerificationException("El token ya fue utilizado");
         }
 
         if (storedToken.getFechaExpiracion().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("El token ha expirado");
+            throw new EmailVerificationException("El token ha expirado");
         }
 
         usuarioMapper.activate(storedToken.getIdUsuario());

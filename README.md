@@ -73,6 +73,62 @@ http://localhost:8080/swagger-ui/index.html
 | `estudiante1` | `estudiante123` | ESTUDIANTE |
 | `empresa1` | `empresa123` | EMPRESA |
 
+## 📈 **Code Quality Metrics (SAST / SonarQube / SonarCloud)**
+
+Este proyecto incluye configuración para ejecutar **SonarScanner (Maven)** y subir métricas como:
+- Complejidad ciclomática y cognitiva (calculadas por Sonar)
+- Technical Debt (Sonar)
+- Cobertura (JaCoCo XML)
+
+### **Ejecutar SonarQube local**
+1) Levantar SonarQube (ejemplo con Docker):
+
+```bash
+docker run --rm -p 9000:9000 --name sonarqube sonarqube:lts-community
+```
+
+2) Crear el proyecto en SonarQube y obtener:
+- `SONAR_PROJECT_KEY`
+- `SONAR_TOKEN`
+
+3) Correr el análisis (desde la raíz del repo):
+
+```bash
+export SONAR_TOKEN="..."
+export SONAR_PROJECT_KEY="..."
+
+cd pasantias
+mvn -Psonar -Dsonar.host.url=http://localhost:9000 -Dsonar.login="$SONAR_TOKEN" -Dsonar.projectKey="$SONAR_PROJECT_KEY" clean verify sonar:sonar
+```
+
+### **Ejecutar SonarCloud**
+En CI o local, seteá:
+- `SONAR_TOKEN`
+- `sonar.organization`
+- `sonar.projectKey`
+
+Ejemplo:
+
+```bash
+export SONAR_TOKEN="..."
+cd pasantias
+mvn -Psonar -Dsonar.login="$SONAR_TOKEN" -Dsonar.organization="TU_ORG" -Dsonar.projectKey="TU_KEY" clean verify sonar:sonar
+```
+
+### **Quality Gates (complejidad)**
+El umbral de complejidad (ej. **15**) se configura en SonarQube/SonarCloud como **Quality Gate** (no en el `pom.xml`).
+Cuando el Quality Gate está activo, el job/pipeline queda en rojo si la rama no lo cumple.
+
+## 🔥 **Code Churn / Hotspots**
+Para detectar archivos con alto “churn” (cambian mucho), corré:
+
+```bash
+chmod +x ./scripts/code-churn-hotspots.sh
+./scripts/code-churn-hotspots.sh "90 days ago"
+```
+
+Priorización recomendada: **alto churn + alta complejidad (Sonar)** ⇒ mejores candidatos a refactor.
+
 ## 🏗️ **Arquitectura**
 
 ```

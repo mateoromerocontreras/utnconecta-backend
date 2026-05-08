@@ -6,6 +6,8 @@ import com.seminario.pasantias.dto.response.PostulacionResponseDTO;
 import com.seminario.pasantias.service.PostulacionService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,6 +25,13 @@ import java.util.Map;
              allowedHeaders = "*")
 public class PostulacionController {
 
+    private static final Logger log = LoggerFactory.getLogger(PostulacionController.class);
+
+    private static final String KEY_CODIGO = "codigo";
+    private static final String KEY_MENSAJE = "mensaje";
+    private static final String KEY_DATA = "data";
+    private static final String SEP = "========================================";
+
     @Autowired
     private PostulacionService postulacionService;
 
@@ -30,44 +39,45 @@ public class PostulacionController {
     @PostMapping("/registrarPostulacion")
     @SecurityRequirement(name = "Bearer Authentication")
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'ESTUDIANTE')")
-    public ResponseEntity<?> registrarPostulacion(@Valid @RequestBody PostulacionRequestDTO request) {
+    public ResponseEntity<Map<String, Object>> registrarPostulacion(@Valid @RequestBody PostulacionRequestDTO request) {
         try {
-            System.out.println("========================================");
-            System.out.println("POSTULACION - Iniciando registro de postulación");
-            System.out.println("Estudiante ID: " + request.getIdEstudiante());
-            System.out.println("Pasantia ID: " + request.getIdPasantia());
-            System.out.println("Fecha Postulación: " + request.getFechaPostulacion());
-            System.out.println("Estado: " + request.getEstado());
-            System.out.println("========================================");
+            log.debug("{}\nPOSTULACION - Iniciando registro. estudianteId={}, pasantiaId={}, fecha={}, estado={}\n{}",
+                    SEP,
+                    request.getIdEstudiante(),
+                    request.getIdPasantia(),
+                    request.getFechaPostulacion(),
+                    request.getEstado(),
+                    SEP);
             
             PostulacionResponseDTO postulacion = postulacionService.crearPostulacion(request);
 
-            System.out.println("========================================");
-            System.out.println("POSTULACION - Registro exitoso");
-            System.out.println("Postulación ID: " + postulacion.getIdPostulacion());
-            System.out.println("Estudiante: " + postulacion.getNombreEstudiante() + " " + postulacion.getApellidoEstudiante());
-            System.out.println("Pasantia: " + postulacion.getTituloPasantia());
-            System.out.println("Estado: " + postulacion.getEstado());
-            System.out.println("Fecha Postulación: " + postulacion.getFechaPostulacion());
-            System.out.println("========================================");
+            log.debug("{}\nPOSTULACION - Registro exitoso. id={}, estudiante={} {}, pasantia={}, estado={}, fecha={}\n{}",
+                    SEP,
+                    postulacion.getIdPostulacion(),
+                    postulacion.getNombreEstudiante(),
+                    postulacion.getApellidoEstudiante(),
+                    postulacion.getTituloPasantia(),
+                    postulacion.getEstado(),
+                    postulacion.getFechaPostulacion(),
+                    SEP);
 
             Map<String, Object> response = new HashMap<>();
-            response.put("codigo", 0);
-            response.put("mensaje", "Postulación registrada exitosamente");
-            response.put("data", postulacion);
+            response.put(KEY_CODIGO, 0);
+            response.put(KEY_MENSAJE, "Postulación registrada exitosamente");
+            response.put(KEY_DATA, postulacion);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
-            System.out.println("========================================");
-            System.out.println("POSTULACION - Error al registrar postulación");
-            System.out.println("Estudiante ID: " + request.getIdEstudiante());
-            System.out.println("Pasantia ID: " + request.getIdPasantia());
-            System.out.println("Error: " + e.getMessage());
-            System.out.println("========================================");
+            log.warn("{}\nPOSTULACION - Error al registrar. estudianteId={}, pasantiaId={}, error={}\n{}",
+                    SEP,
+                    request.getIdEstudiante(),
+                    request.getIdPasantia(),
+                    e.getMessage(),
+                    SEP);
             
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("codigo", -1);
-            errorResponse.put("mensaje", e.getMessage());
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, e.getMessage());
 
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
@@ -76,7 +86,7 @@ public class PostulacionController {
     @PutMapping("/{id}/estado")
     @SecurityRequirement(name = "Bearer Authentication")
     @PreAuthorize("hasAnyRole('EMPRESA')")
-    public ResponseEntity<?> actualizarEstadoYFinalizarCiclo(
+    public ResponseEntity<Map<String, Object>> actualizarEstadoYFinalizarCiclo(
             @PathVariable Integer id,
             @Valid @RequestBody ActualizarEstadoPostulacionDTO request
     ) {
@@ -84,16 +94,16 @@ public class PostulacionController {
             PostulacionResponseDTO postulacion = postulacionService.cubrirPostulacionYFinalizarPasantia(id, request);
 
             Map<String, Object> response = new HashMap<>();
-            response.put("codigo", 0);
-            response.put("mensaje", "Ciclo finalizado: postulación cubierta y pasantía finalizada");
-            response.put("data", postulacion);
+            response.put(KEY_CODIGO, 0);
+            response.put(KEY_MENSAJE, "Ciclo finalizado: postulación cubierta y pasantía finalizada");
+            response.put(KEY_DATA, postulacion);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("codigo", -1);
-            errorResponse.put("mensaje", e.getMessage());
-            errorResponse.put("data", null);
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, e.getMessage());
+            errorResponse.put(KEY_DATA, null);
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         }
     }
@@ -101,21 +111,21 @@ public class PostulacionController {
     @GetMapping("/consultarPostulaciones")
     @SecurityRequirement(name = "Bearer Authentication")
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'ESTUDIANTE')")
-    public ResponseEntity<?> consultarPostulaciones() {
+    public ResponseEntity<Map<String, Object>> consultarPostulaciones() {
         try {
-            System.out.println(":::::: AGUSTIN ENTRA A CONSULTAR POSTULACION ::::::");
+            log.debug("Consultar postulaciones");
             List<PostulacionResponseDTO> postulaciones = postulacionService.consultarPostulaciones();
 
             Map<String, Object> response = new HashMap<>();
-            response.put("codigo", 0);
-            response.put("mensaje", "Postulaciones encontradas");
-            response.put("data", postulaciones);
+            response.put(KEY_CODIGO, 0);
+            response.put(KEY_MENSAJE, "Postulaciones encontradas");
+            response.put(KEY_DATA, postulaciones);
 
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("codigo", -1);
-            errorResponse.put("mensaje", e.getMessage());
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, e.getMessage());
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
@@ -127,9 +137,9 @@ public class PostulacionController {
         List<PostulacionResponseDTO> data = postulacionService.consultarMisPostulaciones();
 
         Map<String, Object> response = new HashMap<>();
-        response.put("codigo", 0);
-        response.put("data", data);
-        response.put("mensaje", "Postulaciones encontradas");
+        response.put(KEY_CODIGO, 0);
+        response.put(KEY_DATA, data);
+        response.put(KEY_MENSAJE, "Postulaciones encontradas");
 
         return ResponseEntity.ok(response);
     }
@@ -143,21 +153,21 @@ public class PostulacionController {
 
             Map<String, Object> response = new HashMap<>();
             if (postulacionOpt.isPresent()) {
-                response.put("codigo", 0);
-                response.put("mensaje", "Postulación encontrada");
-                response.put("data", postulacionOpt.get());
+                response.put(KEY_CODIGO, 0);
+                response.put(KEY_MENSAJE, "Postulación encontrada");
+                response.put(KEY_DATA, postulacionOpt.get());
                 return ResponseEntity.ok(response);
             } else {
-                response.put("codigo", 0);
-                response.put("mensaje", "No se encontró postulación para esta pasantía");
-                response.put("data", null);
+                response.put(KEY_CODIGO, 0);
+                response.put(KEY_MENSAJE, "No se encontró postulación para esta pasantía");
+                response.put(KEY_DATA, null);
                 return ResponseEntity.ok(response);
             }
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("codigo", -1);
-            errorResponse.put("mensaje", e.getMessage());
-            errorResponse.put("data", null);
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, e.getMessage());
+            errorResponse.put(KEY_DATA, null);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
@@ -170,15 +180,15 @@ public class PostulacionController {
             List<PostulacionResponseDTO> postulaciones = postulacionService.obtenerTodasPostulacionesPorPasantia(pasantiaId);
 
             Map<String, Object> response = new HashMap<>();
-            response.put("codigo", 0);
-            response.put("mensaje", "Postulaciones encontradas: " + postulaciones.size());
-            response.put("data", postulaciones);
+            response.put(KEY_CODIGO, 0);
+            response.put(KEY_MENSAJE, "Postulaciones encontradas: " + postulaciones.size());
+            response.put(KEY_DATA, postulaciones);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("codigo", -1);
-            errorResponse.put("mensaje", "Error al obtener postulaciones: " + e.getMessage());
-            errorResponse.put("data", null);
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, "Error al obtener postulaciones: " + e.getMessage());
+            errorResponse.put(KEY_DATA, null);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
@@ -191,21 +201,21 @@ public class PostulacionController {
             com.seminario.pasantias.dto.response.PostulacionDetalleDTO postulacion = postulacionService.obtenerPostulacionPorId(id);
 
             Map<String, Object> response = new HashMap<>();
-            response.put("codigo", 0);
-            response.put("mensaje", "Postulación encontrada");
-            response.put("data", postulacion);
+            response.put(KEY_CODIGO, 0);
+            response.put(KEY_MENSAJE, "Postulación encontrada");
+            response.put(KEY_DATA, postulacion);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("codigo", -1);
-            errorResponse.put("mensaje", e.getMessage());
-            errorResponse.put("data", null);
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, e.getMessage());
+            errorResponse.put(KEY_DATA, null);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("codigo", -1);
-            errorResponse.put("mensaje", "Error al obtener la postulación: " + e.getMessage());
-            errorResponse.put("data", null);
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, "Error al obtener la postulación: " + e.getMessage());
+            errorResponse.put(KEY_DATA, null);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
@@ -218,15 +228,15 @@ public class PostulacionController {
             List<PostulacionResponseDTO> postulaciones = postulacionService.obtenerPostulacionesMiEmpresa();
 
             Map<String, Object> response = new HashMap<>();
-            response.put("codigo", 0);
-            response.put("mensaje", "Postulaciones encontradas");
-            response.put("data", postulaciones);
+            response.put(KEY_CODIGO, 0);
+            response.put(KEY_MENSAJE, "Postulaciones encontradas");
+            response.put(KEY_DATA, postulaciones);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("codigo", -1);
-            errorResponse.put("mensaje", "Error al obtener postulaciones: " + e.getMessage());
-            errorResponse.put("data", null);
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, "Error al obtener postulaciones: " + e.getMessage());
+            errorResponse.put(KEY_DATA, null);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }

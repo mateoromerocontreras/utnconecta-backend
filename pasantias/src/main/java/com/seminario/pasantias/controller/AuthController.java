@@ -11,6 +11,8 @@ import com.seminario.pasantias.service.EstudianteService;
 import com.seminario.pasantias.service.EmailVerificationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -24,6 +26,8 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+
+    private static final Logger log = LoggerFactory.getLogger(AuthController.class);
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -43,9 +47,7 @@ public class AuthController {
     @PostMapping("/iniciarSesion")
     public ResponseEntity<AuthResponse> iniciarSesion(@RequestBody LoginRequest request) {
         try {
-            System.out.println("=== DEBUG LOGIN ===");
-            System.out.println("Email recibido: " + request.getEmail());
-            System.out.println("Password recibido: " + request.getPassword());
+            log.debug("Login attempt. email={}", request.getEmail());
             
             // Validaciones básicas
             if (request.getEmail() == null || request.getEmail().isEmpty()) {
@@ -60,22 +62,21 @@ public class AuthController {
 
             // Buscar usuario por email
             Optional<Usuario> usuarioOpt = usuarioService.findByEmail(request.getEmail());
-            System.out.println("Usuario encontrado: " + usuarioOpt.isPresent());
+            log.debug("Usuario encontrado: {}", usuarioOpt.isPresent());
             if (usuarioOpt.isEmpty()) {
                 return ResponseEntity.badRequest()
                     .body(new AuthResponse(null, null, null, null, "Credenciales inválidas"));
             }
 
             Usuario usuario = usuarioOpt.get();
-            System.out.println("Username: " + usuario.getUsername());
-            System.out.println("Email: " + usuario.getEmail());
-            System.out.println("Activo: " + usuario.getActivo());
-            System.out.println("Rol: " + (usuario.getRol() != null ? usuario.getRol().getNombre() : "NULL"));
+            log.debug("Usuario login. username={}, activo={}, rol={}",
+                    usuario.getUsername(),
+                    usuario.getActivo(),
+                    usuario.getRol() != null ? usuario.getRol().getNombre() : "NULL");
             
             // Verificar contraseña
             boolean passwordMatch = usuarioService.verifyPassword(request.getPassword(), usuario.getPassword());
-            System.out.println("Password match: " + passwordMatch);
-            System.out.println("Password hash stored: " + usuario.getPassword());
+            log.debug("Password match: {}", passwordMatch);
             
             if (!passwordMatch) {
                 return ResponseEntity.badRequest()

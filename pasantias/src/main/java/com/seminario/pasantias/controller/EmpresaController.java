@@ -13,6 +13,10 @@ import java.util.Map;
 @RestController
 @RequestMapping("/empresas")
 public class EmpresaController {
+	private static final int ERROR_CODE = -1;
+	private static final int SUCCESS_CODE = 0;
+	private static final String ES_OBLIGATORIO = " es obligatorio";
+
 	private final EmpresaService empresaService;
 
 	@Autowired
@@ -64,70 +68,20 @@ public class EmpresaController {
 	@PostMapping("/crearEmpresa")
 	public GenericResponse crearEmpresa(@RequestBody EmpresaRequest request) {
 		GenericResponse response = new GenericResponse();
-		
-		// Validaciones de campos obligatorios
-		if (request.getNombre() == null || request.getNombre().isEmpty()) {
-			response.setCode(-1);
-			response.setMessage("El nombre es obligatorio");
-			return response;
+		Optional<String> validationError = validateCrearEmpresaRequest(request);
+		if (validationError.isPresent()) {
+			return fail(response, validationError.get());
 		}
-		if (request.getRazonSocial() == null || request.getRazonSocial().isEmpty()) {
-			response.setCode(-1);
-			response.setMessage("La razón social es obligatoria");
-			return response;
-		}
-		if (request.getCuit() == null || request.getCuit().isEmpty()) {
-			response.setCode(-1);
-			response.setMessage("El CUIT es obligatorio");
-			return response;
-		}
-		if (request.getCiudad() == null || request.getCiudad().isEmpty()) {
-			response.setCode(-1);
-			response.setMessage("La ciudad es obligatoria");
-			return response;
-		}
-		if (request.getCalle() == null || request.getCalle().isEmpty()) {
-			response.setCode(-1);
-			response.setMessage("La calle es obligatoria");
-			return response;
-		}
-		if (request.getContacto() == null || request.getContacto().isEmpty()) {
-			response.setCode(-1);
-			response.setMessage("La lista de contactos es obligatoria");
-			return response;
-		}
-		
-		// Validar cada contacto
-		for (int i = 0; i < request.getContacto().size(); i++) {
-			var contacto = request.getContacto().get(i);
-			if (contacto.getNombre() == null || contacto.getNombre().isEmpty()) {
-				response.setCode(-1);
-				response.setMessage("El nombre del contacto " + (i + 1) + " es obligatorio");
-				return response;
-			}
-			if (contacto.getApellido() == null || contacto.getApellido().isEmpty()) {
-				response.setCode(-1);
-				response.setMessage("El apellido del contacto " + (i + 1) + " es obligatorio");
-				return response;
-			}
-			if (contacto.getEmailResponsable() == null || contacto.getEmailResponsable().isEmpty()) {
-				response.setCode(-1);
-				response.setMessage("El email del responsable del contacto " + (i + 1) + " es obligatorio");
-				return response;
-			}
-		}
-		
+
 		try {
 			Empresa empresa = new Empresa(null, request.getNombre(), request.getCiudad(), 
 				request.getCalle(), request.getNroCalle(), request.getPiso(),
 				request.getDepartamento(), request.getBarrio(), request.getEmail(), 
 				request.getCuit(), request.getRazonSocial(), request.getContacto(),null);
 			empresaService.createEmpresaWithContactos(empresa);
-			response.setCode(0);
-			response.setMessage(null);
+			success(response);
 		} catch (Exception e) {
-			response.setCode(-1);
-			response.setMessage(e.getMessage());
+			fail(response, e.getMessage());
 		}
 		return response;
 	}
@@ -156,19 +110,15 @@ public class EmpresaController {
 		
 		// Validación de campo obligatorio
 		String cuit = request.get("cuit");
-		if (cuit == null || cuit.isEmpty()) {
-			response.setCode(-1);
-			response.setMessage("El CUIT es obligatorio");
-			return response;
+		if (isBlank(cuit)) {
+			return fail(response, "El CUIT" + ES_OBLIGATORIO);
 		}
 		
 		try {
 			empresaService.deleteEmpresaByCuit(cuit);
-			response.setCode(0);
-			response.setMessage(null);
+			success(response);
 		} catch (Exception e) {
-			response.setCode(-1);
-			response.setMessage(e.getMessage());
+			fail(response, e.getMessage());
 		}
 		return response;
 	}
@@ -176,5 +126,76 @@ public class EmpresaController {
 	@DeleteMapping("/{id}")
 	public void deleteEmpresa(@PathVariable Integer id) {
 		empresaService.deleteEmpresa(id);
+	}
+
+	private Optional<String> validateCrearEmpresaRequest(EmpresaRequest request) {
+		if (request == null) {
+			return Optional.of("Request inválido");
+		}
+
+		Optional<String> baseError = validateRequiredEmpresaFields(request);
+		if (baseError.isPresent()) {
+			return baseError;
+		}
+
+		return validateContactos(request);
+	}
+
+	private Optional<String> validateRequiredEmpresaFields(EmpresaRequest request) {
+		if (isBlank(request.getNombre())) {
+			return Optional.of("El nombre" + ES_OBLIGATORIO);
+		}
+		if (isBlank(request.getRazonSocial())) {
+			return Optional.of("La razón social es obligatoria");
+		}
+		if (isBlank(request.getCuit())) {
+			return Optional.of("El CUIT" + ES_OBLIGATORIO);
+		}
+		if (isBlank(request.getCiudad())) {
+			return Optional.of("La ciudad es obligatoria");
+		}
+		if (isBlank(request.getCalle())) {
+			return Optional.of("La calle es obligatoria");
+		}
+		if (request.getContacto() == null || request.getContacto().isEmpty()) {
+			return Optional.of("La lista de contactos es obligatoria");
+		}
+		return Optional.empty();
+	}
+
+	private Optional<String> validateContactos(EmpresaRequest request) {
+		for (int i = 0; i < request.getContacto().size(); i++) {
+			var contacto = request.getContacto().get(i);
+			int idx = i + 1;
+
+			if (contacto == null) {
+				return Optional.of("El contacto " + idx + ES_OBLIGATORIO);
+			}
+			if (isBlank(contacto.getNombre())) {
+				return Optional.of("El nombre del contacto " + idx + ES_OBLIGATORIO);
+			}
+			if (isBlank(contacto.getApellido())) {
+				return Optional.of("El apellido del contacto " + idx + ES_OBLIGATORIO);
+			}
+			if (isBlank(contacto.getEmailResponsable())) {
+				return Optional.of("El email del responsable del contacto " + idx + ES_OBLIGATORIO);
+			}
+		}
+		return Optional.empty();
+	}
+
+	private static boolean isBlank(String value) {
+		return value == null || value.isEmpty();
+	}
+
+	private static GenericResponse fail(GenericResponse response, String message) {
+		response.setCode(ERROR_CODE);
+		response.setMessage(message);
+		return response;
+	}
+
+	private static void success(GenericResponse response) {
+		response.setCode(SUCCESS_CODE);
+		response.setMessage(null);
 	}
 }

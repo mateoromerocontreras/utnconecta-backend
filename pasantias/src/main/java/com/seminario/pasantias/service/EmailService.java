@@ -5,6 +5,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
@@ -13,6 +15,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class EmailService {
     
+    private static final Logger log = LoggerFactory.getLogger(EmailService.class);
+
     @Autowired
     private JavaMailSender mailSender;
     
@@ -47,10 +51,10 @@ public class EmailService {
         
         try {
             mailSender.send(message);
-            System.out.println("Email de confirmación enviado exitosamente a: " + toEmail);
+            log.info("Email de confirmación enviado exitosamente a: {}", toEmail);
         } catch (MailException e) {
-            System.err.println("Error al enviar email de confirmación a " + toEmail + ": " + e.getMessage());
-            System.err.println("Causa: " + (e.getCause() != null ? e.getCause().getMessage() : "Desconocida"));
+            log.warn("Error al enviar email de confirmación a {}: {}", toEmail, e.getMessage());
+            log.debug("Causa: {}", e.getCause() != null ? e.getCause().getMessage() : "Desconocida");
             throw e;
         }
     }

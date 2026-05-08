@@ -6,6 +6,8 @@ import com.seminario.pasantias.entity.Usuario;
 import com.seminario.pasantias.persistence.EmpresaMapper;
 import com.seminario.pasantias.persistence.PasantiaMapper;
 import com.seminario.pasantias.persistence.UsuarioMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,6 +20,11 @@ import java.util.Optional;
  */
 @Service
 public class SecurityService {
+
+    private static final Logger log = LoggerFactory.getLogger(SecurityService.class);
+    private static final String ROLE_ADMIN = "ADMINISTRADOR";
+    private static final String ROLE_EMPRESA = "EMPRESA";
+    private static final String ROLE_ESTUDIANTE = "ESTUDIANTE";
 
     private final UsuarioMapper usuarioMapper;
     private final EmpresaMapper empresaMapper;
@@ -64,21 +71,21 @@ public class SecurityService {
      * Verifica si el usuario es ADMINISTRADOR
      */
     public boolean esAdministrador() {
-        return tieneRol("ADMINISTRADOR");
+        return tieneRol(ROLE_ADMIN);
     }
 
     /**
      * Verifica si el usuario es EMPRESA
      */
     public boolean esEmpresa() {
-        return tieneRol("EMPRESA");
+        return tieneRol(ROLE_EMPRESA);
     }
 
     /**
      * Verifica si el usuario es ESTUDIANTE
      */
     public boolean esEstudiante() {
-        return tieneRol("ESTUDIANTE");
+        return tieneRol(ROLE_ESTUDIANTE);
     }
 
     /**
@@ -88,7 +95,7 @@ public class SecurityService {
      */
     public Empresa getEmpresaDelUsuario() {
         Usuario usuario = getUsuarioAutenticado();
-        System.out.println("MARCOS USUARIO AUTENTICADO: " + usuario.toString());
+        log.debug("Usuario autenticado: {}", usuario);
         if (!esEmpresa()) {
             throw new SecurityException("El usuario no es de tipo EMPRESA");
         }
@@ -166,7 +173,7 @@ public class SecurityService {
         if (!puedeCrearPasantiaParaEmpresa(empresaId)) {
             if (esEmpresa()) {
                 Empresa miEmpresa = getEmpresaDelUsuario();
-                System.out.println("MARCOS EMPRESA DEL USUARIO: " + getEmpresaDelUsuario().toString());
+                log.debug("Empresa del usuario: {}", miEmpresa);
                 throw new SecurityException(
                     String.format("No tienes permiso para crear pasantías para la empresa %d. " +
                                 "Solo puedes crear pasantías para tu empresa (%d - %s)",

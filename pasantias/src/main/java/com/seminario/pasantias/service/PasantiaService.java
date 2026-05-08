@@ -5,6 +5,8 @@ import com.seminario.pasantias.dto.response.*;
 import com.seminario.pasantias.entity.*;
 import com.seminario.pasantias.persistence.*;
 import com.seminario.pasantias.util.PasantiaMapperUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -14,11 +16,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class PasantiaService {
+
+    private static final String PASANTIA_NO_ENCONTRADA_PREFIX = "Pasantía no encontrada con ID: ";
+    private static final Logger log = LoggerFactory.getLogger(PasantiaService.class);
 
     private final com.seminario.pasantias.persistence.PasantiaMapper pasantiaMapper;
     private final EmpresaMapper empresaMapper;
@@ -49,10 +53,10 @@ public class PasantiaService {
     public PasantiaResponseDTO crearPasantia(PasantiaRequestDTO request) {
         // Validar que la empresa existe
         Empresa empresa = empresaMapper.findById(request.getIdEmpresa());
-        System.out.println("MARCOS " + empresa.toString());
         if (empresa == null) {
             throw new IllegalArgumentException("La empresa con ID " + request.getIdEmpresa() + " no existe");
         }
+        log.debug("Empresa encontrada para pasantía. idEmpresa={}, empresa={}", request.getIdEmpresa(), empresa);
 
         // Validar que las carreras existen
         if (request.getIdsCarreras() != null && !request.getIdsCarreras().isEmpty()) {
@@ -100,7 +104,7 @@ public class PasantiaService {
         // Validar que la pasantía exists
         Optional<Pasantia> pasantiaOpt = pasantiaMapper.findById(id);
         if (pasantiaOpt.isEmpty()) {
-            throw new IllegalArgumentException("Pasantía no encontrada con ID: " + id);
+            throw new IllegalArgumentException(PASANTIA_NO_ENCONTRADA_PREFIX + id);
         }
         Pasantia pasantiaExistente = pasantiaOpt.get();
 
@@ -148,7 +152,7 @@ public class PasantiaService {
      */
     public PasantiaResponseDTO actualizarEstado(Integer id, ActualizarEstadoPasantiaDTO request) {
         Pasantia pasantia = pasantiaMapper.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Pasantía no encontrada con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException(PASANTIA_NO_ENCONTRADA_PREFIX + id));
 
         // Validar transiciones de estado permitidas
         validarTransicionEstado(pasantia.getEstado(), request.getEstado());
@@ -167,7 +171,7 @@ public class PasantiaService {
     @Transactional(readOnly = true)
     public PasantiaDetalleDTO obtenerPasantiaPorId(Integer id) {
         Pasantia pasantia = pasantiaMapper.findByIdWithRelations(id)
-                .orElseThrow(() -> new IllegalArgumentException("Pasantía no encontrada con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException(PASANTIA_NO_ENCONTRADA_PREFIX + id));
 
         return mapperUtil.entityToDetalleDto(pasantia);
     }
@@ -192,7 +196,7 @@ public class PasantiaService {
         // Convertir a DTOs
         List<PasantiaResponseDTO> dtos = pasantias.stream()
                 .map(mapperUtil::entityToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
 
         // Crear página
         PaginaDTO<PasantiaResponseDTO> pagina = new PaginaDTO<>();
@@ -213,7 +217,7 @@ public class PasantiaService {
         List<Pasantia> pasantias = pasantiaMapper.findByEmpresaId(empresaId);
         return pasantias.stream()
                 .map(mapperUtil::entityToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
@@ -224,7 +228,7 @@ public class PasantiaService {
         List<Pasantia> pasantias = pasantiaMapper.findByCarreraId(carreraId);
         return pasantias.stream()
                 .map(mapperUtil::entityToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
@@ -235,7 +239,7 @@ public class PasantiaService {
         List<Pasantia> pasantias = pasantiaMapper.findAll();
         return pasantias.stream()
                 .map(mapperUtil::entityToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
@@ -246,7 +250,7 @@ public class PasantiaService {
         List<Pasantia> pasantias = pasantiaMapper.findByEstado("PUBLICADA");
         return pasantias.stream()
                 .map(mapperUtil::entityToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
@@ -255,7 +259,7 @@ public class PasantiaService {
     public void eliminarPasantia(Integer id) {
         Optional<Pasantia> pasantiaOpt = pasantiaMapper.findById(id);
         if (pasantiaOpt.isEmpty()) {
-            throw new IllegalArgumentException("Pasantía no encontrada con ID: " + id);
+            throw new IllegalArgumentException(PASANTIA_NO_ENCONTRADA_PREFIX + id);
         }
         Pasantia pasantia = pasantiaOpt.get();
 
@@ -317,7 +321,7 @@ public class PasantiaService {
         // Buscar el usuario en BD
         Optional<Usuario> usuarioOpt = usuarioService.findByUsername(username);
         if (usuarioOpt.isEmpty()) {
-            throw new RuntimeException("Usuario no encontrado");
+            throw new SecurityException("Usuario no encontrado");
         }
         Usuario usuario = usuarioOpt.get();
 
@@ -331,6 +335,6 @@ public class PasantiaService {
         List<Pasantia> pasantias = pasantiaMapper.findByEmpresaId(empresa.getIdEmpresa());
         return pasantias.stream()
                 .map(mapperUtil::entityToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 }

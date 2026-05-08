@@ -9,6 +9,8 @@ import com.seminario.pasantias.security.SecurityService;
 import com.seminario.pasantias.service.PasantiaService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +47,14 @@ import java.util.Map;
              allowedHeaders = "*")
 public class PasantiaController {
 
+    private static final Logger log = LoggerFactory.getLogger(PasantiaController.class);
+
+    private static final String HEADER_CONTENT_TYPE = "Content-Type";
+    private static final String CONTENT_TYPE_JSON_UTF8 = "application/json;charset=UTF-8";
+    private static final String KEY_CODIGO = "codigo";
+    private static final String KEY_MENSAJE = "mensaje";
+    private static final String KEY_DATA = "data";
+
     /** Servicio que contiene la lógica de negocio para pasantías */
     @Autowired
     private PasantiaService pasantiaService;
@@ -63,11 +73,11 @@ public class PasantiaController {
      * @return ResponseEntity con lista de PasantiaResponseDTO y código HTTP 200 (OK)
      * @see PasantiaResponseDTO
      */
-    @GetMapping(produces = "application/json;charset=UTF-8")
+    @GetMapping(produces = CONTENT_TYPE_JSON_UTF8)
     public ResponseEntity<List<PasantiaResponseDTO>> getAllPasantias() {
         List<PasantiaResponseDTO> pasantias = pasantiaService.obtenerTodasLasPasantias();
         return ResponseEntity.ok()
-                .header("Content-Type", "application/json;charset=UTF-8")
+                .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON_UTF8)
                 .body(pasantias);
     }
 
@@ -87,7 +97,7 @@ public class PasantiaController {
     public ResponseEntity<List<PasantiaResponseDTO>> getPasantiasPublicadas() {
         List<PasantiaResponseDTO> pasantias = pasantiaService.obtenerPasantiasPublicadas();
         return ResponseEntity.ok()
-                .header("Content-Type", "application/json;charset=UTF-8")
+                .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON_UTF8)
                 .body(pasantias);
     }
 
@@ -105,24 +115,24 @@ public class PasantiaController {
      * @see PasantiaDetalleDTO
      */
     @GetMapping("/{id}")
-    public ResponseEntity<?> getPasantiaById(@PathVariable Integer id) {
+    public ResponseEntity<Object> getPasantiaById(@PathVariable Integer id) {
         try {
             // Obtener los detalles completos de la pasantía
             PasantiaDetalleDTO pasantia = pasantiaService.obtenerPasantiaPorId(id);
             return ResponseEntity.ok()
-                    .header("Content-Type", "application/json;charset=UTF-8")
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON_UTF8)
                     .body(pasantia);
         } catch (IllegalArgumentException e) {
             // La pasantía no existe
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("codigo", -1);
-            errorResponse.put("mensaje", e.getMessage());
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
         } catch (Exception e) {
             // Error inesperado del servidor
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("codigo", -1);
-            errorResponse.put("mensaje", "Error al obtener la pasantía: " + e.getMessage());
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, "Error al obtener la pasantía: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
@@ -164,10 +174,10 @@ public class PasantiaController {
     @PostMapping("/registrar")
     @SecurityRequirement(name = "Bearer Authentication")
     @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'EMPRESA')")
-    public ResponseEntity<?> registrarPasantia(@Valid @RequestBody PasantiaRequestDTO request) {
+    public ResponseEntity<Map<String, Object>> registrarPasantia(@Valid @RequestBody PasantiaRequestDTO request) {
         try {
             // Validar que el usuario autenticado tiene permiso para crear pasantía para esta empresa
-            System.out.println("MARCOS ID EMPRESA " + request.getIdEmpresa());
+            log.debug("Registrar pasantía. idEmpresa={}", request.getIdEmpresa());
             securityService.validarPermisoCrearPasantia(request.getIdEmpresa());
             
             // Crear la pasantía en la base de datos
@@ -175,32 +185,32 @@ public class PasantiaController {
             
             // Construir respuesta exitosa
             Map<String, Object> response = new HashMap<>();
-            response.put("codigo", 0);
-            response.put("mensaje", "Pasantía registrada exitosamente");
-            response.put("data", pasantia);
+            response.put(KEY_CODIGO, 0);
+            response.put(KEY_MENSAJE, "Pasantía registrada exitosamente");
+            response.put(KEY_DATA, pasantia);
             
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .header("Content-Type", "application/json;charset=UTF-8")
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON_UTF8)
                     .body(response);
         } catch (SecurityException | AccessDeniedException e) {
             // Usuario no tiene permisos para realizar esta acción
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("codigo", -1);
-            errorResponse.put("mensaje", e.getMessage());
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, e.getMessage());
             
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
         } catch (IllegalArgumentException e) {
             // Datos inválidos (empresa no existe, carrera no existe, fechas inválidas, etc.)
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("codigo", -1);
-            errorResponse.put("mensaje", e.getMessage());
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, e.getMessage());
             
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         } catch (Exception e) {
             // Error inesperado del servidor
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("codigo", -1);
-            errorResponse.put("mensaje", "Error al registrar la pasantía: " + e.getMessage());
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, "Error al registrar la pasantía: " + e.getMessage());
             
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
@@ -236,7 +246,7 @@ public class PasantiaController {
      * @see EstadoPasantia#PENDIENTE_DE_APROBACION
      */
     @PutMapping("/{id}/aprobar")
-    public ResponseEntity<?> aprobarPasantia(@PathVariable Integer id) {
+    public ResponseEntity<Map<String, Object>> aprobarPasantia(@PathVariable Integer id) {
         try {
             // Validar que el usuario es ADMINISTRADOR
             securityService.validarEsAdministrador();
@@ -250,39 +260,39 @@ public class PasantiaController {
             
             // Construir respuesta exitosa
             Map<String, Object> response = new HashMap<>();
-            response.put("codigo", 0);
-            response.put("mensaje", "Pasantía aprobada y publicada exitosamente");
-            response.put("data", pasantia);
+            response.put(KEY_CODIGO, 0);
+            response.put(KEY_MENSAJE, "Pasantía aprobada y publicada exitosamente");
+            response.put(KEY_DATA, pasantia);
             
             return ResponseEntity.ok()
-                    .header("Content-Type", "application/json;charset=UTF-8")
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON_UTF8)
                     .body(response);
         } catch (SecurityException | AccessDeniedException e) {
             // Usuario no es ADMINISTRADOR
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("codigo", -1);
-            errorResponse.put("mensaje", e.getMessage());
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, e.getMessage());
             
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
         } catch (IllegalArgumentException e) {
             // La pasantía no existe
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("codigo", -1);
-            errorResponse.put("mensaje", e.getMessage());
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, e.getMessage());
             
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         } catch (IllegalStateException e) {
             // La pasantía no está en un estado válido para ser aprobada
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("codigo", -1);
-            errorResponse.put("mensaje", e.getMessage());
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, e.getMessage());
             
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         } catch (Exception e) {
             // Error inesperado del servidor
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("codigo", -1);
-            errorResponse.put("mensaje", "Error al aprobar la pasantía: " + e.getMessage());
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, "Error al aprobar la pasantía: " + e.getMessage());
             
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
@@ -318,7 +328,7 @@ public class PasantiaController {
      * @see EstadoPasantia#PUBLICADA
      */
     @PutMapping("/{id}/finalizar")
-    public ResponseEntity<?> finalizarPasantia(@PathVariable Integer id) {
+    public ResponseEntity<Map<String, Object>> finalizarPasantia(@PathVariable Integer id) {
         try {
             // Validar que el usuario es ADMINISTRADOR
             securityService.validarEsAdministrador();
@@ -332,39 +342,39 @@ public class PasantiaController {
             
             // Construir respuesta exitosa
             Map<String, Object> response = new HashMap<>();
-            response.put("codigo", 0);
-            response.put("mensaje", "Pasantía finalizada exitosamente");
-            response.put("data", pasantia);
+            response.put(KEY_CODIGO, 0);
+            response.put(KEY_MENSAJE, "Pasantía finalizada exitosamente");
+            response.put(KEY_DATA, pasantia);
             
             return ResponseEntity.ok()
-                    .header("Content-Type", "application/json;charset=UTF-8")
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON_UTF8)
                     .body(response);
         } catch (SecurityException | AccessDeniedException e) {
             // Usuario no es ADMINISTRADOR
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("codigo", -1);
-            errorResponse.put("mensaje", e.getMessage());
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, e.getMessage());
             
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
         } catch (IllegalArgumentException e) {
             // La pasantía no existe
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("codigo", -1);
-            errorResponse.put("mensaje", e.getMessage());
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, e.getMessage());
             
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         } catch (IllegalStateException e) {
             // La pasantía no está en un estado válido para ser finalizada
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("codigo", -1);
-            errorResponse.put("mensaje", e.getMessage());
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, e.getMessage());
             
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
         } catch (Exception e) {
             // Error inesperado del servidor
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("codigo", -1);
-            errorResponse.put("mensaje", "Error al finalizar la pasantía: " + e.getMessage());
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, "Error al finalizar la pasantía: " + e.getMessage());
             
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
@@ -378,15 +388,15 @@ public class PasantiaController {
             List<PasantiaResponseDTO> pasantias = pasantiaService.obtenerMisPasantias();
 
             Map<String, Object> response = new HashMap<>();
-            response.put("codigo", 0);
-            response.put("mensaje", "Pasantías encontradas");
-            response.put("data", pasantias);
+            response.put(KEY_CODIGO, 0);
+            response.put(KEY_MENSAJE, "Pasantías encontradas");
+            response.put(KEY_DATA, pasantias);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("codigo", -1);
-            errorResponse.put("mensaje", "Error al obtener pasantías: " + e.getMessage());
-            errorResponse.put("data", null);
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, "Error al obtener pasantías: " + e.getMessage());
+            errorResponse.put(KEY_DATA, null);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }

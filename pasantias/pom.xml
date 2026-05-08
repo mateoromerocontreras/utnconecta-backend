@@ -30,6 +30,7 @@
 		<java.version>25</java.version>
 		<jacoco.version>0.8.14</jacoco.version>
 		<lombok.version>1.18.46</lombok.version>
+		<sonar-maven-plugin.version>5.1.0.4751</sonar-maven-plugin.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -136,6 +137,12 @@
 						<goals>
 							<goal>report</goal>
 						</goals>
+						<configuration>
+							<formats>
+								<format>XML</format>
+								<format>HTML</format>
+							</formats>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
@@ -231,7 +238,28 @@
 					</dependency>
 				</dependencies>
 			</plugin>
+
+			<!-- SonarScanner for Maven: run via `mvn -Psonar sonar:sonar` -->
+			<plugin>
+				<groupId>org.sonarsource.scanner.maven</groupId>
+				<artifactId>sonar-maven-plugin</artifactId>
+				<version>${sonar-maven-plugin.version}</version>
+			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>sonar</id>
+			<properties>
+				<!-- Coverage (JaCoCo XML) -->
+				<sonar.coverage.jacoco.xmlReportPaths>${project.basedir}/target/site/jacoco/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
+
+				<!-- Ensure Sonar uses the compiled bytecode -->
+				<sonar.java.binaries>${project.build.directory}/classes</sonar.java.binaries>
+				<sonar.java.test.binaries>${project.build.directory}/test-classes</sonar.java.test.binaries>
+			</properties>
+		</profile>
+	</profiles>
 
 </project>

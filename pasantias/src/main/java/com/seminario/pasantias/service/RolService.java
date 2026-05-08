@@ -12,6 +12,12 @@ import java.util.Optional;
 @Service
 public class RolService {
 
+    public static class RolServiceException extends RuntimeException {
+        public RolServiceException(String message) {
+            super(message);
+        }
+    }
+
     @Autowired
     private RolMapper rolMapper;
 
@@ -29,7 +35,7 @@ public class RolService {
 
     public void createRol(Rol rol) {
         if (rolMapper.findByNombre(rol.getNombre()).isPresent()) {
-            throw new RuntimeException("Ya existe un rol con ese nombre");
+            throw new RolServiceException("Ya existe un rol con ese nombre");
         }
         
         rol.setActivo(true);
@@ -40,13 +46,13 @@ public class RolService {
     public void updateRol(Rol rol) {
         Optional<Rol> existingRol = rolMapper.findById(rol.getIdRol());
         if (existingRol.isEmpty()) {
-            throw new RuntimeException("No se encontró el rol a actualizar");
+            throw new RolServiceException("No se encontró el rol a actualizar");
         }
 
         // Verificar que no exista otro rol con el mismo nombre
         Optional<Rol> rolConMismoNombre = rolMapper.findByNombre(rol.getNombre());
         if (rolConMismoNombre.isPresent() && !rolConMismoNombre.get().getIdRol().equals(rol.getIdRol())) {
-            throw new RuntimeException("Ya existe otro rol con ese nombre");
+            throw new RolServiceException("Ya existe otro rol con ese nombre");
         }
 
         rolMapper.update(rol);
@@ -55,7 +61,7 @@ public class RolService {
     public void deleteRolByNombre(String nombre) {
         Optional<Rol> rol = rolMapper.findByNombre(nombre);
         if (rol.isEmpty()) {
-            throw new RuntimeException("No se encontró un rol con ese nombre");
+            throw new RolServiceException("No se encontró un rol con ese nombre");
         }
         rolMapper.deactivate(rol.get().getIdRol());
     }
@@ -63,7 +69,7 @@ public class RolService {
     public void deleteRolById(Integer id) {
         Optional<Rol> rol = rolMapper.findById(id);
         if (rol.isEmpty()) {
-            throw new RuntimeException("No se encontró el rol a eliminar");
+            throw new RolServiceException("No se encontró el rol a eliminar");
         }
         rolMapper.deactivate(id);
     }

@@ -8,6 +8,8 @@ import com.seminario.pasantias.persistence.EstudianteMapper;
 import com.seminario.pasantias.persistence.PasantiaMapper;
 import com.seminario.pasantias.persistence.EmpresaMapper;
 import com.seminario.pasantias.util.PostulacionMapperUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -17,11 +19,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class PostulacionService {
+
+    private static final String POSTULACION_NO_ENCONTRADA_PREFIX = "Postulación no encontrada con ID: ";
+    private static final Logger log = LoggerFactory.getLogger(PostulacionService.class);
 
     private final PostulacionMapper postulacionMapper;
     private final EstudianteMapper estudianteMapper;
@@ -55,7 +59,7 @@ public class PostulacionService {
     public PostulacionResponseDTO crearPostulacion(PostulacionRequestDTO request) {
         // Validar que el estudiante existe
         Optional<Estudiante> estudianteOpt = estudianteMapper.findById(request.getIdEstudiante());
-        System.out.println("MARCOS ESTUDIANTE: " + estudianteOpt.toString());
+        log.debug("Buscar estudiante. idEstudiante={}, found={}", request.getIdEstudiante(), estudianteOpt.isPresent());
         if (estudianteOpt.isEmpty()) {
             throw new IllegalArgumentException("El estudiante con ID " + request.getIdEstudiante() + " no existe");
         }
@@ -68,7 +72,7 @@ public class PostulacionService {
 
         Pasantia pasantia = pasantiaOpt.get();
         Estudiante estudiante = estudianteOpt.get();
-        System.out.println("AGUSTIN PASANTIA " + pasantia.toString() );
+        log.debug("Pasantía para postulación. idPasantia={}, estado={}", pasantia.getIdPasantia(), pasantia.getEstado());
 
         // TS-05 Cross-Career Guard: el estudiante solo puede postular a pasantías de su carrera/especialidad
         // La especialidad del estudiante se compara con los nombres de carreras habilitadas para la pasantía.
@@ -96,7 +100,7 @@ public class PostulacionService {
                 request.getIdEstudiante(), 
                 request.getIdPasantia()
         );
-        System.out.println("AGUSTIN YA POSTULO? " + yaPostulo);
+        log.debug("Ya postuló? estudianteId={}, pasantiaId={}, yaPostulo={}", request.getIdEstudiante(), request.getIdPasantia(), yaPostulo);
         if (yaPostulo) {
             throw new IllegalStateException("El estudiante ya tiene una postulación para esta pasantía");
         }
@@ -108,7 +112,9 @@ public class PostulacionService {
 
         // Insertar en BD
         postulacionMapper.insert(postulacion);
-        System.out.println("Empresa: " + pasantia.getEmpresa()+ " id-usuario : " + pasantia.getEmpresa().getIdUsuario());
+        log.debug("Notificación empresa. empresaPresent={}, idUsuarioEmpresa={}",
+                pasantia.getEmpresa() != null,
+                pasantia.getEmpresa() != null ? pasantia.getEmpresa().getIdUsuario() : null);
         // Notificar a la empresa
         if (pasantia.getEmpresa() != null && pasantia.getEmpresa().getIdUsuario() != null) {
             String mensaje = "Nueva postulación recibida para la pasantía: " + pasantia.getTitulo();
@@ -127,7 +133,7 @@ public class PostulacionService {
     public PostulacionResponseDTO actualizarPostulacion(Integer id, PostulacionRequestDTO request) {
         // Validar que la postulación existe
         Postulacion postulacionExistente = postulacionMapper.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Postulación no encontrada con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException(POSTULACION_NO_ENCONTRADA_PREFIX + id));
 
         // Validar que solo se modifiquen postulaciones en BORRADOR o PENDIENTE_APROBACION
         if (postulacionExistente.getEstado() != EstadoPostulacion.BORRADOR && 
@@ -150,7 +156,7 @@ public class PostulacionService {
      */
     public PostulacionResponseDTO actualizarEstado(Integer id, ActualizarEstadoPostulacionDTO request) {
         Postulacion postulacion = postulacionMapper.findByIdWithRelations(id)
-                .orElseThrow(() -> new IllegalArgumentException("Postulación no encontrada con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException(POSTULACION_NO_ENCONTRADA_PREFIX + id));
 
         // Validar transición de estado
         validarTransicionEstado(postulacion.getEstado(), request.getEstado());
@@ -190,7 +196,7 @@ public class PostulacionService {
         }
 
         Postulacion postulacion = postulacionMapper.findByIdWithRelations(id)
-                .orElseThrow(() -> new IllegalArgumentException("Postulación no encontrada con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException(POSTULACION_NO_ENCONTRADA_PREFIX + id));
 
         // Verificar que el usuario autenticado pertenece a la empresa dueña de la pasantía
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -264,7 +270,7 @@ public class PostulacionService {
         // Convertir a DTOs
         List<PostulacionResponseDTO> dtos = postulaciones.stream()
                 .map(mapperUtil::entityToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
 
         // Crear página
         PaginaDTO<PostulacionResponseDTO> pagina = new PaginaDTO<>();
@@ -285,7 +291,7 @@ public class PostulacionService {
         List<Postulacion> postulaciones = postulacionMapper.findByEstudiante(estudianteId);
         return postulaciones.stream()
                 .map(mapperUtil::entityToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
@@ -296,7 +302,7 @@ public class PostulacionService {
         List<Postulacion> postulaciones = postulacionMapper.findByPasantiaId(pasantiaId);
         return postulaciones.stream()
                 .map(mapperUtil::entityToResponseDto)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     /**
@@ -341,7 +347,7 @@ public class PostulacionService {
      */
     public void eliminarPostulacion(Integer id) {
         Postulacion postulacion = postulacionMapper.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Postulación no encontrada con ID: " + id));
+                .orElseThrow(() -> new IllegalArgumentException(POSTULACION_NO_ENCONTRADA_PREFIX + id));
 
         // Solo se pueden eliminar postulaciones en BORRADOR
         if (postulacion.getEstado() != EstadoPostulacion.BORRADOR) {
@@ -400,10 +406,14 @@ public class PostulacionService {
         String username = auth.getName();
 
         // Buscar el usuario en BD
-        Optional<Usuario> usuario = usuarioService.findByUsername(username);
-        System.out.println("AGUSTIN USUARIO: " + usuario.get().getIdUsuario());
+        Optional<Usuario> usuarioOpt = usuarioService.findByUsername(username);
+        if (usuarioOpt.isEmpty()) {
+            throw new RuntimeException("Usuario no encontrado");
+        }
+        Usuario usuario = usuarioOpt.get();
+        log.debug("Consultar mis postulaciones. usuarioId={}", usuario.getIdUsuario());
         // Buscar postulaciones por idUsuario
-        List<PostulacionResponseDTO> postulaciones = postulacionMapper.findByUsuarioId(usuario.get().getIdUsuario());
+        List<PostulacionResponseDTO> postulaciones = postulacionMapper.findByUsuarioId(usuario.getIdUsuario());
 
         // Calcular campos adicionales
         postulaciones.forEach(dto -> {

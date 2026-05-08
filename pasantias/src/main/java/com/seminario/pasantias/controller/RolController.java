@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/roles")
@@ -46,7 +45,7 @@ public class RolController {
             List<Rol> roles = rolService.getAllRoles();
             return roles.stream()
                     .map(Rol::getNombre)
-                    .collect(Collectors.toList());
+                    .toList();
         } else {
             Optional<Rol> rol = rolService.getRolByNombre(nombre);
             return rol.map(r -> List.of(r.getNombre()))
