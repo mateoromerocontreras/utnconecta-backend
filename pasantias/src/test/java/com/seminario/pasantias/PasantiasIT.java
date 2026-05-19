@@ -58,7 +58,7 @@ class PasantiasIT {
 
     @Test
     @WithMockUser(username = "biofarma_user", roles = "EMPRESA")
-    void TS_01_registerInternship_shouldCreatePendingInternship() throws Exception {
+    void TS_01_registerInternship_shouldCreatePublishedInternship() throws Exception {
         PasantiaRequestDTO request = new PasantiaRequestDTO();
         request.setTitulo("Pasantía QA TS-01");
         request.setPuestoACubrir("Backend Junior");
@@ -79,14 +79,14 @@ class PasantiasIT {
                 )
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.codigo").value(0))
-                .andExpect(jsonPath("$.data.estado").value("PENDIENTE_DE_APROBACION"))
+                .andExpect(jsonPath("$.data.estado").value("PUBLICADA"))
                 .andReturn();
 
         Integer createdId = extractDataIdAsInt(result);
         assertThat(createdId).isNotNull();
 
         Pasantia created = pasantiaMapper.findById(createdId).orElseThrow();
-        assertThat(created.getEstado()).isEqualTo(EstadoPasantia.PENDIENTE_DE_APROBACION);
+        assertThat(created.getEstado()).isEqualTo(EstadoPasantia.PUBLICADA);
         assertThat(created.getEmpresa()).isNotNull();
         assertThat(created.getEmpresa().getIdEmpresa()).isEqualTo(1);
     }

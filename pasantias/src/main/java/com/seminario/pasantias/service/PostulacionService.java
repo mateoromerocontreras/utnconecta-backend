@@ -90,11 +90,6 @@ public class PostulacionService {
             throw new IllegalStateException("La pasantía no está disponible para postulaciones. Estado actual: " + pasantia.getEstado());
         }
 
-        // Verificar que no haya caducado
-        if (pasantia.getFechaCaducidad() != null && pasantia.getFechaCaducidad().isBefore(LocalDate.now())) {
-            throw new IllegalStateException("La pasantía ha caducado");
-        }
-
         // Verificar que el estudiante no haya postulado ya a esta pasantía
         boolean yaPostulo = postulacionMapper.existsByEstudianteAndPasantia(
                 request.getIdEstudiante(), 

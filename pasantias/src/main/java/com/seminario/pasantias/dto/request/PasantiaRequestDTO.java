@@ -76,7 +76,7 @@ public class PasantiaRequestDTO {
     private LocalDate fechaCaducidad;
 
     /**
-     * Estado inicial de la pasantía (opcional, por defecto PENDIENTE_DE_APROBACION)
+     * Estado inicial de la pasantía (opcional, por defecto PUBLICADA)
      */
     private EstadoPasantia estado;
 

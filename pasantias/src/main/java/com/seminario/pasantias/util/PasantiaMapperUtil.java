@@ -42,7 +42,7 @@ public class PasantiaMapperUtil {
         if (dto.getEstado() != null) {
             pasantia.setEstado(dto.getEstado());
         } else {
-            pasantia.setEstado(EstadoPasantia.PENDIENTE_DE_APROBACION);
+            pasantia.setEstado(EstadoPasantia.PUBLICADA);
         }
 
         // La empresa y carreras se setean por separado en el servicio
@@ -135,11 +135,9 @@ public class PasantiaMapperUtil {
             dto.setDiasRestantes(diasRestantes);
         }
 
-        // Acepta postulaciones si está publicada y no caducó
+        // Acepta postulaciones si está publicada
         dto.setAceptaPostulaciones(
-                pasantia.getEstado() == EstadoPasantia.PUBLICADA &&
-                (pasantia.getFechaCaducidad() == null || 
-                 pasantia.getFechaCaducidad().isAfter(LocalDate.now()))
+                pasantia.getEstado() == EstadoPasantia.PUBLICADA
         );
 
         return dto;
@@ -241,11 +239,9 @@ public class PasantiaMapperUtil {
             dto.setDiasRestantes(diasRestantes);
         }
 
-        // Acepta postulaciones
+        // Acepta postulaciones si está publicada
         dto.setAceptaPostulaciones(
-                pasantia.getEstado() == EstadoPasantia.PUBLICADA &&
-                (pasantia.getFechaCaducidad() == null || 
-                 pasantia.getFechaCaducidad().isAfter(LocalDate.now()))
+                pasantia.getEstado() == EstadoPasantia.PUBLICADA
         );
 
         return dto;

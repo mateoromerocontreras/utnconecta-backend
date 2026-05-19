@@ -239,7 +239,7 @@ export default function RegistrarPasantia() {
       const data = await res.json();
 
       if (res.ok && res.status === 201) {
-        setMessage("✅ ¡Pasantía registrada con éxito! Estado: PENDIENTE_DE_APROBACION");
+        setMessage("✅ ¡Pasantía publicada con éxito! Ya es visible para los estudiantes.");
         setMessageType("success");
         
         // Limpiar formulario
@@ -526,9 +526,8 @@ export default function RegistrarPasantia() {
         )}
 
         <p className="pasantia-info">
-          <strong>Nota:</strong> La pasantía será creada en estado{" "}
-          <em>PENDIENTE_DE_APROBACION</em> y deberá ser aprobada por un
-          administrador antes de ser visible para los estudiantes.
+          <strong>Nota:</strong> La pasantía será publicada inmediatamente
+          y será visible para todos los estudiantes.
         </p>
       </div>
     </section>

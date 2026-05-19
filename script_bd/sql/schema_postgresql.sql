@@ -2,7 +2,7 @@
 -- Database already exists, only creating tables
 
 -- Create ENUM types
-CREATE TYPE estado_pasantia AS ENUM('PUBLICADA', 'FINALIZADA', 'DADA_DE_BAJA', 'PENDIENTE_DE_APROBACION', 'EXPIRADA');
+CREATE TYPE estado_pasantia AS ENUM('PUBLICADA', 'FINALIZADA');
 CREATE TYPE estado_postulacion AS ENUM('BORRADOR', 'PENDIENTE_APROBACION', 'PUBLICADA', 'CUBIERTA', 'FINALIZADA');
 
 -- Table: Rol
@@ -115,7 +115,7 @@ CREATE TABLE Pasantia (
     cantidad_de_pasantes INT NOT NULL DEFAULT 1,
     fecha_publicacion DATE NOT NULL,
     fecha_caducidad DATE NOT NULL,
-    estado estado_pasantia NOT NULL DEFAULT 'PENDIENTE_DE_APROBACION',
+    estado estado_pasantia NOT NULL DEFAULT 'PUBLICADA',
     email_contacto VARCHAR(100) NOT NULL,
     conocimientos TEXT,
     otros_requisitos TEXT,

@@ -7,6 +7,7 @@ import com.seminario.pasantias.persistence.*;
 import com.seminario.pasantias.util.PasantiaMapperUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -48,7 +49,8 @@ public class PasantiaService {
     }
 
     /**
-     * Crear una nueva pasantía
+     * Crear una nueva pasantía.
+     * La pasantía se crea directamente en estado PUBLICADA y es visible para todos los usuarios.
      */
     public PasantiaResponseDTO crearPasantia(PasantiaRequestDTO request) {
         // Validar que la empresa existe
@@ -76,7 +78,8 @@ public class PasantiaService {
         // Convertir DTO a Entity
         Pasantia pasantia = mapperUtil.requestDtoToEntity(request);
         pasantia.setFechaPublicacion(LocalDate.now());
-        pasantia.setEstado(EstadoPasantia.PENDIENTE_DE_APROBACION);
+        // Las pasantías se publican directamente al crearlas
+        pasantia.setEstado(EstadoPasantia.PUBLICADA);
 
         // Setear la empresa
         pasantia.setEmpresa(empresa);
@@ -98,7 +101,8 @@ public class PasantiaService {
     }
 
     /**
-     * Actualizar una pasantía existente
+     * Actualizar una pasantía existente.
+     * Solo se pueden modificar pasantías en estado PUBLICADA.
      */
     public PasantiaResponseDTO actualizarPasantia(Integer id, PasantiaRequestDTO request) {
         // Validar que la pasantía exists
@@ -108,10 +112,9 @@ public class PasantiaService {
         }
         Pasantia pasantiaExistente = pasantiaOpt.get();
 
-        // Solo se pueden modificar pasantías en ciertos estados
-        if (pasantiaExistente.getEstado() == EstadoPasantia.FINALIZADA ||
-            pasantiaExistente.getEstado() == EstadoPasantia.DADA_DE_BAJA) {
-            throw new IllegalStateException("No se puede modificar una pasantía en estado " + pasantiaExistente.getEstado());
+        // Solo se pueden modificar pasantías publicadas
+        if (pasantiaExistente.getEstado() == EstadoPasantia.FINALIZADA) {
+            throw new IllegalStateException("No se puede modificar una pasantía finalizada");
         }
 
         // Validar que la empresa existe
@@ -148,7 +151,8 @@ public class PasantiaService {
     }
 
     /**
-     * Cambiar el estado de una pasantía
+     * Cambiar el estado de una pasantía a FINALIZADA.
+     * Solo permite la transición PUBLICADA → FINALIZADA.
      */
     public PasantiaResponseDTO actualizarEstado(Integer id, ActualizarEstadoPasantiaDTO request) {
         Pasantia pasantia = pasantiaMapper.findById(id)
@@ -243,7 +247,7 @@ public class PasantiaService {
     }
 
     /**
-     * Obtener pasantías publicadas (disponibles para postular)
+     * Obtener pasantías publicadas (visibles para todos los usuarios, disponibles para postular)
      */
     @Transactional(readOnly = true)
     public List<PasantiaResponseDTO> obtenerPasantiasPublicadas() {
@@ -254,7 +258,7 @@ public class PasantiaService {
     }
 
     /**
-     * Eliminar pasantía (soft delete)
+     * Eliminar pasantía (finalizar en lugar de dar de baja)
      */
     public void eliminarPasantia(Integer id) {
         Optional<Pasantia> pasantiaOpt = pasantiaMapper.findById(id);
@@ -263,50 +267,28 @@ public class PasantiaService {
         }
         Pasantia pasantia = pasantiaOpt.get();
 
-        // Validar que no tenga postulaciones activas
-        Integer postulacionesActivas = postulacionMapper.countByPasantiaIdAndEstadoNot(
-                id, 
-                "FINALIZADA"
-        );
-
-        if (postulacionesActivas > 0) {
-            throw new IllegalStateException(
-                    "No se puede eliminar la pasantía porque tiene " + postulacionesActivas + " postulaciones activas"
-            );
-        }
-
-        pasantia.setEstado(EstadoPasantia.DADA_DE_BAJA);
+        pasantia.setEstado(EstadoPasantia.FINALIZADA);
         pasantiaMapper.update(pasantia);
     }
 
     /**
-     * Validar transiciones de estado permitidas
+     * Validar transiciones de estado permitidas.
+     * Solo se permite: PUBLICADA → FINALIZADA
      */
     private void validarTransicionEstado(EstadoPasantia estadoActual, EstadoPasantia nuevoEstado) {
-        switch (estadoActual) {
-            case PENDIENTE_DE_APROBACION:
-                if (nuevoEstado != EstadoPasantia.PUBLICADA && nuevoEstado != EstadoPasantia.DADA_DE_BAJA) {
-                    throw new IllegalStateException(
-                            "Desde PENDIENTE_DE_APROBACION solo se puede pasar a PUBLICADA o DADA_DE_BAJA"
-                    );
-                }
-                break;
-            case PUBLICADA:
-                if (nuevoEstado != EstadoPasantia.FINALIZADA && 
-                    nuevoEstado != EstadoPasantia.DADA_DE_BAJA &&
-                    nuevoEstado != EstadoPasantia.EXPIRADA) {
-                    throw new IllegalStateException(
-                            "Desde PUBLICADA solo se puede pasar a FINALIZADA, DADA_DE_BAJA o EXPIRADA"
-                    );
-                }
-                break;
-            case FINALIZADA:
-            case DADA_DE_BAJA:
-            case EXPIRADA:
-                throw new IllegalStateException(
-                        "No se puede cambiar el estado de una pasantía en estado " + estadoActual
-                );
+        if (estadoActual == EstadoPasantia.PUBLICADA && nuevoEstado == EstadoPasantia.FINALIZADA) {
+            return; // Transición válida
         }
+
+        if (estadoActual == EstadoPasantia.FINALIZADA) {
+            throw new IllegalStateException(
+                    "No se puede cambiar el estado de una pasantía ya finalizada"
+            );
+        }
+
+        throw new IllegalStateException(
+                "Transición de estado no permitida: " + estadoActual + " → " + nuevoEstado
+        );
     }
 
     /**
@@ -336,5 +318,32 @@ public class PasantiaService {
         return pasantias.stream()
                 .map(mapperUtil::entityToResponseDto)
                 .toList();
+    }
+
+    /**
+     * Tarea programada: finaliza automáticamente las pasantías publicadas
+     * cuya fecha de caducidad ha vencido.
+     * Se ejecuta cada hora.
+     */
+    @Scheduled(fixedRate = 3600000) // Cada 1 hora (en ms)
+    @Transactional
+    public void finalizarPasantiasExpiradas() {
+        List<Pasantia> publicadas = pasantiaMapper.findByEstado("PUBLICADA");
+        LocalDate hoy = LocalDate.now();
+        int count = 0;
+
+        for (Pasantia p : publicadas) {
+            if (p.getFechaCaducidad() != null && !p.getFechaCaducidad().isAfter(hoy)) {
+                p.setEstado(EstadoPasantia.FINALIZADA);
+                pasantiaMapper.update(p);
+                count++;
+                log.info("Pasantía finalizada automáticamente por caducidad. id={}, titulo={}, fechaCaducidad={}",
+                        p.getIdPasantia(), p.getTitulo(), p.getFechaCaducidad());
+            }
+        }
+
+        if (count > 0) {
+            log.info("Tarea programada: {} pasantía(s) finalizada(s) por fecha de caducidad vencida", count);
+        }
     }
 }

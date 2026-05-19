@@ -36,10 +36,10 @@ export default function Internships() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [user, setUser] = useState(null);
-  const [approving, setApproving] = useState(new Set());
   const [finalizing, setFinalizing] = useState(new Set());
   const [careers, setCareers] = useState([]);
   const [appliedIds, setAppliedIds] = useState(new Set());
+  const [empresaId, setEmpresaId] = useState(null);
 
   const readUserFromStorage = useCallback(() => {
     const token = getStoredItem("authToken");
@@ -70,6 +70,42 @@ export default function Internships() {
   }, [readUserFromStorage]);
 
   const isAdmin = user?.rol === "ADMINISTRADOR";
+  const isEmpresa = user?.rol === "EMPRESA";
+
+  // Obtener el ID de empresa del usuario autenticado (si es EMPRESA)
+  useEffect(() => {
+    async function loadEmpresaId() {
+      if (!isEmpresa) {
+        setEmpresaId(null);
+        return;
+      }
+
+      const token = getStoredItem("authToken");
+      if (!token) return;
+
+      try {
+        const empresasRes = await fetch(`${API}/empresas/consultarEmpresas`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+
+        if (!empresasRes.ok) return;
+
+        const empresas = await empresasRes.json();
+        const miEmpresa = empresas.find(e =>
+          e.email && user?.email &&
+          e.email.toLowerCase() === user.email.toLowerCase()
+        );
+
+        if (miEmpresa) {
+          setEmpresaId(miEmpresa.idEmpresa);
+        }
+      } catch (err) {
+        console.error("Error al obtener empresa:", err);
+      }
+    }
+
+    loadEmpresaId();
+  }, [isEmpresa, user]);
 
   async function load() {
     try {
@@ -101,6 +137,7 @@ export default function Internships() {
           id: p.idPasantia,
           titulo: p.titulo || "",
           empresa: p.nombreEmpresa || "Empresa no especificada",
+          idEmpresa: p.idEmpresa,
           ciudad: p.ciudad || "",
           modalidad: p.modalidad || "",
           carreras,
@@ -246,63 +283,12 @@ export default function Internships() {
     navigate(`/pasantias/${id}`);
   }
 
-  async function handleAprobar(id, e) {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (!isAdmin) {
-      alert("Solo los administradores pueden aprobar pasantías");
-      return;
-    }
-
-    const token = getStoredItem("authToken");
-    if (!token) {
-      alert("Debes iniciar sesión para realizar esta acción");
-      return;
-    }
-
-    if (!confirm("¿Estás seguro de que deseas aprobar esta pasantía?")) {
-      return;
-    }
-
-    setApproving(prev => new Set(prev).add(id));
-
-    try {
-      const res = await fetch(`${API}/pasantias/${id}/aprobar`, {
-        method: "PUT",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.mensaje || `Error ${res.status}`);
-      }
-
-      // Recargar la lista de pasantías
-      await load();
-      alert("Pasantía aprobada exitosamente");
-    } catch (err) {
-      console.error("Error al aprobar pasantía:", err);
-      alert(err.message || "Error al aprobar la pasantía");
-    } finally {
-      setApproving(prev => {
-        const next = new Set(prev);
-        next.delete(id);
-        return next;
-      });
-    }
-  }
-
   async function handleFinalizar(id, e) {
     e.preventDefault();
     e.stopPropagation();
     
-    if (!isAdmin) {
-      alert("Solo los administradores pueden finalizar pasantías");
+    if (!isAdmin && !isEmpresa) {
+      alert("Solo administradores o la empresa dueña pueden finalizar pasantías");
       return;
     }
 
@@ -312,7 +298,7 @@ export default function Internships() {
       return;
     }
 
-    if (!confirm("¿Estás seguro de que deseas finalizar esta pasantía?")) {
+    if (!confirm("¿Estás seguro de que deseas finalizar esta pasantía? Ya no será visible para los estudiantes.")) {
       return;
     }
 
@@ -346,6 +332,13 @@ export default function Internships() {
         return next;
       });
     }
+  }
+
+  // La empresa puede finalizar solo sus propias pasantías
+  function canFinalizar(job) {
+    if (isAdmin) return true;
+    if (isEmpresa && empresaId && job.idEmpresa === empresaId) return true;
+    return false;
   }
 
   return (
@@ -483,17 +476,7 @@ export default function Internships() {
                         >
                           Ver detalles
                         </button>
-                        {isAdmin && j.estado === "PENDIENTE_DE_APROBACION" && (
-                          <button
-                            className="btn btn-approve"
-                            onClick={(e) => handleAprobar(j.id, e)}
-                            disabled={approving.has(j.id)}
-                            style={{ fontSize: "0.9em" }}
-                          >
-                            {approving.has(j.id) ? "Aprobando..." : "Aprobar"}
-                          </button>
-                        )}
-                        {isAdmin && j.estado === "PUBLICADA" && (
+                        {j.estado === "PUBLICADA" && canFinalizar(j) && (
                           <button
                             className="btn btn-finish"
                             onClick={(e) => handleFinalizar(j.id, e)}

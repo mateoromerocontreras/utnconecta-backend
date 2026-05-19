@@ -25,21 +25,15 @@ import java.util.Map;
 /**
  * Controlador REST para gestionar las operaciones relacionadas con Pasantías.
  * 
- * <p>Este controlador maneja las siguientes operaciones:
+ * <p>Las pasantías tienen solo 2 estados:
  * <ul>
- *   <li>Obtener todas las pasantías</li>
- *   <li>Obtener pasantías publicadas (endpoint público)</li>
- *   <li>Obtener detalles de una pasantía por ID</li>
- *   <li>Registrar una nueva pasantía</li>
- *   <li>Aprobar una pasantía (solo ADMINISTRADOR)</li>
- *   <li>Finalizar una pasantía (solo ADMINISTRADOR)</li>
+ *   <li><strong>PUBLICADA</strong>: visible para todos, acepta postulaciones</li>
+ *   <li><strong>FINALIZADA</strong>: no visible para estudiantes, no acepta postulaciones</li>
  * </ul>
  * 
- * <p>Todas las respuestas incluyen el header Content-Type con charset UTF-8
- * para garantizar la correcta codificación de caracteres especiales.
- * 
- * @author Sistema de Pasantías
- * @version 1.0
+ * <p>Al crear una pasantía, se publica automáticamente sin necesidad de aprobación.
+ * La empresa dueña o el administrador pueden finalizarla manualmente.
+ * Las pasantías con fecha de caducidad vencida se finalizan automáticamente.
  */
 @RestController
 @RequestMapping("/pasantias")
@@ -64,14 +58,7 @@ public class PasantiaController {
     private SecurityService securityService;
 
     /**
-     * Obtiene todas las pasantías del sistema.
-     * 
-     * <p>Este endpoint requiere autenticación y retorna todas las pasantías
-     * independientemente de su estado. Los usuarios solo verán las pasantías
-     * según sus permisos definidos en el servicio de seguridad.
-     * 
-     * @return ResponseEntity con lista de PasantiaResponseDTO y código HTTP 200 (OK)
-     * @see PasantiaResponseDTO
+     * Obtiene todas las pasantías del sistema (para administradores).
      */
     @GetMapping(produces = CONTENT_TYPE_JSON_UTF8)
     public ResponseEntity<List<PasantiaResponseDTO>> getAllPasantias() {
@@ -83,15 +70,7 @@ public class PasantiaController {
 
     /**
      * Obtiene todas las pasantías con estado PUBLICADA.
-     * 
-     * <p>Este es un endpoint público que no requiere autenticación.
-     * Retorna únicamente las pasantías que han sido aprobadas y publicadas,
-     * permitiendo que cualquier usuario pueda ver las pasantías disponibles.
-     * 
-     * @return ResponseEntity con lista de PasantiaResponseDTO (solo PUBLICADAS) 
-     *         y código HTTP 200 (OK)
-     * @see PasantiaResponseDTO
-     * @see EstadoPasantia#PUBLICADA
+     * Endpoint público: las pasantías finalizadas NO aparecen aquí.
      */
     @GetMapping("/publicadas")
     public ResponseEntity<List<PasantiaResponseDTO>> getPasantiasPublicadas() {
@@ -103,16 +82,7 @@ public class PasantiaController {
 
     /**
      * Obtiene los detalles completos de una pasantía por su ID.
-     * 
-     * <p>Este endpoint es público y no requiere autenticación. Retorna información
-     * detallada de la pasantía incluyendo datos de la empresa asociada, carreras
-     * relacionadas y todos los campos disponibles.
-     * 
-     * @param id ID único de la pasantía a consultar
-     * @return ResponseEntity con PasantiaDetalleDTO y código HTTP 200 (OK) si existe,
-     *         o código HTTP 404 (NOT_FOUND) si no se encuentra,
-     *         o código HTTP 500 (INTERNAL_SERVER_ERROR) en caso de error
-     * @see PasantiaDetalleDTO
+     * Endpoint público.
      */
     @GetMapping("/{id}")
     public ResponseEntity<Object> getPasantiaById(@PathVariable Integer id) {
@@ -139,37 +109,7 @@ public class PasantiaController {
 
     /**
      * Registra una nueva pasantía en el sistema.
-     * 
-     * <p>Este endpoint requiere autenticación y valida que el usuario tenga permisos
-     * para crear pasantías para la empresa especificada. La pasantía se crea con
-     * estado PENDIENTE_DE_APROBACION y debe ser aprobada por un ADMINISTRADOR
-     * antes de ser publicada.
-     * 
-     * <p>El proceso incluye:
-     * <ul>
-     *   <li>Validación de permisos del usuario autenticado</li>
-     *   <li>Validación de existencia de la empresa</li>
-     *   <li>Validación de existencia de las carreras asociadas</li>
-     *   <li>Validación de fechas (fecha de caducidad no puede ser anterior a hoy)</li>
-     *   <li>Inserción en la base de datos</li>
-     *   <li>Asociación con las carreras especificadas</li>
-     * </ul>
-     * 
-     * @param request DTO con los datos de la pasantía a registrar.
-     *                Debe incluir: título, puesto, ciudad, modalidad, empresa, etc.
-     *                Las validaciones se realizan mediante @Valid
-     * @return ResponseEntity con código HTTP 201 (CREATED) y el objeto PasantiaResponseDTO
-     *         creado si la operación es exitosa,
-     *         o código HTTP 403 (FORBIDDEN) si el usuario no tiene permisos,
-     *         o código HTTP 400 (BAD_REQUEST) si los datos son inválidos,
-     *         o código HTTP 500 (INTERNAL_SERVER_ERROR) en caso de error
-     * @throws SecurityException si el usuario no tiene permisos para crear pasantías
-     *                          para la empresa especificada
-     * @throws IllegalArgumentException si los datos proporcionados son inválidos
-     *                                  (empresa no existe, carrera no existe, fechas inválidas)
-     * @see PasantiaRequestDTO
-     * @see PasantiaResponseDTO
-     * @see EstadoPasantia#PENDIENTE_DE_APROBACION
+     * La pasantía se crea directamente en estado PUBLICADA (sin aprobación).
      */
     @PostMapping("/registrar")
     @SecurityRequirement(name = "Bearer Authentication")
@@ -180,13 +120,13 @@ public class PasantiaController {
             log.debug("Registrar pasantía. idEmpresa={}", request.getIdEmpresa());
             securityService.validarPermisoCrearPasantia(request.getIdEmpresa());
             
-            // Crear la pasantía en la base de datos
+            // Crear la pasantía en la base de datos (se publica automáticamente)
             PasantiaResponseDTO pasantia = pasantiaService.crearPasantia(request);
             
             // Construir respuesta exitosa
             Map<String, Object> response = new HashMap<>();
             response.put(KEY_CODIGO, 0);
-            response.put(KEY_MENSAJE, "Pasantía registrada exitosamente");
+            response.put(KEY_MENSAJE, "Pasantía publicada exitosamente");
             response.put(KEY_DATA, pasantia);
             
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -217,121 +157,26 @@ public class PasantiaController {
     }
 
     /**
-     * Aprueba y publica una pasantía cambiando su estado a PUBLICADA.
-     * 
-     * <p>Este endpoint está restringido exclusivamente a usuarios con rol ADMINISTRADOR.
-     * Solo las pasantías en estado PENDIENTE_DE_APROBACION pueden ser aprobadas.
-     * Una vez aprobada, la pasantía queda visible públicamente en el endpoint
-     * GET /pasantias/publicadas.
-     * 
-     * <p>El proceso incluye:
-     * <ul>
-     *   <li>Validación de que el usuario es ADMINISTRADOR</li>
-     *   <li>Validación de que la pasantía existe</li>
-     *   <li>Validación de que la pasantía está en estado PENDIENTE_DE_APROBACION</li>
-     *   <li>Actualización del estado a PUBLICADA</li>
-     * </ul>
-     * 
-     * @param id ID único de la pasantía a aprobar
-     * @return ResponseEntity con código HTTP 200 (OK) y el objeto PasantiaResponseDTO
-     *         actualizado si la operación es exitosa,
-     *         o código HTTP 403 (FORBIDDEN) si el usuario no es ADMINISTRADOR,
-     *         o código HTTP 400 (BAD_REQUEST) si la pasantía no existe o no puede
-     *         ser aprobada (estado inválido),
-     *         o código HTTP 500 (INTERNAL_SERVER_ERROR) en caso de error
-     * @throws SecurityException si el usuario no tiene rol ADMINISTRADOR
-     * @throws IllegalArgumentException si la pasantía no existe
-     * @throws IllegalStateException si la pasantía no está en estado PENDIENTE_DE_APROBACION
-     * @see EstadoPasantia#PUBLICADA
-     * @see EstadoPasantia#PENDIENTE_DE_APROBACION
-     */
-    @PutMapping("/{id}/aprobar")
-    public ResponseEntity<Map<String, Object>> aprobarPasantia(@PathVariable Integer id) {
-        try {
-            // Validar que el usuario es ADMINISTRADOR
-            securityService.validarEsAdministrador();
-            
-            // Crear DTO para actualizar estado a PUBLICADA
-            ActualizarEstadoPasantiaDTO estadoDTO = new ActualizarEstadoPasantiaDTO();
-            estadoDTO.setEstado(EstadoPasantia.PUBLICADA);
-            
-            // Actualizar el estado de la pasantía en la base de datos
-            PasantiaResponseDTO pasantia = pasantiaService.actualizarEstado(id, estadoDTO);
-            
-            // Construir respuesta exitosa
-            Map<String, Object> response = new HashMap<>();
-            response.put(KEY_CODIGO, 0);
-            response.put(KEY_MENSAJE, "Pasantía aprobada y publicada exitosamente");
-            response.put(KEY_DATA, pasantia);
-            
-            return ResponseEntity.ok()
-                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON_UTF8)
-                    .body(response);
-        } catch (SecurityException | AccessDeniedException e) {
-            // Usuario no es ADMINISTRADOR
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put(KEY_CODIGO, -1);
-            errorResponse.put(KEY_MENSAJE, e.getMessage());
-            
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
-        } catch (IllegalArgumentException e) {
-            // La pasantía no existe
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put(KEY_CODIGO, -1);
-            errorResponse.put(KEY_MENSAJE, e.getMessage());
-            
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        } catch (IllegalStateException e) {
-            // La pasantía no está en un estado válido para ser aprobada
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put(KEY_CODIGO, -1);
-            errorResponse.put(KEY_MENSAJE, e.getMessage());
-            
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        } catch (Exception e) {
-            // Error inesperado del servidor
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put(KEY_CODIGO, -1);
-            errorResponse.put(KEY_MENSAJE, "Error al aprobar la pasantía: " + e.getMessage());
-            
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
-        }
-    }
-
-    /**
      * Finaliza una pasantía cambiando su estado a FINALIZADA.
      * 
-     * <p>Este endpoint está restringido exclusivamente a usuarios con rol ADMINISTRADOR.
-     * Solo las pasantías en estado PUBLICADA pueden ser finalizadas. Una vez finalizada,
-     * la pasantía ya no aparecerá en el listado de pasantías publicadas y no podrá
-     * recibir nuevas postulaciones.
-     * 
-     * <p>El proceso incluye:
+     * <p>Accesible para:
      * <ul>
-     *   <li>Validación de que el usuario es ADMINISTRADOR</li>
-     *   <li>Validación de que la pasantía existe</li>
-     *   <li>Validación de que la pasantía está en estado PUBLICADA</li>
-     *   <li>Actualización del estado a FINALIZADA</li>
+     *   <li>ADMINISTRADOR: puede finalizar cualquier pasantía</li>
+     *   <li>EMPRESA: solo puede finalizar sus propias pasantías</li>
      * </ul>
      * 
-     * @param id ID único de la pasantía a finalizar
-     * @return ResponseEntity con código HTTP 200 (OK) y el objeto PasantiaResponseDTO
-     *         actualizado si la operación es exitosa,
-     *         o código HTTP 403 (FORBIDDEN) si el usuario no es ADMINISTRADOR,
-     *         o código HTTP 400 (BAD_REQUEST) si la pasantía no existe o no puede
-     *         ser finalizada (estado inválido),
-     *         o código HTTP 500 (INTERNAL_SERVER_ERROR) en caso de error
-     * @throws SecurityException si el usuario no tiene rol ADMINISTRADOR
-     * @throws IllegalArgumentException si la pasantía no existe
-     * @throws IllegalStateException si la pasantía no está en estado PUBLICADA
-     * @see EstadoPasantia#FINALIZADA
-     * @see EstadoPasantia#PUBLICADA
+     * <p>Una vez finalizada, la pasantía ya no es visible para los estudiantes
+     * y no acepta nuevas postulaciones.
      */
     @PutMapping("/{id}/finalizar")
+    @SecurityRequirement(name = "Bearer Authentication")
+    @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'EMPRESA')")
     public ResponseEntity<Map<String, Object>> finalizarPasantia(@PathVariable Integer id) {
         try {
-            // Validar que el usuario es ADMINISTRADOR
-            securityService.validarEsAdministrador();
+            // Validar permisos: admin puede finalizar cualquiera, empresa solo las suyas
+            if (!securityService.esAdministrador()) {
+                securityService.validarPermisoModificarPasantia(id);
+            }
             
             // Crear DTO para actualizar estado a FINALIZADA
             ActualizarEstadoPasantiaDTO estadoDTO = new ActualizarEstadoPasantiaDTO();
@@ -350,7 +195,7 @@ public class PasantiaController {
                     .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON_UTF8)
                     .body(response);
         } catch (SecurityException | AccessDeniedException e) {
-            // Usuario no es ADMINISTRADOR
+            // Usuario no tiene permisos
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put(KEY_CODIGO, -1);
             errorResponse.put(KEY_MENSAJE, e.getMessage());

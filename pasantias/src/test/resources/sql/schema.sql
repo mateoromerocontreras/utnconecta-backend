@@ -147,7 +147,7 @@ CREATE TABLE Pasantia (
     cantidad_de_pasantes INT NOT NULL DEFAULT 1,
     fecha_publicacion DATE NOT NULL,
     fecha_caducidad DATE NOT NULL,
-    estado ENUM('PUBLICADA', 'FINALIZADA', 'DADA_DE_BAJA', 'PENDIENTE_DE_APROBACION', 'EXPIRADA') NOT NULL DEFAULT 'PENDIENTE_DE_APROBACION',
+    estado ENUM('PUBLICADA', 'FINALIZADA') NOT NULL DEFAULT 'PUBLICADA',
     email_contacto VARCHAR(100) NOT NULL,
     conocimientos TEXT,
     otros_requisitos TEXT,
@@ -348,11 +348,11 @@ INSERT INTO CV (nombre_archivo, datos_cv, id_estudiante) VALUES
 INSERT INTO Pasantia (titulo, puesto_a_cubrir, ciudad, modalidad, asignacion_estimulo, cantidad_de_pasantes, fecha_publicacion, fecha_caducidad, estado, email_contacto, conocimientos, otros_requisitos, beneficios, id_empresa) VALUES
 ('Desarrollador Backend Java', 'Desarrollador Junior', 'Córdoba', 'Híbrida', 50000.0, 2, '2025-11-01', '2026-02-01', 'PUBLICADA', 'rrhh@biofarmaweb.com.ar', NULL, NULL, NULL, 1),
 ('Analista de Sistemas', 'Analista Junior', 'Córdoba', 'Presencial', 45000.0, 1, '2025-11-01', '2026-01-15', 'PUBLICADA', 'seleccion@hospital-italiano.org.ar', NULL, NULL, NULL, 3),
-('Desarrollador Frontend React', 'Desarrollador Frontend', 'Córdoba', 'Remoto', 48000.0, 3, '2025-10-15', '2025-12-31', 'PENDIENTE_DE_APROBACION', 'natalia.barrionuevo@avenga.com', NULL, NULL, NULL, 6),
-('Pasante IT', 'Pasante IT', 'Córdoba', 'Híbrida', 725888.0, 3, '2025-12-01', '2026-03-01', 'PENDIENTE_DE_APROBACION', 'rrhh@claro.com.ar', 'Conocimientos de lenguaje de base de datos Oracle\nConocimientos en metodologías ágiles y DevOps\nConocimientos de Linux\nPoder dar soporte a ejecuciones realizadas por los usuarios que usan las herramientas de IC/DC\nInglés (nivel medio)', 'Simplicidad en tu forma de pensar y hacer\nVocación de servicio', 'OSDE 210', 19),
-('Pasante de Garantía', 'Pasante de Garantía', 'Córdoba', 'Presencial', 712656.0, 2, '2025-12-01', '2026-03-01', 'PENDIENTE_DE_APROBACION', 'rocio.suarez@grupoquijada.com.ar', 'Estudiantes que estén cursando 3ro o 4to año tendrían los conocimientos necesarios para poder desempeñarse en la posición', 'Manejo de Excel (Básico)', 'SWISS MEDICAL SMG 20', 20),
-('Pasante en Seguridad y Ambiente', 'Pasante en Seguridad y Ambiente', 'Córdoba', 'Presencial', 473101.0, 1, '2025-12-01', '2026-03-01', 'PENDIENTE_DE_APROBACION', 'alfonsina.gioino@dayco.com', 'Conocimiento Excel avanzado', NULL, NULL, 21),
-('Auxiliar de soporte técnico', 'Auxiliar de soporte técnico', 'Córdoba', 'Presencial', 532411.18, 1, '2025-12-01', '2026-03-01', 'PENDIENTE_DE_APROBACION', 'azul.merlo@hospitalprivado.com.ar', 'Conocimientos en reparación y armado de computadoras, redes, impresoras, entre otras. Buen manejo de Word y Excel.', NULL, 'Ninguno', 22);
+('Desarrollador Frontend React', 'Desarrollador Frontend', 'Córdoba', 'Remoto', 48000.0, 3, '2025-10-15', '2025-12-31', 'PUBLICADA', 'natalia.barrionuevo@avenga.com', NULL, NULL, NULL, 6),
+('Pasante IT', 'Pasante IT', 'Córdoba', 'Híbrida', 725888.0, 3, '2025-12-01', '2026-03-01', 'PUBLICADA', 'rrhh@claro.com.ar', 'Conocimientos de lenguaje de base de datos Oracle\nConocimientos en metodologías ágiles y DevOps\nConocimientos de Linux\nPoder dar soporte a ejecuciones realizadas por los usuarios que usan las herramientas de IC/DC\nInglés (nivel medio)', 'Simplicidad en tu forma de pensar y hacer\nVocación de servicio', 'OSDE 210', 19),
+('Pasante de Garantía', 'Pasante de Garantía', 'Córdoba', 'Presencial', 712656.0, 2, '2025-12-01', '2026-03-01', 'PUBLICADA', 'rocio.suarez@grupoquijada.com.ar', 'Estudiantes que estén cursando 3ro o 4to año tendrían los conocimientos necesarios para poder desempeñarse en la posición', 'Manejo de Excel (Básico)', 'SWISS MEDICAL SMG 20', 20),
+('Pasante en Seguridad y Ambiente', 'Pasante en Seguridad y Ambiente', 'Córdoba', 'Presencial', 473101.0, 1, '2025-12-01', '2026-03-01', 'PUBLICADA', 'alfonsina.gioino@dayco.com', 'Conocimiento Excel avanzado', NULL, NULL, 21),
+('Auxiliar de soporte técnico', 'Auxiliar de soporte técnico', 'Córdoba', 'Presencial', 532411.18, 1, '2025-12-01', '2026-03-01', 'PUBLICADA', 'azul.merlo@hospitalprivado.com.ar', 'Conocimientos en reparación y armado de computadoras, redes, impresoras, entre otras. Buen manejo de Word y Excel.', NULL, 'Ninguno', 22);
 
 --
 -- Inserta relaciones Pasantia-Carrera

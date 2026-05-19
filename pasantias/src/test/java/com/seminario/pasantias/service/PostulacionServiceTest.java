@@ -146,7 +146,7 @@ class PostulacionServiceTest {
         PostulacionRequestDTO request = baseRequest();
         Estudiante estudiante = estudianteWithCareer("Ingeniería Industrial");
         Pasantia pasantia = publishedPasantia(LocalDate.now().plusDays(30));
-        pasantia.setEstado(EstadoPasantia.PENDIENTE_DE_APROBACION);
+        pasantia.setEstado(EstadoPasantia.FINALIZADA);
 
         when(estudianteMapper.findById(ID_ESTUDIANTE)).thenReturn(Optional.of(estudiante));
         when(pasantiaMapper.findById(ID_PASANTIA)).thenReturn(Optional.of(pasantia));
@@ -158,21 +158,8 @@ class PostulacionServiceTest {
                 .hasMessageContaining("no está disponible para postulaciones");
     }
 
-    @Test
-    void crearPostulacion_shouldFailWhenPasantiaExpired() {
-        PostulacionRequestDTO request = baseRequest();
-        Estudiante estudiante = estudianteWithCareer("Ingeniería Industrial");
-        Pasantia pasantia = publishedPasantia(LocalDate.now().minusDays(1));
 
-        when(estudianteMapper.findById(ID_ESTUDIANTE)).thenReturn(Optional.of(estudiante));
-        when(pasantiaMapper.findById(ID_PASANTIA)).thenReturn(Optional.of(pasantia));
-        when(pasantiaMapper.findCarrerasByPasantiaId(ID_PASANTIA))
-                .thenReturn(List.of(carrera("Ingeniería Industrial")));
 
-        assertThatThrownBy(() -> postulacionService.crearPostulacion(request))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("caducado");
-    }
 
     @Test
     void crearPostulacion_shouldFailWhenDuplicateApplication() {
