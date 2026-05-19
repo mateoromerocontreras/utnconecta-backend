@@ -38,6 +38,17 @@ mvn clean package -DskipTests
 java -jar target/pasantias-0.0.1-SNAPSHOT.jar
 ```
 
+### **Backend Local (Sin Docker)**
+```bash
+# 1. Iniciar y verificar MySQL/MariaDB local
+sudo systemctl start mysql
+sudo systemctl status mysql
+
+# 2. Ejecutar backend con Spring Boot
+cd pasantias
+./mvnw -DskipTests spring-boot:run
+```
+
 ### **Base de Datos**
 ```bash
 cd script_bd

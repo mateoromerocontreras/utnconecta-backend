@@ -260,16 +260,6 @@ export default function PasantiaDetalle() {
       return;
     }
 
-    if (!cvLoading && cvList.length === 0) {
-      pushToast("Necesitas subir un CV en tu perfil antes de postularte", "error");
-      return;
-    }
-
-    if (!selectedCv) {
-      pushToast("Selecciona un CV para postularte", "error");
-      return;
-    }
-
     try {
       setRegistering(true);
       const token = getStoredItem("authToken");
@@ -673,20 +663,16 @@ export default function PasantiaDetalle() {
           >
             <h3 style={{ marginTop: 0, marginBottom: "0.75rem" }}>Confirmar postulacion</h3>
             <p style={{ marginBottom: "1.25rem", color: "#475569" }}>
-              Vas a enviar tu postulacion a esta pasantia. Deseas continuar?
+              Vas a enviar tu postulacion a esta pasantia. Si tienes un CV cargado, puedes adjuntarlo; si no, igual puedes continuar.
             </p>
 
             {user?.rol === "ESTUDIANTE" && (
               <div style={{ marginBottom: "1rem" }}>
                 <label htmlFor="cvSelect" style={{ display: "block", fontWeight: 600, marginBottom: "0.4rem" }}>
-                  Selecciona un CV para postularte
+                  Selecciona un CV opcional
                 </label>
                 {cvLoading ? (
                   <p style={{ color: "#64748b", fontSize: "0.9rem" }}>Cargando CVs...</p>
-                ) : cvList.length === 0 ? (
-                  <p style={{ color: "#dc2626", fontSize: "0.9rem" }}>
-                    No tienes CVs cargados. Sube uno desde tu perfil antes de postularte.
-                  </p>
                 ) : (
                   <select
                     id="cvSelect"
@@ -694,6 +680,7 @@ export default function PasantiaDetalle() {
                     onChange={(e) => setSelectedCv(e.target.value)}
                     style={{ width: "100%", padding: "0.65rem 0.75rem", borderRadius: "8px", border: "1px solid #cbd5e1" }}
                   >
+                    <option value="">Sin CV</option>
                     {cvList.map((cv) => (
                       <option key={cv.idCv} value={cv.idCv}>
                         {cv.nombreArchivo || `CV ${cv.idCv}`}
@@ -718,10 +705,7 @@ export default function PasantiaDetalle() {
                   setConfirmOpen(false);
                   handleConfirmarPostulacion();
                 }}
-                disabled={
-                  registering ||
-                  (user?.rol === "ESTUDIANTE" && (cvLoading || cvList.length === 0 || !selectedCv))
-                }
+                disabled={registering}
               >
                 {registering ? "Enviando..." : "Confirmar"}
               </button>

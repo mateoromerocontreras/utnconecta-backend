@@ -247,6 +247,40 @@ public class PostulacionService {
         Postulacion postulacion = postulacionMapper.findByIdWithRelations(id)
                 .orElseThrow(() -> new IllegalArgumentException("Postulación no encontrada con ID: " + id));
 
+        // Obtener el usuario autenticado para validar permisos
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        
+        Optional<Usuario> usuarioOpt = usuarioService.findByUsername(username);
+        if (usuarioOpt.isPresent()) {
+            Usuario usuario = usuarioOpt.get();
+            
+            // ADMINISTRADOR puede ver cualquier postulación
+            if (usuario.getRol() != null && "ADMINISTRADOR".equals(usuario.getRol().getNombre())) {
+                // Permitir acceso sin restricciones
+                return mapperUtil.entityToDetalleDto(postulacion);
+            }
+            
+            // Buscar la empresa asociada al usuario (si es EMPRESA)
+            Empresa empresaDelUsuario = empresaMapper.findByIdUsuario(usuario.getIdUsuario());
+            
+            // Si el usuario es EMPRESA, validar que la postulación sea de sus pasantías
+            if (empresaDelUsuario != null) {
+                if (postulacion.getPasantia() == null || postulacion.getPasantia().getEmpresa() == null ||
+                    !postulacion.getPasantia().getEmpresa().getIdEmpresa().equals(empresaDelUsuario.getIdEmpresa())) {
+                    throw new SecurityException(
+                        "No tienes permiso para ver esta postulación. Solo puedes ver postulaciones de tus propias pasantías"
+                    );
+                }
+            }
+            // Si el usuario es ESTUDIANTE, validar que la postulación sea suya
+            else if (postulacion.getEstudiante() != null && !postulacion.getEstudiante().getIdEstudiante().equals(usuario.getIdUsuario())) {
+                throw new SecurityException(
+                    "No tienes permiso para ver esta postulación. Solo puedes ver tus propias postulaciones"
+                );
+            }
+        }
+
         return mapperUtil.entityToDetalleDto(postulacion);
     }
 
@@ -310,6 +344,41 @@ public class PostulacionService {
      */
     @Transactional(readOnly = true)
     public List<PostulacionResponseDTO> obtenerTodasPostulacionesPorPasantia(Integer pasantiaId) {
+        // Obtener el usuario autenticado para validar permisos
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        
+        // Si el usuario es EMPRESA, validar que la pasantía pertenece a su empresa
+        Optional<Usuario> usuarioOpt = usuarioService.findByUsername(username);
+        if (usuarioOpt.isPresent()) {
+            Usuario usuario = usuarioOpt.get();
+            
+            // ADMINISTRADOR puede ver postulaciones de cualquier pasantía
+            if (usuario.getRol() != null && "ADMINISTRADOR".equals(usuario.getRol().getNombre())) {
+                // Permitir acceso sin restricciones
+            } else {
+                // Para EMPRESA, validar que la pasantía sea suya
+                Empresa empresaDelUsuario = empresaMapper.findByIdUsuario(usuario.getIdUsuario());
+                
+                if (empresaDelUsuario != null) {
+                    // Obtener la pasantía para verificar su empresa
+                    Optional<Pasantia> pasantiaOpt = pasantiaMapper.findById(pasantiaId);
+                    if (pasantiaOpt.isPresent()) {
+                        Pasantia pasantia = pasantiaOpt.get();
+                        // Validar que la pasantía pertenece a la empresa del usuario autenticado
+                        if (pasantia.getEmpresa() == null || 
+                            !pasantia.getEmpresa().getIdEmpresa().equals(empresaDelUsuario.getIdEmpresa())) {
+                            throw new SecurityException(
+                                "No tienes permiso para ver postulaciones de una pasantía que no pertenece a tu empresa"
+                            );
+                        }
+                    } else {
+                        throw new IllegalArgumentException("La pasantía especificada no existe");
+                    }
+                }
+            }
+        }
+        
         List<PostulacionResponseDTO> postulaciones = postulacionMapper.findAllByPasantiaId(pasantiaId);
         
         // Calcular campos adicionales

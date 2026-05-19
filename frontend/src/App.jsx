@@ -20,6 +20,9 @@ import RegistrarPasantia from "./pages/RegistrarPasantia.jsx";
 import PasantiaDetalle from "./pages/PasantiaDetalle.jsx";
 import PasantiasPublicadas from "./pages/PasantiasPublicadas.jsx";
 import PostulacionDetalle from "./pages/PostulacionDetalle.jsx";
+import TerminosYCondiciones from "./pages/TerminosYCondiciones.jsx";
+import PoliticaPrivacidad from "./pages/PoliticaPrivacidad.jsx";
+import Footer from "./components/Footer.jsx";
 import "./styles/admin-layout.css";
 
 function getStoredItem(key) {
@@ -91,6 +94,8 @@ export default function App() {
       <Route path="/perfil" element={<Perfil />} />
       <Route path="/perfil/completar" element={<CompletarPerfil />} />
       <Route path="/perfil/modificar" element={<ModificarPerfil />} />
+      <Route path="/terminos-y-condiciones" element={<TerminosYCondiciones />} />
+      <Route path="/politica-de-privacidad" element={<PoliticaPrivacidad />} />
     </Routes>
   ), []);
 
@@ -105,6 +110,7 @@ export default function App() {
         <>
           <Navbar />
           <main className="main">{routes}</main>
+          <Footer />
         </>
       )}
     </div>
