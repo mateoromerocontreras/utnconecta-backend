@@ -61,6 +61,16 @@ services:
      networks:
        - pasantias-network
 
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: pasantias_mailpit
+    restart: unless-stopped
+    ports:
+      - "1025:1025"   # SMTP
+      - "8025:8025"   # Web UI
+    networks:
+      - pasantias-network
+
 networks:
   pasantias-network:
     driver: bridge

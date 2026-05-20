@@ -101,7 +101,7 @@ public class EstudianteController {
                 usuario.getIdUsuario()
             );
 
-            emailVerificationService.enviarCorreoDeVerificacion(usuario);
+            emailVerificationService.crearYEnviarToken(usuario);
 
             response.setCode(0);
             response.setMessage("Se envio un email de verificacion para activar la cuenta");

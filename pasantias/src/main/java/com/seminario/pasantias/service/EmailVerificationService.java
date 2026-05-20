@@ -4,17 +4,21 @@ import com.seminario.pasantias.entity.EmailVerificationToken;
 import com.seminario.pasantias.entity.Usuario;
 import com.seminario.pasantias.persistence.EmailVerificationTokenMapper;
 import com.seminario.pasantias.persistence.UsuarioMapper;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * Servicio de lógica de negocio para la verificación de email.
+ * Se encarga de generar, persistir y validar tokens; delega el envío
+ * físico del correo en la abstracción {@link EmailSender}.
+ */
 @Service
+@RequiredArgsConstructor
 public class EmailVerificationService {
 
     public static class EmailVerificationException extends RuntimeException {
@@ -23,49 +27,33 @@ public class EmailVerificationService {
         }
     }
 
-    @Autowired
-    private EmailVerificationTokenMapper tokenMapper;
-
-    @Autowired
-    private UsuarioMapper usuarioMapper;
-
-    @Autowired
-    private JavaMailSender mailSender;
-
-    @Value("${app.verification.base-url:http://localhost:8080/auth/confirmar?token=}")
-    private String verificationBaseUrl;
+    private final EmailVerificationTokenMapper tokenMapper;
+    private final UsuarioMapper usuarioMapper;
+    private final EmailSender emailSender;
 
     @Value("${app.verification.expiration-hours:24}")
     private long expirationHours;
 
-    @Value("${app.mail.from:no-reply@pasantias.local}")
-    private String defaultFrom;
+    /**
+     * Genera un token de verificación, lo persiste y delega el envío del correo.
+     */
+    public void crearYEnviarToken(Usuario usuario) {
+        String token = UUID.randomUUID().toString();
 
-    public void enviarCorreoDeVerificacion(Usuario usuario) {
         EmailVerificationToken verificationToken = new EmailVerificationToken();
         verificationToken.setIdUsuario(usuario.getIdUsuario());
-        verificationToken.setToken(UUID.randomUUID().toString());
+        verificationToken.setToken(token);
         verificationToken.setFechaExpiracion(LocalDateTime.now().plusHours(expirationHours));
         verificationToken.setUsado(false);
         verificationToken.setFechaCreacion(LocalDateTime.now());
         tokenMapper.insert(verificationToken);
 
-        String verificationLink = verificationBaseUrl + verificationToken.getToken();
-
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(defaultFrom);
-        message.setTo(usuario.getEmail());
-        message.setSubject("Confirma tu cuenta");
-        message.setText(
-                "Hola " + usuario.getUsername() + ",\n\n" +
-                "Para activar tu cuenta, hacé click o copia el siguiente enlace en tu navegador:\n" +
-                verificationLink + "\n\n" +
-                "Este enlace vence en " + expirationHours + " horas.\n" +
-                "Si no creaste una cuenta, ignorá este correo."
-        );
-        mailSender.send(message);
+        emailSender.sendVerificationEmail(usuario.getEmail(), token);
     }
 
+    /**
+     * Valida un token de verificación y activa la cuenta del usuario.
+     */
     public void confirmarToken(String token) {
         Optional<EmailVerificationToken> tokenOpt = tokenMapper.findByToken(token);
         if (tokenOpt.isEmpty()) {

@@ -214,7 +214,7 @@ public class AuthController {
                 usuario.getIdUsuario()
             );
 
-            emailVerificationService.enviarCorreoDeVerificacion(usuario);
+            emailVerificationService.crearYEnviarToken(usuario);
 
             return ResponseEntity.ok(new AuthResponse(
                 null,
