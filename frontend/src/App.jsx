@@ -22,6 +22,7 @@ import PasantiasPublicadas from "./pages/PasantiasPublicadas.jsx";
 import PostulacionDetalle from "./pages/PostulacionDetalle.jsx";
 import TerminosYCondiciones from "./pages/TerminosYCondiciones.jsx";
 import PoliticaPrivacidad from "./pages/PoliticaPrivacidad.jsx";
+import ConfirmarCuenta from "./pages/ConfirmarCuenta.jsx";
 import Footer from "./components/Footer.jsx";
 import "./styles/admin-layout.css";
 
@@ -85,6 +86,7 @@ export default function App() {
       <Route path="/empresas" element={<Empresas />} />
       <Route path="/administrar-usuarios" element={<RegistrarUsuario />} />
       <Route path="/registrarse" element={<RegistrarEstudiante />} />
+      <Route path="/confirmar-cuenta" element={<ConfirmarCuenta />} />
       <Route path="/login" element={<Login />} />
       <Route path="/empresa-list" element={<Empresas />} />
       <Route path="/registrar-empresa" element={<RegistrarEmpresa />} />
