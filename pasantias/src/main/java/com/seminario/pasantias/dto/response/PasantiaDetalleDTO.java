@@ -171,10 +171,9 @@ public class PasantiaDetalleDTO {
     @Builder
     public static class EstadisticasPostulacionDTO {
         private Integer total;
-        private Integer borradores;
-        private Integer pendientes;
-        private Integer publicadas;
-        private Integer cubiertas;
-        private Integer finalizadas;
+        private Integer postulados;
+        private Integer aceptados;
+        private Integer rechazados;
+        private Integer finalizados;
     }
 }

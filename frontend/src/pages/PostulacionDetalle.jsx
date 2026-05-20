@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../styles/pasantias.css";
 
@@ -19,6 +19,23 @@ export default function PostulacionDetalle() {
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [estadoFilter, setEstadoFilter] = useState("todas");
+
+  // Actions modal state
+  const [modalOpen, setModalOpen] = useState(false);
+  const [actionType, setActionType] = useState(null); // 'ACEPTADO' | 'RECHAZADO' | 'FINALIZADA'
+  const [selectedPostulacionId, setSelectedPostulacionId] = useState(null);
+  const [actionForm, setActionForm] = useState({ observaciones: "", fechaInicioContrato: "", duracionMeses: "" });
+  const [actionSubmitting, setActionSubmitting] = useState(false);
+  const [actionError, setActionError] = useState("");
+  const [toasts, setToasts] = useState([]);
+
+  const pushToast = useCallback((message, type = "success") => {
+    const toastId = crypto.randomUUID();
+    setToasts(curr => [...curr, { id: toastId, message, type }]);
+    setTimeout(() => setToasts(curr => curr.filter(t => t.id !== toastId)), 4500);
+  }, []);
+
+  const closeToast = (id) => setToasts(curr => curr.filter(t => t.id !== id));
 
   const storedUserInfo = getStoredItem("userInfo");
   const userInfo = storedUserInfo ? JSON.parse(storedUserInfo) : null;
@@ -103,6 +120,68 @@ export default function PostulacionDetalle() {
       load();
     }
   }, [pasantiaId]);
+
+  const handleAction = async (e) => {
+    e.preventDefault();
+    setActionError("");
+
+    if ((actionType === "ACEPTADO" || actionType === "RECHAZADO") && (!actionForm.observaciones || actionForm.observaciones.trim() === "")) {
+      setActionError("Las observaciones son obligatorias.");
+      return;
+    }
+    if (actionType === "FINALIZADA") {
+      if (!actionForm.fechaInicioContrato || !actionForm.duracionMeses) {
+        setActionError("La fecha de inicio de contrato y la duración en meses son obligatorias.");
+        return;
+      }
+    }
+
+    try {
+      setActionSubmitting(true);
+      const token = getStoredItem("authToken");
+      const url = actionType === "FINALIZADA" 
+        ? `${API}/postulaciones/${selectedPostulacionId}/finalizar-ciclo`
+        : `${API}/postulaciones/${selectedPostulacionId}/estado`;
+        
+      const payload = {
+        estado: actionType,
+        observaciones: actionForm.observaciones || null,
+        fechaInicioContrato: actionForm.fechaInicioContrato || null,
+        duracionMeses: actionForm.duracionMeses ? parseInt(actionForm.duracionMeses) : null
+      };
+
+      const res = await fetch(url, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (res.ok && data.codigo === 0) {
+        pushToast(`Postulación ${actionType.toLowerCase()} exitosamente.`, "success");
+        setModalOpen(false);
+        // Refresh postulaciones
+        setPostulaciones(curr => curr.map(p => p.idPostulacion === selectedPostulacionId ? { ...p, estado: actionType, observaciones: payload.observaciones || p.observaciones } : p));
+      } else {
+        setActionError(data.mensaje || "Error al actualizar postulación");
+      }
+    } catch (err) {
+      setActionError(err.message || "Error de red");
+    } finally {
+      setActionSubmitting(false);
+    }
+  };
+
+  const openActionModal = (id, type) => {
+    setSelectedPostulacionId(id);
+    setActionType(type);
+    setActionForm({ observaciones: "", fechaInicioContrato: "", duracionMeses: "" });
+    setActionError("");
+    setModalOpen(true);
+  };
 
   const estadosDisponibles = useMemo(() => {
     const set = new Set(
@@ -377,10 +456,84 @@ export default function PostulacionDetalle() {
                     </dl>
                   </section>
                 </div>
+                {userInfo?.rol === "EMPRESA" && postulacion.estado === "POSTULADO" && (
+                  <div style={{ padding: "1rem", borderTop: "1px solid #e2e8f0", display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
+                    <button className="btn outline" onClick={() => openActionModal(postulacion.idPostulacion, "RECHAZADO")} style={{ borderColor: "#ef4444", color: "#ef4444" }}>Rechazar</button>
+                    <button className="btn" onClick={() => openActionModal(postulacion.idPostulacion, "ACEPTADO")} style={{ backgroundColor: "#22c55e" }}>Aceptar</button>
+                  </div>
+                )}
+                {userInfo?.rol === "EMPRESA" && postulacion.estado === "ACEPTADO" && (
+                  <div style={{ padding: "1rem", borderTop: "1px solid #e2e8f0", display: "flex", gap: "1rem", justifyContent: "flex-end" }}>
+                    <button className="btn" onClick={() => openActionModal(postulacion.idPostulacion, "FINALIZADA")} style={{ backgroundColor: "#3b82f6" }}>Finalizar Pasantía</button>
+                  </div>
+                )}
               </article>
             ))}
           </div>
         )}
+      </div>
+
+      {modalOpen && (
+        <div className="modal-overlay" style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
+          <div className="modal" style={{ background: "white", padding: "2rem", borderRadius: "8px", width: "100%", maxWidth: "400px" }}>
+            <h3 style={{ marginTop: 0, marginBottom: "1rem" }}>
+              {actionType === "ACEPTADO" ? "Aceptar Postulación" : actionType === "RECHAZADO" ? "Rechazar Postulación" : "Finalizar Pasantía"}
+            </h3>
+            {actionError && <div className="alert error" style={{ marginBottom: "1rem", color: "red" }}>{actionError}</div>}
+            <form onSubmit={handleAction}>
+              {(actionType === "ACEPTADO" || actionType === "RECHAZADO") && (
+                <div style={{ marginBottom: "1rem" }}>
+                  <label style={{ display: "block", marginBottom: "0.5rem" }}>Mensaje / Observaciones (Obligatorio)</label>
+                  <textarea 
+                    value={actionForm.observaciones}
+                    onChange={e => setActionForm(curr => ({ ...curr, observaciones: e.target.value }))}
+                    style={{ width: "100%", padding: "0.5rem", borderRadius: "4px", border: "1px solid #ccc", minHeight: "80px" }}
+                    required
+                  />
+                </div>
+              )}
+              {actionType === "FINALIZADA" && (
+                <>
+                  <div style={{ marginBottom: "1rem" }}>
+                    <label style={{ display: "block", marginBottom: "0.5rem" }}>Fecha Inicio de Contrato</label>
+                    <input 
+                      type="date"
+                      value={actionForm.fechaInicioContrato}
+                      onChange={e => setActionForm(curr => ({ ...curr, fechaInicioContrato: e.target.value }))}
+                      style={{ width: "100%", padding: "0.5rem", borderRadius: "4px", border: "1px solid #ccc" }}
+                      required
+                    />
+                  </div>
+                  <div style={{ marginBottom: "1rem" }}>
+                    <label style={{ display: "block", marginBottom: "0.5rem" }}>Duración (meses)</label>
+                    <input 
+                      type="number"
+                      min="1"
+                      value={actionForm.duracionMeses}
+                      onChange={e => setActionForm(curr => ({ ...curr, duracionMeses: e.target.value }))}
+                      style={{ width: "100%", padding: "0.5rem", borderRadius: "4px", border: "1px solid #ccc" }}
+                      required
+                    />
+                  </div>
+                </>
+              )}
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "1rem" }}>
+                <button type="button" className="btn outline" onClick={() => setModalOpen(false)} disabled={actionSubmitting}>Cancelar</button>
+                <button type="submit" className="btn primary" disabled={actionSubmitting}>{actionSubmitting ? "Guardando..." : "Confirmar"}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notifications */}
+      <div style={{ position: "fixed", top: "20px", right: "20px", zIndex: 10000, display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+        {toasts.map(toast => (
+          <div key={toast.id} style={{ padding: "1rem 1.5rem", backgroundColor: toast.type === "error" ? "#dc3545" : "#28a745", color: "white", borderRadius: "4px", display: "flex", justifyContent: "space-between", gap: "1rem" }}>
+            <span>{toast.message}</span>
+            <button onClick={() => closeToast(toast.id)} style={{ background: "transparent", border: "none", color: "white", cursor: "pointer", padding: 0 }}>×</button>
+          </div>
+        ))}
       </div>
     </section>
   );

@@ -104,6 +104,7 @@ public class PostulacionService {
         Postulacion postulacion = mapperUtil.requestDtoToEntity(request);
         postulacion.setPasantia(pasantia);
         postulacion.setEstudiante(estudiante);
+        postulacion.setEstado(EstadoPostulacion.POSTULADO);
 
         // Insertar en BD
         postulacionMapper.insert(postulacion);
@@ -130,10 +131,9 @@ public class PostulacionService {
         Postulacion postulacionExistente = postulacionMapper.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException(POSTULACION_NO_ENCONTRADA_PREFIX + id));
 
-        // Validar que solo se modifiquen postulaciones en BORRADOR o PENDIENTE_APROBACION
-        if (postulacionExistente.getEstado() != EstadoPostulacion.BORRADOR && 
-            postulacionExistente.getEstado() != EstadoPostulacion.PENDIENTE_APROBACION) {
-            throw new IllegalStateException("Solo se pueden modificar postulaciones en estado BORRADOR o PENDIENTE_APROBACION");
+        // Validar que solo se modifiquen postulaciones en POSTULADO
+        if (postulacionExistente.getEstado() != EstadoPostulacion.POSTULADO) {
+            throw new IllegalStateException("Solo se pueden modificar postulaciones en estado POSTULADO");
         }
 
         // Actualizar campos
@@ -156,16 +156,25 @@ public class PostulacionService {
         // Validar transición de estado
         validarTransicionEstado(postulacion.getEstado(), request.getEstado());
 
-        // Si el estado es CUBIERTA, validar datos del contrato
-        if (request.getEstado() == EstadoPostulacion.CUBIERTA) {
+        // Si el estado es ACEPTADO, validar datos del contrato (opcional o requerido)
+        if (request.getEstado() == EstadoPostulacion.ACEPTADO) {
             if (request.getFechaInicioContrato() == null || request.getDuracionMeses() == null) {
-                throw new IllegalArgumentException("Para estado CUBIERTA se requiere fechaInicioContrato y duracionMeses");
+                throw new IllegalArgumentException("Para estado ACEPTADO se requiere fechaInicioContrato y duracionMeses");
             }
             postulacion.setFechaInicioContrato(request.getFechaInicioContrato());
             postulacion.setDuracionMeses(request.getDuracionMeses());
         }
 
+        // Validar que se haya enviado un mensaje (observaciones) al aceptar o rechazar
+        if ((request.getEstado() == EstadoPostulacion.ACEPTADO || request.getEstado() == EstadoPostulacion.RECHAZADO) &&
+            (request.getObservaciones() == null || request.getObservaciones().trim().isEmpty())) {
+            throw new IllegalArgumentException("Es obligatorio dejar un mensaje corto (observaciones) al aceptar o rechazar una postulación");
+        }
+
         postulacion.setEstado(request.getEstado());
+        if (request.getObservaciones() != null) {
+            postulacion.setObservaciones(request.getObservaciones());
+        }
         postulacionMapper.update(postulacion);
 
         // Notificar al estudiante sobre el cambio de estado
@@ -186,8 +195,8 @@ public class PostulacionService {
      * Se ejecuta en una única transacción para garantizar atomicidad.
      */
     public PostulacionResponseDTO cubrirPostulacionYFinalizarPasantia(Integer id, ActualizarEstadoPostulacionDTO request) {
-        if (request.getEstado() != EstadoPostulacion.CUBIERTA) {
-            throw new IllegalArgumentException("El estado requerido para finalizar ciclo debe ser CUBIERTA");
+        if (request.getEstado() != EstadoPostulacion.FINALIZADA) {
+            throw new IllegalArgumentException("El estado requerido para finalizar ciclo debe ser FINALIZADA");
         }
 
         Postulacion postulacion = postulacionMapper.findByIdWithRelations(id)
@@ -212,17 +221,17 @@ public class PostulacionService {
             throw new SecurityException("No tienes permiso para finalizar el ciclo de una pasantía que no pertenece a tu empresa");
         }
 
-        // Validar transición (ej: PUBLICADA -> CUBIERTA)
+        // Validar transición (ej: ACEPTADO -> FINALIZADA)
         validarTransicionEstado(postulacion.getEstado(), request.getEstado());
 
         // Validar datos del contrato
         if (request.getFechaInicioContrato() == null || request.getDuracionMeses() == null) {
-            throw new IllegalArgumentException("Para estado CUBIERTA se requiere fechaInicioContrato y duracionMeses");
+            throw new IllegalArgumentException("Para finalizar la pasantía se requiere fechaInicioContrato y duracionMeses");
         }
 
         postulacion.setFechaInicioContrato(request.getFechaInicioContrato());
         postulacion.setDuracionMeses(request.getDuracionMeses());
-        postulacion.setEstado(EstadoPostulacion.CUBIERTA);
+        postulacion.setEstado(EstadoPostulacion.FINALIZADA);
         postulacionMapper.update(postulacion);
 
         // Finalizar la pasantía en el mismo commit
@@ -379,8 +388,7 @@ public class PostulacionService {
         // Calcular campos adicionales
         postulaciones.forEach(dto -> {
             dto.setEsEditable(
-                    dto.getEstado() == EstadoPostulacion.BORRADOR ||
-                            dto.getEstado() == EstadoPostulacion.PENDIENTE_APROBACION
+                    dto.getEstado() == EstadoPostulacion.POSTULADO
             );
         });
         
@@ -397,8 +405,7 @@ public class PostulacionService {
         // Calcular campos adicionales
         postulaciones.forEach(dto -> {
             dto.setEsEditable(
-                    dto.getEstado() == EstadoPostulacion.BORRADOR ||
-                            dto.getEstado() == EstadoPostulacion.PENDIENTE_APROBACION
+                    dto.getEstado() == EstadoPostulacion.POSTULADO
             );
         });
 
@@ -407,16 +414,16 @@ public class PostulacionService {
 
 
     /**
-     * Eliminar postulación (solo si está en BORRADOR)
+     * Eliminar postulación (solo si está en POSTULADO)
      */
     public void eliminarPostulacion(Integer id) {
         Postulacion postulacion = postulacionMapper.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException(POSTULACION_NO_ENCONTRADA_PREFIX + id));
 
-        // Solo se pueden eliminar postulaciones en BORRADOR
-        if (postulacion.getEstado() != EstadoPostulacion.BORRADOR) {
+        // Solo se pueden eliminar postulaciones en POSTULADO
+        if (postulacion.getEstado() != EstadoPostulacion.POSTULADO) {
             throw new IllegalStateException(
-                    "Solo se pueden eliminar postulaciones en estado BORRADOR. Estado actual: " + postulacion.getEstado()
+                    "Solo se pueden eliminar postulaciones en estado POSTULADO. Estado actual: " + postulacion.getEstado()
             );
         }
 
@@ -428,35 +435,24 @@ public class PostulacionService {
      */
     private void validarTransicionEstado(EstadoPostulacion estadoActual, EstadoPostulacion nuevoEstado) {
         switch (estadoActual) {
-            case BORRADOR:
-                if (nuevoEstado != EstadoPostulacion.PENDIENTE_APROBACION) {
+            case POSTULADO:
+                if (nuevoEstado != EstadoPostulacion.ACEPTADO && nuevoEstado != EstadoPostulacion.RECHAZADO) {
                     throw new IllegalStateException(
-                            "Desde BORRADOR solo se puede pasar a PENDIENTE_APROBACION"
+                            "Desde POSTULADO solo se puede pasar a ACEPTADO o RECHAZADO"
                     );
                 }
                 break;
-            case PENDIENTE_APROBACION:
-                if (nuevoEstado != EstadoPostulacion.PUBLICADA) {
-                    throw new IllegalStateException(
-                            "Desde PENDIENTE_APROBACION solo se puede pasar a PUBLICADA"
-                    );
-                }
-                break;
-            case PUBLICADA:
-                if (nuevoEstado != EstadoPostulacion.CUBIERTA && 
-                    nuevoEstado != EstadoPostulacion.FINALIZADA) {
-                    throw new IllegalStateException(
-                            "Desde PUBLICADA solo se puede pasar a CUBIERTA o FINALIZADA"
-                    );
-                }
-                break;
-            case CUBIERTA:
+            case ACEPTADO:
                 if (nuevoEstado != EstadoPostulacion.FINALIZADA) {
                     throw new IllegalStateException(
-                            "Desde CUBIERTA solo se puede pasar a FINALIZADA"
+                            "Desde ACEPTADO solo se puede pasar a FINALIZADA"
                     );
                 }
                 break;
+            case RECHAZADO:
+                throw new IllegalStateException(
+                        "No se puede cambiar el estado de una postulación RECHAZADA"
+                );
             case FINALIZADA:
                 throw new IllegalStateException(
                         "No se puede cambiar el estado de una postulación FINALIZADA"
@@ -482,8 +478,7 @@ public class PostulacionService {
         // Calcular campos adicionales
         postulaciones.forEach(dto -> {
             dto.setEsEditable(
-                    dto.getEstado() == EstadoPostulacion.BORRADOR ||
-                            dto.getEstado() == EstadoPostulacion.PENDIENTE_APROBACION
+                    dto.getEstado() == EstadoPostulacion.POSTULADO
             );
             dto.setFechaActualizacion(null); // o LocalDateTime.now() si querés setearlo
         });
@@ -529,8 +524,7 @@ public class PostulacionService {
         // Convertir a DTO
         PostulacionResponseDTO dto = mapperUtil.entityToResponseDto(postulacionOpt.get());
         dto.setEsEditable(
-                dto.getEstado() == EstadoPostulacion.BORRADOR ||
-                        dto.getEstado() == EstadoPostulacion.PENDIENTE_APROBACION
+                dto.getEstado() == EstadoPostulacion.POSTULADO
         );
 
         return Optional.of(dto);
@@ -564,8 +558,7 @@ public class PostulacionService {
         // Calcular campos adicionales
         postulaciones.forEach(dto -> {
             dto.setEsEditable(
-                    dto.getEstado() == EstadoPostulacion.BORRADOR ||
-                            dto.getEstado() == EstadoPostulacion.PENDIENTE_APROBACION
+                    dto.getEstado() == EstadoPostulacion.POSTULADO
             );
         });
 

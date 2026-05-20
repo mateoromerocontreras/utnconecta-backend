@@ -253,7 +253,7 @@ class PostulacionServiceTest {
     void actualizarPostulacion_shouldFailWhenEstadoNotEditable() {
         Postulacion existing = new Postulacion();
         existing.setIdPostulacion(123);
-        existing.setEstado(EstadoPostulacion.PUBLICADA);
+        existing.setEstado(EstadoPostulacion.ACEPTADO);
         when(postulacionMapper.findById(123)).thenReturn(Optional.of(existing));
 
         assertThatThrownBy(() -> postulacionService.actualizarPostulacion(123, new PostulacionRequestDTO()))
@@ -267,7 +267,7 @@ class PostulacionServiceTest {
     void actualizarPostulacion_shouldUpdateWhenEstadoEditable() {
         Postulacion existing = new Postulacion();
         existing.setIdPostulacion(123);
-        existing.setEstado(EstadoPostulacion.BORRADOR);
+        existing.setEstado(EstadoPostulacion.POSTULADO);
         when(postulacionMapper.findById(123)).thenReturn(Optional.of(existing));
 
         PostulacionRequestDTO req = new PostulacionRequestDTO();
@@ -286,7 +286,7 @@ class PostulacionServiceTest {
         when(postulacionMapper.findByIdWithRelations(123)).thenReturn(Optional.empty());
 
         ActualizarEstadoPostulacionDTO req = new ActualizarEstadoPostulacionDTO();
-        req.setEstado(EstadoPostulacion.PUBLICADA);
+        req.setEstado(EstadoPostulacion.ACEPTADO);
 
         assertThatThrownBy(() -> postulacionService.actualizarEstado(123, req))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -297,44 +297,47 @@ class PostulacionServiceTest {
     void actualizarEstado_shouldEnforceTransitionRules() {
         Postulacion p = new Postulacion();
         p.setIdPostulacion(123);
-        p.setEstado(EstadoPostulacion.BORRADOR);
+        p.setEstado(EstadoPostulacion.POSTULADO);
         when(postulacionMapper.findByIdWithRelations(123)).thenReturn(Optional.of(p));
 
         ActualizarEstadoPostulacionDTO req = new ActualizarEstadoPostulacionDTO();
-        req.setEstado(EstadoPostulacion.PUBLICADA); // BORRADOR -> PUBLICADA no permitido
+        req.setEstado(EstadoPostulacion.FINALIZADA); // POSTULADO -> FINALIZADA no permitido
 
         assertThatThrownBy(() -> postulacionService.actualizarEstado(123, req))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Desde BORRADOR");
+                .hasMessageContaining("Desde POSTULADO");
 
         verify(postulacionMapper, never()).update(any());
     }
 
     @Test
-    void actualizarEstado_shouldRequireContractFieldsWhenCubierta() {
+    void actualizarEstado_shouldRequireContractFieldsWhenAceptado() {
         Postulacion p = new Postulacion();
         p.setIdPostulacion(123);
-        p.setEstado(EstadoPostulacion.PUBLICADA);
+        p.setEstado(EstadoPostulacion.POSTULADO);
         when(postulacionMapper.findByIdWithRelations(123)).thenReturn(Optional.of(p));
 
         ActualizarEstadoPostulacionDTO req = new ActualizarEstadoPostulacionDTO();
-        req.setEstado(EstadoPostulacion.CUBIERTA);
+        req.setEstado(EstadoPostulacion.ACEPTADO);
         // missing fechaInicioContrato/duracionMeses
 
         assertThatThrownBy(() -> postulacionService.actualizarEstado(123, req))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Para estado CUBIERTA");
+                .hasMessageContaining("Para estado ACEPTADO");
     }
 
     @Test
     void actualizarEstado_shouldUpdateWhenTransitionValid() {
         Postulacion p = new Postulacion();
         p.setIdPostulacion(123);
-        p.setEstado(EstadoPostulacion.BORRADOR);
+        p.setEstado(EstadoPostulacion.POSTULADO);
         when(postulacionMapper.findByIdWithRelations(123)).thenReturn(Optional.of(p));
 
         ActualizarEstadoPostulacionDTO req = new ActualizarEstadoPostulacionDTO();
-        req.setEstado(EstadoPostulacion.PENDIENTE_APROBACION);
+        req.setEstado(EstadoPostulacion.ACEPTADO);
+        req.setObservaciones("OK");
+        req.setFechaInicioContrato(LocalDate.now());
+        req.setDuracionMeses(6);
 
         PostulacionResponseDTO mapped = new PostulacionResponseDTO();
         when(mapperUtil.entityToResponseDto(p)).thenReturn(mapped);
@@ -357,7 +360,7 @@ class PostulacionServiceTest {
     void eliminarPostulacion_shouldFailWhenNotBorrador() {
         Postulacion p = new Postulacion();
         p.setIdPostulacion(123);
-        p.setEstado(EstadoPostulacion.PUBLICADA);
+        p.setEstado(EstadoPostulacion.ACEPTADO);
         when(postulacionMapper.findById(123)).thenReturn(Optional.of(p));
 
         assertThatThrownBy(() -> postulacionService.eliminarPostulacion(123))
@@ -371,7 +374,7 @@ class PostulacionServiceTest {
     void eliminarPostulacion_shouldDeleteWhenBorrador() {
         Postulacion p = new Postulacion();
         p.setIdPostulacion(123);
-        p.setEstado(EstadoPostulacion.BORRADOR);
+        p.setEstado(EstadoPostulacion.POSTULADO);
         when(postulacionMapper.findById(123)).thenReturn(Optional.of(p));
 
         postulacionService.eliminarPostulacion(123);
@@ -383,7 +386,7 @@ class PostulacionServiceTest {
         request.setIdEstudiante(ID_ESTUDIANTE);
         request.setIdPasantia(ID_PASANTIA);
         request.setFechaPostulacion(LocalDate.now());
-        request.setEstado(EstadoPostulacion.PENDIENTE_APROBACION);
+        request.setEstado(EstadoPostulacion.POSTULADO);
         return request;
     }
 

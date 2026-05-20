@@ -157,6 +157,48 @@ public class PasantiaController {
     }
 
     /**
+     * Actualiza una pasantía existente.
+     * Solo la empresa dueña puede editarla.
+     */
+    @PutMapping("/{id}")
+    @SecurityRequirement(name = "Bearer Authentication")
+    @PreAuthorize("hasAnyRole('EMPRESA')")
+    public ResponseEntity<Map<String, Object>> actualizarPasantia(
+            @PathVariable Integer id,
+            @Valid @RequestBody PasantiaRequestDTO request) {
+        try {
+            // Validar permiso de edición
+            securityService.validarPermisoModificarPasantia(id);
+
+            PasantiaResponseDTO pasantia = pasantiaService.actualizarPasantia(id, request);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put(KEY_CODIGO, 0);
+            response.put(KEY_MENSAJE, "Pasantía actualizada exitosamente");
+            response.put(KEY_DATA, pasantia);
+
+            return ResponseEntity.ok()
+                    .header(HEADER_CONTENT_TYPE, CONTENT_TYPE_JSON_UTF8)
+                    .body(response);
+        } catch (SecurityException | AccessDeniedException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, e.getMessage());
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, "Error al actualizar la pasantía: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    /**
      * Finaliza una pasantía cambiando su estado a FINALIZADA.
      * 
      * <p>Accesible para:

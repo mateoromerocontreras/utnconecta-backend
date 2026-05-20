@@ -302,7 +302,6 @@ export default function PasantiaDetalle() {
         idPasantia: parseInt(id, 10),
         idEstudiante: estudianteData.idEstudiante,
         fechaPostulacion: new Date().toISOString().split("T")[0],
-        estado: "BORRADOR",
         idCv: cvToSend
       };
 
@@ -482,8 +481,22 @@ export default function PasantiaDetalle() {
           </article>
 
           <aside>
+              {/* Button to edit pasantia - only for EMPRESA owner */}
+              {user && user.rol === "EMPRESA" && pasantia.empresa?.email === user.email && (
+                <div className="job-card" style={{ padding: "1.5rem", marginBottom: "1rem" }}>
+                  <h3 style={{ fontSize: "1.1em", marginBottom: "1rem" }}>Editar Pasantía</h3>
+                  <button
+                    className="btn"
+                    onClick={() => navigate(`/editar-pasantia/${id}`)}
+                    style={{ width: "100%", backgroundColor: "#eab308" }}
+                  >
+                    Editar Pasantía
+                  </button>
+                </div>
+              )}
+
               {/* Button to confirm postulacion - only for ESTUDIANTE users without existing postulacion */}
-              {user && user.rol === "ESTUDIANTE" && !postulacion && pasantia?.estado === "PUBLICADA" && (
+              {user && user.rol === "ESTUDIANTE" && !postulacion && pasantia?.estado === "PUBLICADA" && pasantia?.diasRestantes >= 0 && (
                 <div className="job-card" style={{ padding: "1.5rem", marginBottom: "1rem" }}>
                   <h3 style={{ fontSize: "1.1em", marginBottom: "1rem" }}>Postularse</h3>
                   <p style={{ marginBottom: "1rem", fontSize: "0.9em" }}>
@@ -497,6 +510,12 @@ export default function PasantiaDetalle() {
                   >
                     {registering ? "Registrando..." : "Postularse"}
                   </button>
+                </div>
+              )}
+
+              {user && user.rol === "ESTUDIANTE" && !postulacion && pasantia?.estado === "PUBLICADA" && pasantia?.diasRestantes < 0 && (
+                <div className="job-card" style={{ padding: "1.5rem", marginBottom: "1rem", backgroundColor: "#fee2e2" }}>
+                  <p style={{ margin: 0, color: "#991b1b", fontWeight: "bold" }}>Esta pasantía ha expirado y ya no acepta postulaciones.</p>
                 </div>
               )}
 

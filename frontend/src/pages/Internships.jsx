@@ -111,7 +111,7 @@ export default function Internships() {
     try {
       setLoading(true);
       setError("");
-      const res = await fetch(`${API}/pasantias`, {
+      const res = await fetch(`${API}/pasantias/publicadas`, {
         headers: { 
           Accept: "application/json;charset=UTF-8",
           "Content-Type": "application/json;charset=UTF-8"

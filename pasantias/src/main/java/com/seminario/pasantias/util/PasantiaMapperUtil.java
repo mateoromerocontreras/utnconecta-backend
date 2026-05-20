@@ -220,15 +220,13 @@ public class PasantiaMapperUtil {
         if (pasantia.getPostulaciones() != null) {
             EstadisticasPostulacionDTO stats = new EstadisticasPostulacionDTO();
             stats.setTotal(pasantia.getPostulaciones().size());
-            stats.setBorradores((int) pasantia.getPostulaciones().stream()
-                    .filter(p -> p.getEstado() == EstadoPostulacion.BORRADOR).count());
-            stats.setPendientes((int) pasantia.getPostulaciones().stream()
-                    .filter(p -> p.getEstado() == EstadoPostulacion.PENDIENTE_APROBACION).count());
-            stats.setPublicadas((int) pasantia.getPostulaciones().stream()
-                    .filter(p -> p.getEstado() == EstadoPostulacion.PUBLICADA).count());
-            stats.setCubiertas((int) pasantia.getPostulaciones().stream()
-                    .filter(p -> p.getEstado() == EstadoPostulacion.CUBIERTA).count());
-            stats.setFinalizadas((int) pasantia.getPostulaciones().stream()
+            stats.setPostulados((int) pasantia.getPostulaciones().stream()
+                    .filter(p -> p.getEstado() == EstadoPostulacion.POSTULADO).count());
+            stats.setAceptados((int) pasantia.getPostulaciones().stream()
+                    .filter(p -> p.getEstado() == EstadoPostulacion.ACEPTADO).count());
+            stats.setRechazados((int) pasantia.getPostulaciones().stream()
+                    .filter(p -> p.getEstado() == EstadoPostulacion.RECHAZADO).count());
+            stats.setFinalizados((int) pasantia.getPostulaciones().stream()
                     .filter(p -> p.getEstado() == EstadoPostulacion.FINALIZADA).count());
             dto.setEstadisticas(stats);
         }

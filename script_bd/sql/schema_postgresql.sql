@@ -3,7 +3,7 @@
 
 -- Create ENUM types
 CREATE TYPE estado_pasantia AS ENUM('PUBLICADA', 'FINALIZADA');
-CREATE TYPE estado_postulacion AS ENUM('BORRADOR', 'PENDIENTE_APROBACION', 'PUBLICADA', 'CUBIERTA', 'FINALIZADA');
+CREATE TYPE estado_postulacion AS ENUM('POSTULADO', 'ACEPTADO', 'RECHAZADO', 'FINALIZADA');
 
 -- Table: Rol
 CREATE TABLE Rol (
@@ -153,7 +153,7 @@ CREATE TABLE Postulacion (
     fecha_postulacion DATE NOT NULL,
     fecha_inicio_contrato DATE,
     duracion_meses INT,
-    estado estado_postulacion NOT NULL DEFAULT 'BORRADOR',
+    estado estado_postulacion NOT NULL DEFAULT 'POSTULADO',
     observaciones TEXT,
     id_pasantia INT NOT NULL,
     estudiante_id INT NOT NULL,

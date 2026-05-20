@@ -177,7 +177,7 @@ CREATE TABLE Postulacion (
     fecha_postulacion DATE NOT NULL,
     fecha_inicio_contrato DATE,
     duracion_meses INT,
-    estado ENUM('PENDIENTE_APROBACION', 'PUBLICADA', 'CUBIERTA', 'FINALIZADA') NOT NULL DEFAULT 'PENDIENTE_APROBACION',
+    estado ENUM('POSTULADO', 'ACEPTADO', 'RECHAZADO', 'FINALIZADA') NOT NULL DEFAULT 'POSTULADO',
     observaciones TEXT,
     id_pasantia INT NOT NULL,
     estudiante_id INT NOT NULL,
@@ -374,21 +374,21 @@ INSERT INTO Pasantia_Carrera (id_pasantia, id_carrera) VALUES
 -- Postulaciones para Estudiante 1 (Juan García)
 -- Esta postulación ahora está asociada con el CV de ejemplo (id_cv = 1)
 INSERT INTO Postulacion (fecha_postulacion, estado, id_pasantia, estudiante_id, id_cv)
-VALUES ('2025-11-02', 'PENDIENTE_APROBACION', 1, 1, 1);
+VALUES ('2025-11-02', 'POSTULADO', 1, 1, 1);
 
 INSERT INTO Postulacion (fecha_postulacion, estado, id_pasantia, estudiante_id)
-VALUES ('2025-11-05', 'PENDIENTE_APROBACION', 2, 1);
+VALUES ('2025-11-05', 'POSTULADO', 2, 1);
 
 -- Postulaciones para Estudiante 2 (María López)
 INSERT INTO Postulacion (fecha_postulacion, fecha_inicio_contrato, duracion_meses, estado, id_pasantia, estudiante_id)
-VALUES ('2025-11-08', '2025-12-01', 6, 'PUBLICADA', 3, 2);
+VALUES ('2025-11-08', '2025-12-01', 6, 'ACEPTADO', 3, 2);
 
 INSERT INTO Postulacion (fecha_postulacion, estado, id_pasantia, estudiante_id)
-VALUES ('2025-11-15', 'PENDIENTE_APROBACION', 4, 2);
+VALUES ('2025-11-15', 'POSTULADO', 4, 2);
 
 -- Postulaciones para Estudiante 3 (Carlos Fernández)
 INSERT INTO Postulacion (fecha_postulacion, fecha_inicio_contrato, duracion_meses, estado, id_pasantia, estudiante_id)
-VALUES ('2025-11-20', '2025-12-10', 12, 'CUBIERTA', 5, 3);
+VALUES ('2025-11-20', '2025-12-10', 12, 'ACEPTADO', 5, 3);
 
 INSERT INTO Postulacion (fecha_postulacion, estado, id_pasantia, estudiante_id)
 VALUES ('2025-11-25', 'FINALIZADA', 6, 3);
