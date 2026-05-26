@@ -33,10 +33,10 @@ public class PostulacionMapperUtil {
         postulacion.setFechaInicioContrato(dto.getFechaInicioContrato());
         postulacion.setDuracionMeses(dto.getDuracionMeses());
         
-        if (dto.getEstado() != null) {
-            postulacion.setEstado(dto.getEstado());
+        if (dto.getEstado() == null) {
+            postulacion.setEstado(EstadoPostulacion.POSTULADO);
         } else {
-            postulacion.setEstado(EstadoPostulacion.BORRADOR);
+            postulacion.setEstado(dto.getEstado());
         }
 
         // Pasantia y Estudiante se setean por separado en el servicio
@@ -98,8 +98,7 @@ public class PostulacionMapperUtil {
 
         // Campos calculados
         dto.setEsEditable(
-                postulacion.getEstado() == EstadoPostulacion.BORRADOR ||
-                postulacion.getEstado() == EstadoPostulacion.PENDIENTE_APROBACION
+                postulacion.getEstado() == EstadoPostulacion.POSTULADO
         );
 
         return dto;
@@ -154,8 +153,7 @@ public class PostulacionMapperUtil {
 
         // Campos calculados
         dto.setEsEditable(
-                postulacion.getEstado() == EstadoPostulacion.BORRADOR ||
-                postulacion.getEstado() == EstadoPostulacion.PENDIENTE_APROBACION
+                postulacion.getEstado() == EstadoPostulacion.POSTULADO
         );
 
         return dto;

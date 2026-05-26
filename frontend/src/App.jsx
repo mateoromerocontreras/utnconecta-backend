@@ -93,6 +93,7 @@ export default function App() {
       <Route path="/carreras" element={<Carreras />} />
       <Route path="/registrar-carrera" element={<RegistrarCarrera />} />
       <Route path="/registrar-pasantia" element={<RegistrarPasantia />} />
+      <Route path="/editar-pasantia/:id" element={<RegistrarPasantia />} />
       <Route path="/perfil" element={<Perfil />} />
       <Route path="/perfil/completar" element={<CompletarPerfil />} />
       <Route path="/perfil/modificar" element={<ModificarPerfil />} />

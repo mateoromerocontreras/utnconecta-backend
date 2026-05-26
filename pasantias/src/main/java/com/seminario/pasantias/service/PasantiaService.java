@@ -252,7 +252,9 @@ public class PasantiaService {
     @Transactional(readOnly = true)
     public List<PasantiaResponseDTO> obtenerPasantiasPublicadas() {
         List<Pasantia> pasantias = pasantiaMapper.findByEstado("PUBLICADA");
+        LocalDate hoy = LocalDate.now();
         return pasantias.stream()
+                .filter(p -> p.getFechaCaducidad() == null || !p.getFechaCaducidad().isBefore(hoy))
                 .map(mapperUtil::entityToResponseDto)
                 .toList();
     }

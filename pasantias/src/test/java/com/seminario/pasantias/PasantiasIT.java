@@ -98,7 +98,7 @@ class PasantiasIT {
 
         PostulacionRequestDTO request = new PostulacionRequestDTO();
         request.setFechaPostulacion(LocalDate.now());
-        request.setEstado(EstadoPostulacion.PENDIENTE_APROBACION);
+        request.setEstado(EstadoPostulacion.POSTULADO);
         request.setIdPasantia(pasantiaId);
         // estudianteId=1 tiene especialidad "Ingeniería en Sistemas" (seed) y coincide con carreraId=6
         request.setIdEstudiante(1);
@@ -110,7 +110,7 @@ class PasantiasIT {
                 )
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.codigo").value(0))
-                .andExpect(jsonPath("$.data.estado").value("PENDIENTE_APROBACION"));
+                .andExpect(jsonPath("$.data.estado").value("POSTULADO"));
 
         assertThat(postulacionMapper.existsByEstudianteAndPasantia(1, pasantiaId)).isTrue();
         assertThat(pasantiaMapper.findById(pasantiaId).orElseThrow().getEstado()).isEqualTo(EstadoPasantia.PUBLICADA);
@@ -122,8 +122,8 @@ class PasantiasIT {
         Integer pasantiaBiofarmaId = createPublishedInternship(1, "Pasantía TS-03 BIOFARMA");
         Integer pasantiaIndacorId = createPublishedInternship(2, "Pasantía TS-03 INDACOR");
 
-        createPostulacion(pasantiaBiofarmaId, 2, EstadoPostulacion.PENDIENTE_APROBACION);
-        createPostulacion(pasantiaIndacorId, 2, EstadoPostulacion.PENDIENTE_APROBACION);
+        createPostulacion(pasantiaBiofarmaId, 2, EstadoPostulacion.POSTULADO);
+        createPostulacion(pasantiaIndacorId, 2, EstadoPostulacion.POSTULADO);
 
         MvcResult result = mockMvc.perform(get("/postulaciones/postulacionesMiEmpresa"))
                 .andExpect(status().isOk())
@@ -156,7 +156,7 @@ class PasantiasIT {
         Integer postulacionId = createPublishedPostulacion(pasantiaId, 2);
 
         ActualizarEstadoPostulacionDTO request = new ActualizarEstadoPostulacionDTO();
-        request.setEstado(EstadoPostulacion.CUBIERTA);
+        request.setEstado(EstadoPostulacion.FINALIZADA);
         request.setFechaInicioContrato(LocalDate.now().plusDays(7));
         request.setDuracionMeses(6);
 
@@ -167,10 +167,10 @@ class PasantiasIT {
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.codigo").value(0))
-                .andExpect(jsonPath("$.data.estado").value("CUBIERTA"));
+                .andExpect(jsonPath("$.data.estado").value("FINALIZADA"));
 
         assertThat(pasantiaMapper.findById(pasantiaId).orElseThrow().getEstado()).isEqualTo(EstadoPasantia.FINALIZADA);
-        assertThat(postulacionMapper.findById(postulacionId).orElseThrow().getEstado()).isEqualTo(EstadoPostulacion.CUBIERTA);
+        assertThat(postulacionMapper.findById(postulacionId).orElseThrow().getEstado()).isEqualTo(EstadoPostulacion.FINALIZADA);
     }
 
     @Test
@@ -182,7 +182,7 @@ class PasantiasIT {
 
         PostulacionRequestDTO request = new PostulacionRequestDTO();
         request.setFechaPostulacion(LocalDate.now());
-        request.setEstado(EstadoPostulacion.PENDIENTE_APROBACION);
+        request.setEstado(EstadoPostulacion.POSTULADO);
         request.setIdPasantia(pasantiaId);
         request.setIdEstudiante(2);
 
@@ -281,7 +281,7 @@ class PasantiasIT {
     }
 
     private Integer createPublishedPostulacion(Integer pasantiaId, Integer estudianteId) {
-        return createPostulacion(pasantiaId, estudianteId, EstadoPostulacion.PUBLICADA);
+        return createPostulacion(pasantiaId, estudianteId, EstadoPostulacion.ACEPTADO);
     }
 
     private Integer createPostulacion(Integer pasantiaId, Integer estudianteId, EstadoPostulacion estado) {

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import "../styles/registrar-pasantia.css";
 
 const API = (import.meta.env.VITE_API_URL || "http://localhost:8080").replace(/\/+$/, "");
@@ -10,6 +11,9 @@ function getStoredItem(key) {
 }
 
 export default function RegistrarPasantia() {
+  const { id } = useParams();
+  const isEditMode = !!id;
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     titulo: "",
     puestoACubrir: "",
@@ -32,6 +36,7 @@ export default function RegistrarPasantia() {
   const [messageType, setMessageType] = useState(""); // "success" | "error" | "info"
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [fetchingPasantia, setFetchingPasantia] = useState(false);
 
   // Obtener empresa del usuario autenticado
   useEffect(() => {
@@ -104,7 +109,37 @@ export default function RegistrarPasantia() {
     };
 
     fetchEmpresaDelUsuario();
-  }, []);
+  }, [id, navigate]);
+
+  // Si es modo edición, buscar pasantía
+  useEffect(() => {
+    if (isEditMode) {
+      setFetchingPasantia(true);
+      fetch(`${API}/pasantias/${id}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data && !data.codigo) {
+            setForm({
+              titulo: data.titulo || "",
+              puestoACubrir: data.puestoACubrir || "",
+              ciudad: data.ciudad || "",
+              modalidad: data.modalidad || "Presencial",
+              asignacionEstimulo: data.asignacionEstimulo || "",
+              cantidadDePasantes: data.cantidadDePasantes || "1",
+              fechaPublicacion: data.fechaPublicacion || "",
+              fechaCaducidad: data.fechaCaducidad || "",
+              emailContacto: data.emailContacto || "",
+              conocimientos: data.conocimientos || "",
+              otrosRequisitos: data.otrosRequisitos || "",
+              beneficios: data.beneficios || "",
+              idsCarreras: data.carreras ? data.carreras.map(c => c.idCarrera) : []
+            });
+          }
+        })
+        .catch(err => console.error("Error cargando pasantia a editar", err))
+        .finally(() => setFetchingPasantia(false));
+    }
+  }, [isEditMode, id]);
 
   // Obtener lista de carreras
   useEffect(() => {
@@ -227,8 +262,11 @@ export default function RegistrarPasantia() {
         throw new Error("No hay token de autenticación. Por favor, inicia sesión.");
       }
 
-      const res = await fetch(`${API}/pasantias/registrar`, {
-        method: "POST",
+      const url = isEditMode ? `${API}/pasantias/${id}` : `${API}/pasantias/registrar`;
+      const method = isEditMode ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method: method,
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`
@@ -238,10 +276,13 @@ export default function RegistrarPasantia() {
 
       const data = await res.json();
 
-      if (res.ok && res.status === 201) {
-        setMessage("✅ ¡Pasantía publicada con éxito! Ya es visible para los estudiantes.");
+      if (res.ok && (res.status === 201 || res.status === 200)) {
+        setMessage(isEditMode ? "✅ ¡Pasantía actualizada con éxito!" : "✅ ¡Pasantía publicada con éxito! Ya es visible para los estudiantes.");
         setMessageType("success");
         
+        if (isEditMode) {
+          setTimeout(() => navigate(`/pasantias/${id}`), 2000);
+        } else {
         // Limpiar formulario
         setForm({
           titulo: "",
@@ -263,6 +304,7 @@ export default function RegistrarPasantia() {
           setMessage("");
           setMessageType("");
         }, 3000);
+        }
         
       } else if (res.status === 403) {
         setMessage(`❌ ${data.mensaje || "No tienes permiso para crear esta pasantía."}`);
@@ -286,7 +328,7 @@ export default function RegistrarPasantia() {
     }
   };
 
-  if (loading) {
+  if (loading || fetchingPasantia) {
     return (
       <section className="pasantia-hero" style={{ backgroundImage: "url('/i.jpg')" }}>
         <div className="pasantia-card">
@@ -327,7 +369,7 @@ export default function RegistrarPasantia() {
     >
       <div className="pasantia-card">
         <h2 className="pasantia-title">
-          Publica una nueva pasantía para estudiantes de ingeniería
+          {isEditMode ? "Editar pasantía" : "Publica una nueva pasantía para estudiantes de ingeniería"}
         </h2>
 
         <form className="pasantia-grid" onSubmit={onSubmit} noValidate>
@@ -497,7 +539,7 @@ export default function RegistrarPasantia() {
 
           <div className="pasantia-actions">
             <button type="submit" className="btn registrar" disabled={submitting}>
-              {submitting ? "Registrando…" : "Publicar pasantía"}
+              {submitting ? "Guardando…" : (isEditMode ? "Guardar cambios" : "Publicar pasantía")}
             </button>
             <button
               type="button"
@@ -526,8 +568,7 @@ export default function RegistrarPasantia() {
         )}
 
         <p className="pasantia-info">
-          <strong>Nota:</strong> La pasantía será publicada inmediatamente
-          y será visible para todos los estudiantes.
+          <strong>Nota:</strong> {isEditMode ? "Los cambios realizados serán visibles de inmediato." : "La pasantía será publicada inmediatamente y será visible para todos los estudiantes."}
         </p>
       </div>
     </section>

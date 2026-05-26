@@ -97,6 +97,7 @@
             </if>
             <if test="soloActivas != null and soloActivas == true">
                 AND p.estado = 'PUBLICADA'
+                AND p.fecha_caducidad &gt;= CURRENT_DATE
             </if>
         </where>
         <choose>
@@ -176,6 +177,7 @@
             </if>
             <if test="soloActivas != null and soloActivas == true">
                 AND p.estado = 'PUBLICADA'
+                AND p.fecha_caducidad &gt;= CURRENT_DATE
             </if>
         </where>
     </select>

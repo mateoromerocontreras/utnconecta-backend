@@ -91,7 +91,7 @@ class PostulacionServiceIT {
 
         PostulacionRequestDTO request = new PostulacionRequestDTO();
         request.setFechaPostulacion(LocalDate.now());
-        request.setEstado(EstadoPostulacion.PENDIENTE_APROBACION);
+        request.setEstado(EstadoPostulacion.POSTULADO);
         request.setIdPasantia(pasantia.getIdPasantia());
         request.setIdEstudiante(2);
 
@@ -104,14 +104,14 @@ class PostulacionServiceIT {
     void crearPostulacion_shouldPersistRowAndReturnMappedResponse() {
         PostulacionRequestDTO request = new PostulacionRequestDTO();
         request.setFechaPostulacion(LocalDate.now());
-        request.setEstado(EstadoPostulacion.PENDIENTE_APROBACION);
+        request.setEstado(EstadoPostulacion.POSTULADO);
         request.setIdPasantia(testPasantiaId);
         request.setIdEstudiante(2);
 
         PostulacionResponseDTO response = postulacionService.crearPostulacion(request);
 
         assertThat(response.getIdPostulacion()).isNotNull();
-        assertThat(response.getEstado()).isEqualTo(EstadoPostulacion.PENDIENTE_APROBACION);
+        assertThat(response.getEstado()).isEqualTo(EstadoPostulacion.POSTULADO);
         assertThat(response.getIdPasantia()).isEqualTo(testPasantiaId);
         assertThat(response.getTituloPasantia()).isEqualTo("Pasantía Integración Postulación");
         assertThat(response.getIdEstudiante()).isEqualTo(2);
@@ -132,7 +132,7 @@ class PostulacionServiceIT {
     void crearPostulacion_shouldRejectDuplicateApplication() {
         PostulacionRequestDTO request = new PostulacionRequestDTO();
         request.setFechaPostulacion(LocalDate.now());
-        request.setEstado(EstadoPostulacion.PENDIENTE_APROBACION);
+        request.setEstado(EstadoPostulacion.POSTULADO);
         request.setIdPasantia(testPasantiaId);
         request.setIdEstudiante(2);
 
