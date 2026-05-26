@@ -108,6 +108,40 @@ public class PostulacionController {
         }
     }
 
+    /**
+     * EMPRESA: acepta o rechaza una postulación (sin finalizar la pasantía).
+     * Estados permitidos: ACEPTADO / RECHAZADO (según reglas de transición en el service).
+     */
+    @PutMapping("/{id}/decision")
+    @SecurityRequirement(name = "Bearer Authentication")
+    @PreAuthorize("hasAnyRole('EMPRESA')")
+    public ResponseEntity<Map<String, Object>> aceptarORechazar(
+            @PathVariable Integer id,
+            @Valid @RequestBody ActualizarEstadoPostulacionDTO request
+    ) {
+        try {
+            PostulacionResponseDTO postulacion = postulacionService.actualizarEstadoComoEmpresa(id, request);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put(KEY_CODIGO, 0);
+            response.put(KEY_MENSAJE, "Estado de postulación actualizado");
+            response.put(KEY_DATA, postulacion);
+            return ResponseEntity.ok(response);
+        } catch (SecurityException e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, e.getMessage());
+            errorResponse.put(KEY_DATA, null);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+        } catch (Exception e) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put(KEY_CODIGO, -1);
+            errorResponse.put(KEY_MENSAJE, e.getMessage());
+            errorResponse.put(KEY_DATA, null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+        }
+    }
+
     @GetMapping("/consultarPostulaciones")
     @SecurityRequirement(name = "Bearer Authentication")
     @PreAuthorize("hasAnyRole('ADMINISTRADOR')")

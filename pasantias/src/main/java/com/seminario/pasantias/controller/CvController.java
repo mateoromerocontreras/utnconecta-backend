@@ -2,10 +2,8 @@ package com.seminario.pasantias.controller;
 
 import com.seminario.pasantias.dto.CvDto;
 import com.seminario.pasantias.entity.Cv;
-import com.seminario.pasantias.entity.Estudiante;
 import com.seminario.pasantias.response.GenericResponse;
 import com.seminario.pasantias.service.CvService;
-import com.seminario.pasantias.service.EstudianteService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -36,9 +34,6 @@ public class CvController {
 
     @Autowired
     private CvService cvService;
-
-    @Autowired
-    private EstudianteService estudianteService;
 
     @PostMapping("/subirCV")
     @SecurityRequirement(name = "Bearer Authentication")

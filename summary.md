@@ -16,15 +16,18 @@
 
 ### What’s proven to work (automated integration tests)
 Implemented and passing integration tests (real DB + MockMvc) in:
-- `pasantias/src/test/java/com/seminario/pasantias/PasantiasIntegrationTests.java`
+- `pasantias/src/test/java/com/seminario/pasantias/PasantiasIT.java`
+- `pasantias/src/test/java/com/seminario/pasantias/AuthAndEmpresaRegistrationIT.java`
 
-Scenarios covered (from `pasantias/backend_tests.md`):
-- **TS-01 Register Internship**: `POST /pasantias/registrar` as `EMPRESA` creates pasantía in `PENDIENTE_DE_APROBACION`.
-- **TS-02 Submit Application**: `POST /postulaciones/registrarPostulacion` as `ESTUDIANTE` creates postulación for a `PUBLICADA` pasantía (explicit `estado=PENDIENTE_APROBACION`).
-- **TS-03 Company Visibility**: `GET /postulaciones/postulacionesMiEmpresa` as `EMPRESA` only returns postulaciones for that company’s pasantías.
-- **TS-04 Finalize Cycle (atomic)**: `PUT /postulaciones/{id}/estado` as `EMPRESA` sets postulación to `CUBIERTA` (with contract fields) and sets pasantía to `FINALIZADA` in the same transaction.
-- **TS-05 Cross-Career Guard**: mismatch between student `especialidad` and pasantía allowed careers rejects with **400** + `"Carrera no permitida"`.
-- **TS-06 Impersonation Guard**: `EMPRESA` cannot create pasantía for a different `idEmpresa` (returns **403**).
+Scenarios covered (core flows):
+- **Student creates account**: `POST /auth/registrarEstudiante` creates inactive `Usuario` + `Estudiante`.
+- **Empresa creates account**: `POST /usuarios/registrarUsuario` + `POST /auth/iniciarSesion` + `POST /empresas/crearEmpresa`.
+- **Empresa posts pasantía**: `POST /pasantias/registrar` as `EMPRESA` creates `PUBLICADA`.
+- **Student lists published pasantías**: `GET /pasantias/publicadas` returns created `PUBLICADA`.
+- **Student applies**: `POST /postulaciones/registrarPostulacion` as `ESTUDIANTE` creates postulación in `POSTULADO`.
+- **Empresa sees applicants**: `GET /postulaciones/pasantia/{id}` and `GET /postulaciones/postulacionesMiEmpresa`.
+- **Empresa accept/reject**: `PUT /postulaciones/{id}/decision` updates `ACEPTADO/RECHAZADO` (requires `observaciones`; `ACEPTADO` also requires contract fields).
+- **Student checks status**: `GET /postulaciones/porPasantia/{id}` reflects `ACEPTADO/RECHAZADO`.
 
 Execution summary is recorded in:
 - `test_summary_04052026.md`
@@ -41,7 +44,8 @@ Execution summary is recorded in:
   - `pasantias/src/main/resources/application.properties`: local DB config for running the app
   - `pasantias/src/test/resources/application-test.properties`: DB config used by tests
   - `pasantias/src/test/resources/sql/schema.sql`: test seed/reset script
-  - `pasantias/src/test/java/com/seminario/pasantias/PasantiasIntegrationTests.java`: TS-01..TS-06 suite
+  - `pasantias/src/test/java/com/seminario/pasantias/PasantiasIT.java`: integration suite (core flows)
+  - `pasantias/src/test/java/com/seminario/pasantias/AuthAndEmpresaRegistrationIT.java`: account creation ITs
 - **DB**
   - `script_bd/docker-compose.yml`: MySQL 8.0 container setup
 - **Docs**
@@ -53,6 +57,7 @@ Execution summary is recorded in:
 - **JDK 25 is required for builds/tests**. If you run Maven under Java 21 you’ll get `release version 25 not supported`.
 - **MariaDB/MySQL root auth mismatch** is common on Linux (root uses socket auth). Tests are configured to avoid relying on root login.
 - **Test DB reset**: `pasantias/src/test/resources/sql/schema.sql` drops/recreates tables inside the configured test schema. Don’t point `application-test.properties` at a production database.
+- **Integration tests require MySQL**: run `script_bd/docker-compose.yml` (or set `TEST_DB_URL/TEST_DB_USER/TEST_DB_PASS`) before `./mvnw verify`.
 - **Security is marked “in development”** in `README.md` and security docs; hardening/role protection is still a known workstream.
 
 ### Next steps (recommended)
