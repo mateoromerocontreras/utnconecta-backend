@@ -129,7 +129,7 @@ export default function PostulacionDetalle() {
       setActionError("Las observaciones son obligatorias.");
       return;
     }
-    if (actionType === "FINALIZADA") {
+    if (actionType === "ACEPTADO" || actionType === "FINALIZADA") {
       if (!actionForm.fechaInicioContrato || !actionForm.duracionMeses) {
         setActionError("La fecha de inicio de contrato y la duración en meses son obligatorias.");
         return;
@@ -139,9 +139,9 @@ export default function PostulacionDetalle() {
     try {
       setActionSubmitting(true);
       const token = getStoredItem("authToken");
-      const url = actionType === "FINALIZADA" 
-        ? `${API}/postulaciones/${selectedPostulacionId}/finalizar-ciclo`
-        : `${API}/postulaciones/${selectedPostulacionId}/estado`;
+      const url = actionType === "FINALIZADA"
+        ? `${API}/postulaciones/${selectedPostulacionId}/estado`
+        : `${API}/postulaciones/${selectedPostulacionId}/decision`;
         
       const payload = {
         estado: actionType,
@@ -492,7 +492,7 @@ export default function PostulacionDetalle() {
                   />
                 </div>
               )}
-              {actionType === "FINALIZADA" && (
+              {(actionType === "ACEPTADO" || actionType === "FINALIZADA") && (
                 <>
                   <div style={{ marginBottom: "1rem" }}>
                     <label style={{ display: "block", marginBottom: "0.5rem" }}>Fecha Inicio de Contrato</label>
