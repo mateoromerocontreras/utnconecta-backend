@@ -16,7 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -187,6 +186,35 @@ public class PostulacionService {
         return mapperUtil.entityToResponseDto(
                 postulacionMapper.findByIdWithRelations(id).orElseThrow()
         );
+    }
+
+    /**
+     * Cambiar el estado de una postulación como EMPRESA (ACEPTADO/RECHAZADO),
+     * validando que la postulación pertenezca a una pasantía de la empresa autenticada.
+     */
+    public PostulacionResponseDTO actualizarEstadoComoEmpresa(Integer id, ActualizarEstadoPostulacionDTO request) {
+        Postulacion postulacion = postulacionMapper.findByIdWithRelations(id)
+                .orElseThrow(() -> new IllegalArgumentException(POSTULACION_NO_ENCONTRADA_PREFIX + id));
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+
+        Usuario usuario = usuarioService.findByUsername(username)
+                .orElseThrow(() -> new SecurityException("Usuario no encontrado: " + username));
+        Empresa empresa = empresaMapper.findByIdUsuario(usuario.getIdUsuario());
+        if (empresa == null) {
+            throw new SecurityException("Empresa no encontrada para el usuario autenticado");
+        }
+
+        if (postulacion.getPasantia() == null || postulacion.getPasantia().getEmpresa() == null) {
+            throw new IllegalStateException("La postulación no tiene pasantía/empresa asociada");
+        }
+        Integer pasantiaEmpresaId = postulacion.getPasantia().getEmpresa().getIdEmpresa();
+        if (!empresa.getIdEmpresa().equals(pasantiaEmpresaId)) {
+            throw new SecurityException("No tienes permiso para modificar una postulación que no pertenece a tu empresa");
+        }
+
+        return actualizarEstado(id, request);
     }
 
     /**

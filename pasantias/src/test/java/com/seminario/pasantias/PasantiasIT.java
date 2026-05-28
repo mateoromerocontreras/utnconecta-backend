@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
@@ -26,6 +25,7 @@ import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -74,8 +74,8 @@ class PasantiasIT {
 
         MvcResult result = mockMvc.perform(
                         post("/pasantias/registrar")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .contentType("application/json")
+                                .content(Objects.requireNonNull(objectMapper.writeValueAsString(request)))
                 )
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.codigo").value(0))
@@ -105,8 +105,8 @@ class PasantiasIT {
 
         mockMvc.perform(
                         post("/postulaciones/registrarPostulacion")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .contentType("application/json")
+                                .content(Objects.requireNonNull(objectMapper.writeValueAsString(request)))
                 )
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.codigo").value(0))
@@ -162,8 +162,8 @@ class PasantiasIT {
 
         mockMvc.perform(
                         put("/postulaciones/{id}/estado", postulacionId)
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .contentType("application/json")
+                                .content(Objects.requireNonNull(objectMapper.writeValueAsString(request)))
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.codigo").value(0))
@@ -188,12 +188,15 @@ class PasantiasIT {
 
         mockMvc.perform(
                         post("/postulaciones/registrarPostulacion")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .contentType("application/json")
+                                .content(Objects.requireNonNull(objectMapper.writeValueAsString(request)))
                 )
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.codigo").value(-1))
-                .andExpect(jsonPath("$.mensaje").value(org.hamcrest.Matchers.containsString("Carrera no permitida")));
+                .andExpect(result -> {
+                    JsonNode root = objectMapper.readTree(result.getResponse().getContentAsString());
+                    assertThat(root.path("mensaje").asText()).contains("Carrera no permitida");
+                });
     }
 
     @Test
@@ -216,12 +219,222 @@ class PasantiasIT {
 
         mockMvc.perform(
                         post("/pasantias/registrar")
-                                .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(request))
+                                .contentType("application/json")
+                                .content(Objects.requireNonNull(objectMapper.writeValueAsString(request)))
                 )
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.codigo").value(-1))
-                .andExpect(jsonPath("$.mensaje").value(org.hamcrest.Matchers.containsString("No tienes permiso")));
+                .andExpect(result -> {
+                    JsonNode root = objectMapper.readTree(result.getResponse().getContentAsString());
+                    assertThat(root.path("mensaje").asText()).contains("No tienes permiso");
+                });
+    }
+
+    @Test
+    void TS_07_studentCanSeePublishedInternships_shouldListCreatedPublishedInternship() throws Exception {
+        Integer createdId = createPublishedInternship(1, "Pasantía TS-07 Publicadas");
+
+        MvcResult result = mockMvc.perform(get("/pasantias/publicadas"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andReturn();
+
+        JsonNode root = objectMapper.readTree(result.getResponse().getContentAsString());
+        assertThat(root.isArray()).isTrue();
+
+        boolean found = false;
+        for (JsonNode item : root) {
+            if (item.path("idPasantia").asInt() == createdId) {
+                found = true;
+                assertThat(item.path("titulo").asText()).isEqualTo("Pasantía TS-07 Publicadas");
+                assertThat(item.path("estado").asText()).isEqualTo("PUBLICADA");
+                break;
+            }
+        }
+        assertThat(found).isTrue();
+    }
+
+    @Test
+    @WithMockUser(username = "biofarma_user", roles = "EMPRESA")
+    void TS_08_companyCanSeeApplicantsForSpecificInternship_shouldNotLeakOtherInternships() throws Exception {
+        Integer pasantiaBiofarmaId = createPublishedInternship(1, "Pasantía TS-08 BIOFARMA");
+        Integer pasantiaIndacorId = createPublishedInternship(2, "Pasantía TS-08 INDACOR");
+
+        Integer p1 = createPostulacion(pasantiaBiofarmaId, 1, EstadoPostulacion.POSTULADO);
+        createPostulacion(pasantiaBiofarmaId, 2, EstadoPostulacion.POSTULADO);
+        createPostulacion(pasantiaIndacorId, 2, EstadoPostulacion.POSTULADO);
+
+        MvcResult result = mockMvc.perform(get("/postulaciones/pasantia/{id}", pasantiaBiofarmaId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.codigo").value(0))
+                .andExpect(jsonPath("$.data").isArray())
+                .andReturn();
+
+        JsonNode root = objectMapper.readTree(result.getResponse().getContentAsString());
+        JsonNode data = root.path("data");
+        assertThat(data.isArray()).isTrue();
+
+        boolean containsFirst = false;
+        for (JsonNode item : data) {
+            assertThat(item.path("idPasantia").asInt()).isEqualTo(pasantiaBiofarmaId);
+            assertThat(item.path("idPostulacion").asInt()).isNotEqualTo(0);
+            if (item.path("idPostulacion").asInt() == p1) {
+                containsFirst = true;
+            }
+        }
+        assertThat(containsFirst).isTrue();
+    }
+
+    @Test
+    @WithMockUser(username = "biofarma_user", roles = "EMPRESA")
+    void TS_09_companyCanAcceptApplication_shouldUpdateEstadoToAceptado() throws Exception {
+        Integer pasantiaId = createPublishedInternship(1, "Pasantía TS-09");
+        Integer postulacionId = createPostulacion(pasantiaId, 1, EstadoPostulacion.POSTULADO);
+
+        ActualizarEstadoPostulacionDTO request = new ActualizarEstadoPostulacionDTO();
+        request.setEstado(EstadoPostulacion.ACEPTADO);
+        request.setFechaInicioContrato(LocalDate.now().plusDays(7));
+        request.setDuracionMeses(6);
+        request.setObservaciones("Te contactaremos para coordinar el inicio.");
+
+        mockMvc.perform(
+                        put("/postulaciones/{id}/decision", postulacionId)
+                                .contentType("application/json")
+                                .content(Objects.requireNonNull(objectMapper.writeValueAsString(request)))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.codigo").value(0))
+                .andExpect(jsonPath("$.data.estado").value("ACEPTADO"));
+
+        Postulacion updated = postulacionMapper.findById(postulacionId).orElseThrow();
+        assertThat(updated.getEstado()).isEqualTo(EstadoPostulacion.ACEPTADO);
+        assertThat(updated.getFechaInicioContrato()).isNotNull();
+        assertThat(updated.getDuracionMeses()).isEqualTo(6);
+        assertThat(updated.getObservaciones()).contains("coordinar");
+    }
+
+    @Test
+    @WithMockUser(username = "biofarma_user", roles = "EMPRESA")
+    void TS_10_companyCanRejectApplication_shouldUpdateEstadoToRechazado() throws Exception {
+        Integer pasantiaId = createPublishedInternship(1, "Pasantía TS-10");
+        Integer postulacionId = createPostulacion(pasantiaId, 2, EstadoPostulacion.POSTULADO);
+
+        ActualizarEstadoPostulacionDTO request = new ActualizarEstadoPostulacionDTO();
+        request.setEstado(EstadoPostulacion.RECHAZADO);
+        request.setObservaciones("Gracias por postular, en esta ocasión no avanzamos.");
+
+        mockMvc.perform(
+                        put("/postulaciones/{id}/decision", postulacionId)
+                                .contentType("application/json")
+                                .content(Objects.requireNonNull(objectMapper.writeValueAsString(request)))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.codigo").value(0))
+                .andExpect(jsonPath("$.data.estado").value("RECHAZADO"));
+
+        Postulacion updated = postulacionMapper.findById(postulacionId).orElseThrow();
+        assertThat(updated.getEstado()).isEqualTo(EstadoPostulacion.RECHAZADO);
+        assertThat(updated.getObservaciones()).contains("Gracias");
+    }
+
+    @Test
+    @WithMockUser(username = "biofarma_user", roles = "EMPRESA")
+    void TS_11_companyCannotDecideWithoutObservaciones_shouldReturnBadRequest() throws Exception {
+        Integer pasantiaId = createPublishedInternship(1, "Pasantía TS-11");
+        Integer postulacionId = createPostulacion(pasantiaId, 2, EstadoPostulacion.POSTULADO);
+
+        ActualizarEstadoPostulacionDTO request = new ActualizarEstadoPostulacionDTO();
+        request.setEstado(EstadoPostulacion.RECHAZADO);
+        request.setObservaciones("   ");
+
+        mockMvc.perform(
+                        put("/postulaciones/{id}/decision", postulacionId)
+                                .contentType("application/json")
+                                .content(Objects.requireNonNull(objectMapper.writeValueAsString(request)))
+                )
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.codigo").value(-1))
+                .andExpect(result -> {
+                    JsonNode root = objectMapper.readTree(result.getResponse().getContentAsString());
+                    assertThat(root.path("mensaje").asText()).contains("observaciones");
+                });
+    }
+
+    @Test
+    @WithMockUser(username = "biofarma_user", roles = "EMPRESA")
+    void TS_12_companyCannotDecideOnOtherCompanyApplication_shouldReturnForbidden() throws Exception {
+        Integer pasantiaIndacorId = createPublishedInternship(2, "Pasantía TS-12 INDACOR");
+        Integer postulacionId = createPostulacion(pasantiaIndacorId, 2, EstadoPostulacion.POSTULADO);
+
+        ActualizarEstadoPostulacionDTO request = new ActualizarEstadoPostulacionDTO();
+        request.setEstado(EstadoPostulacion.RECHAZADO);
+        request.setObservaciones("No corresponde a mi empresa.");
+
+        mockMvc.perform(
+                        put("/postulaciones/{id}/decision", postulacionId)
+                                .contentType("application/json")
+                                .content(Objects.requireNonNull(objectMapper.writeValueAsString(request)))
+                )
+                .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.codigo").value(-1));
+    }
+
+    @Test
+    @SuppressWarnings("null")
+    void TS_13_studentCanSeeDecisionStatus_shouldExposeAceptadoInStudentEndpoints() throws Exception {
+        Integer pasantiaId = createPublishedInternship(1, "Pasantía TS-13");
+
+        // 1) Student applies
+        Integer postulacionId;
+        {
+            PostulacionRequestDTO request = new PostulacionRequestDTO();
+            request.setFechaPostulacion(LocalDate.now());
+            request.setEstado(EstadoPostulacion.POSTULADO);
+            request.setIdPasantia(pasantiaId);
+            request.setIdEstudiante(1);
+
+            MvcResult res = mockMvc.perform(
+                            post("/postulaciones/registrarPostulacion")
+                                    .with((org.springframework.test.web.servlet.request.RequestPostProcessor) org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("estudiante1").roles("ESTUDIANTE"))
+                                    .contentType("application/json")
+                                    .content(Objects.requireNonNull(objectMapper.writeValueAsString(request)))
+                    )
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.codigo").value(0))
+                    .andReturn();
+
+            JsonNode root = objectMapper.readTree(res.getResponse().getContentAsString());
+            postulacionId = root.path("data").path("idPostulacion").asInt();
+            assertThat(postulacionId).isGreaterThan(0);
+        }
+
+        // 2) Empresa accepts
+        {
+            ActualizarEstadoPostulacionDTO request = new ActualizarEstadoPostulacionDTO();
+            request.setEstado(EstadoPostulacion.ACEPTADO);
+            request.setFechaInicioContrato(LocalDate.now().plusDays(7));
+            request.setDuracionMeses(6);
+            request.setObservaciones("Aceptado para avanzar con la entrevista final.");
+
+            mockMvc.perform(
+                            put("/postulaciones/{id}/decision", postulacionId)
+                                    .with((org.springframework.test.web.servlet.request.RequestPostProcessor) org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("biofarma_user").roles("EMPRESA"))
+                                    .contentType("application/json")
+                                    .content(Objects.requireNonNull(objectMapper.writeValueAsString(request)))
+                    )
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.codigo").value(0))
+                    .andExpect(jsonPath("$.data.estado").value("ACEPTADO"));
+        }
+
+        // 3) Student reads status
+        mockMvc.perform(
+                        get("/postulaciones/porPasantia/{id}", pasantiaId)
+                                .with((org.springframework.test.web.servlet.request.RequestPostProcessor) org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user("estudiante1").roles("ESTUDIANTE"))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.codigo").value(0))
+                .andExpect(jsonPath("$.data.estado").value("ACEPTADO"));
     }
 
     private Integer extractDataIdAsInt(MvcResult result) throws Exception {

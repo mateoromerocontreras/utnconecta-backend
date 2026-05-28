@@ -250,10 +250,10 @@ public interface PostulacionMapper {
     @Insert("""
         INSERT INTO Postulacion (
             fecha_postulacion, fecha_inicio_contrato, duracion_meses,
-            estado, id_pasantia, estudiante_id
+            estado, observaciones, id_pasantia, estudiante_id, id_cv
         ) VALUES (
             #{fechaPostulacion}, #{fechaInicioContrato}, #{duracionMeses},
-            #{estado}, #{pasantia.idPasantia}, #{estudiante.idEstudiante}
+            #{estado}, #{observaciones}, #{pasantia.idPasantia}, #{estudiante.idEstudiante}, #{idCv}
         )
     """)
     @Options(useGeneratedKeys = true, keyProperty = "idPostulacion", keyColumn = "id_postulacion")
@@ -267,6 +267,7 @@ public interface PostulacionMapper {
             fecha_postulacion = #{fechaPostulacion},
             fecha_inicio_contrato = #{fechaInicioContrato},
             duracion_meses = #{duracionMeses},
+            observaciones = #{observaciones},
             estado = #{estado}
         WHERE id_postulacion = #{idPostulacion}
     """)
