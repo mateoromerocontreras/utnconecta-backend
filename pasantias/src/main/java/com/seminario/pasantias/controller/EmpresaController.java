@@ -77,9 +77,11 @@ public class EmpresaController {
 			Empresa empresa = new Empresa(null, request.getNombre(), request.getCiudad(), 
 				request.getCalle(), request.getNroCalle(), request.getPiso(),
 				request.getDepartamento(), request.getBarrio(), request.getEmail(), 
-				request.getCuit(), request.getRazonSocial(), request.getContacto(),null);
-			empresaService.createEmpresaWithContactos(empresa);
+				request.getCuit(), request.getRazonSocial(), request.getContacto(), null);
+			empresaService.createEmpresaWithContactosForCurrentUser(empresa);
 			success(response);
+		} catch (IllegalStateException | IllegalArgumentException e) {
+			fail(response, e.getMessage());
 		} catch (Exception e) {
 			fail(response, e.getMessage());
 		}

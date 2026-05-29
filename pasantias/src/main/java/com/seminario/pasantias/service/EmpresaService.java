@@ -2,8 +2,10 @@ package com.seminario.pasantias.service;
 
 import com.seminario.pasantias.entity.Empresa;
 import com.seminario.pasantias.entity.Contacto;
+import com.seminario.pasantias.entity.Usuario;
 import com.seminario.pasantias.persistence.EmpresaMapper;
 import com.seminario.pasantias.persistence.ContactoMapper;
+import com.seminario.pasantias.security.SecurityService;
 import org.springframework.stereotype.Service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,11 +17,13 @@ import java.util.Optional;
 public class EmpresaService {
 	private final EmpresaMapper empresaMapper;
 	private final ContactoMapper contactoMapper;
+	private final SecurityService securityService;
 
 	@Autowired
-	public EmpresaService(EmpresaMapper empresaMapper, ContactoMapper contactoMapper) {
+	public EmpresaService(EmpresaMapper empresaMapper, ContactoMapper contactoMapper, SecurityService securityService) {
 		this.empresaMapper = empresaMapper;
 		this.contactoMapper = contactoMapper;
+		this.securityService = securityService;
 	}
 
 	public List<Empresa> getAllEmpresas() {
@@ -68,7 +72,33 @@ public class EmpresaService {
 
 	@Transactional
 	public void createEmpresaWithContactos(Empresa empresa) {
-		// Set default values if not provided
+		insertEmpresaWithContactos(empresa);
+	}
+
+	/**
+	 * Creates an empresa profile for the authenticated user.
+	 * EMPRESA users are linked via {@code id_usuario}; administrators may create unlinked records.
+	 */
+	@Transactional
+	public void createEmpresaWithContactosForCurrentUser(Empresa empresa) {
+		Usuario usuario = securityService.getUsuarioAutenticado();
+
+		if (securityService.esEmpresa()) {
+			Integer idUsuario = usuario.getIdUsuario();
+			if (empresaMapper.findByIdUsuario(idUsuario) != null) {
+				throw new IllegalStateException("El usuario ya tiene una empresa registrada");
+			}
+			empresa.setIdUsuario(idUsuario);
+		}
+
+		if (empresa.getCuit() != null && empresaMapper.findByCuit(empresa.getCuit()) != null) {
+			throw new IllegalArgumentException("Ya existe una empresa con el CUIT proporcionado");
+		}
+
+		insertEmpresaWithContactos(empresa);
+	}
+
+	private void insertEmpresaWithContactos(Empresa empresa) {
 		if (empresa.getActivo() == null) {
 			empresa.setActivo(true);
 		}
