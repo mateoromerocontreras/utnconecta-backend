@@ -159,8 +159,19 @@ class AuthAndEmpresaRegistrationIT {
 
         Empresa empresa = empresaMapper.findByIdUsuario(created.getIdUsuario());
         assertThat(empresa).isNotNull();
+        assertThat(empresa.getIdUsuario()).isEqualTo(created.getIdUsuario());
         assertThat(empresa.getNombre()).contains("Empresa IT");
         assertThat(empresa.getCuit()).isNotBlank();
+
+        mockMvc.perform(
+                        post("/empresas/crearEmpresa")
+                                .header("Authorization", "Bearer " + token)
+                                .contentType("application/json")
+                                .content(Objects.requireNonNull(payload))
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value(-1))
+                .andExpect(jsonPath("$.message").value("El usuario ya tiene una empresa registrada"));
     }
 
     private String extractToken(String responseBody) throws Exception {
