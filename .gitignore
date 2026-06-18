@@ -44,6 +44,7 @@ yarn-error.log*
 # Build outputs
 dist/
 build/
+.m2/
 
 # IDE files
 .vscode/
