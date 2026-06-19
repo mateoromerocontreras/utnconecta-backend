@@ -42,6 +42,23 @@ export default function CompletarPerfil() {
   const [cvLoading, setCvLoading] = useState(false);
   const [cvError, setCvError] = useState("");
   const [cvUploading, setCvUploading] = useState(false);
+  const [carreras, setCarreras] = useState([]);
+
+  // Cargar carreras disponibles
+  useEffect(() => {
+    async function loadCarreras() {
+      try {
+        const res = await fetch(`${API}/carreras/listarCarreras`);
+        if (res.ok) {
+          const data = await res.json();
+          setCarreras(Array.isArray(data) ? data : []);
+        }
+      } catch (err) {
+        // Si falla, el select quedará vacío
+      }
+    }
+    loadCarreras();
+  }, []);
 
   // Verificar autenticación
   useEffect(() => {
@@ -318,15 +335,18 @@ export default function CompletarPerfil() {
               <div className="form-row">
                 <div className={`field ${errors.especialidad ? "has-error" : ""}`}>
                   <label htmlFor="especialidad">Especialidad/Carrera *</label>
-                  <input
+                  <select
                     id="especialidad"
-                    type="text"
                     name="especialidad"
-                    placeholder="Ingeniería en Sistemas"
                     value={form.especialidad}
                     onChange={handleChange}
                     disabled={loading}
-                  />
+                  >
+                    <option value="">Seleccioná tu carrera</option>
+                    {carreras.map((c) => (
+                      <option key={c.id} value={c.nombre}>{c.nombre}</option>
+                    ))}
+                  </select>
                   {errors.especialidad && <div className="error">{errors.especialidad}</div>}
                 </div>
 
