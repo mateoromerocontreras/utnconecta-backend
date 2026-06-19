@@ -1,16 +1,21 @@
 # 🎓 Seminario Integrador 2025 - Sistema de Pasantías
 
-Sistema completo para gestión de pasantías universitarias con frontend React y backend Spring Boot.
+Sistema de gestión de pasantías universitarias con frontend React y backend Spring Boot.
+
+## 🛠️ Stack Tecnológico
+- **Backend**: Java 25, Spring Boot 3.5.5, MyBatis, MySQL 8.0, Spring Security, JWT.
+- **Frontend**: React 19.1.1, Vite 7.1.7, React Router 7.9.3.
+- **Infraestructura**: Docker, SonarQube, Maven.
+
+## 📋 Requisitos Previos
+- Java 25 (JDK)
+- Node.js (v20+)
+- Docker & Docker Compose
+- Maven (o `./mvnw` incluido)
 
 ## 🔐 **IMPORTANTE - Configuración de Seguridad**
 
 ⚠️ **ESTADO ACTUAL**: Este proyecto está en desarrollo activo. La configuración de seguridad requiere mejoras antes de producción.
-
-📋 **Ver documentación completa de seguridad**: 
-- [🛡️ SECURITY.md](SECURITY.md) - Estado actual y recomendaciones críticas
-- [🎯 ENDPOINTS_SECURITY.md](ENDPOINTS_SECURITY.md) - Matriz de permisos detallada  
-- [🛣️ SECURITY_ROADMAP.md](SECURITY_ROADMAP.md) - Plan de implementación
-- [🎫 JIRA_TEMPLATE.md](JIRA_TEMPLATE.md) - Templates para seguimiento en Jira
 
 ### 🚨 **Issues Críticos Identificados:**
 - Endpoints de eliminación requieren configuración por roles
@@ -58,11 +63,14 @@ docker-compose up -d
 # Base de datos: db_pasantias
 ```
 
+## ⚙️ Variables de Entorno
+TODO: Documentar variables de entorno necesarias para la aplicación (DB_URL, JWT_SECRET, etc.).
+
 ## 📚 **Documentación de API**
 
 ### **Endpoints Implementados:**
-- ✅ `POST /usuarios/registrarUsuario` - [Tests](pasantias/TEST_REGISTRAR_USUARIO.md)
-- ✅ `POST /auth/iniciarSesion` - [Tests](pasantias/TESTS_INICIAR_SESION.md)
+- ✅ `POST /usuarios/registrarUsuario` 
+- ✅ `POST /auth/iniciarSesion` 
 - ✅ `POST /auth/login` - Autenticación con JWT
 - ⚠️ Otros endpoints requieren configuración de seguridad
 
@@ -71,11 +79,6 @@ docker-compose up -d
 http://localhost:8080/swagger-ui/index.html
 ```
 
-## 🧪 **Testing**
-
-### **Tests de Endpoints Disponibles:**
-- [📝 Registro de Usuario](pasantias/TEST_REGISTRAR_USUARIO.md)
-- [🔐 Inicio de Sesión](pasantias/TESTS_INICIAR_SESION.md)
 
 ### **Usuarios de Prueba:**
 | Username | Password | Rol |
@@ -174,7 +177,7 @@ proyecto/
 - Frontend integración con backend
 
 ### **📅 Próximo Sprint:**
-- Implementar matriz de seguridad (Ver [SECURITY_ROADMAP.md](SECURITY_ROADMAP.md))
+- Implementar matriz de seguridad 
 - Crear tests automatizados de autorización
 - Configurar CORS para producción
 
@@ -184,15 +187,11 @@ proyecto/
 - **Base de Datos**: http://localhost:3306 (MySQL Workbench)
 - **Frontend**: http://localhost:5173 (Vite dev server)
 
-## 📞 **Soporte**
-
-Para consultas técnicas o reportar issues de seguridad:
-- **Repository**: GitHub Issues
-- **Security**: Ver [SECURITY.md](SECURITY.md) para reportar vulnerabilidades
-- **Jira**: Usar templates de [JIRA_TEMPLATE.md](JIRA_TEMPLATE.md)
+## 📜 Licencia
+TODO: Definir la licencia del proyecto.
 
 ---
 
-**Última actualización**: 8 de octubre de 2025  
+**Última actualización**: 19 de junio de 2026
 **Estado**: 🔄 En desarrollo activo  
 **Versión**: 0.1.0-SNAPSHOT
