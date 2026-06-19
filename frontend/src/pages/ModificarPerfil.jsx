@@ -59,6 +59,7 @@ export default function ModificarPerfil() {
 
   const [errors, setErrors] = useState({});
   const [activeTab, setActiveTab] = useState("cuenta"); // cuenta, datos
+  const [carreras, setCarreras] = useState([]);
 
   // Toasts
   const [toasts, setToasts] = useState([]);
@@ -68,6 +69,22 @@ export default function ModificarPerfil() {
     setTimeout(() => setToasts(curr => curr.filter(t => t.id !== id)), 4500);
   }, []);
   const closeToast = (id) => setToasts(curr => curr.filter(t => t.id !== id));
+
+  // Cargar carreras disponibles
+  useEffect(() => {
+    async function loadCarreras() {
+      try {
+        const res = await fetch(`${API}/carreras/listarCarreras`);
+        if (res.ok) {
+          const data = await res.json();
+          setCarreras(Array.isArray(data) ? data : []);
+        }
+      } catch (err) {
+        // Si falla, el select quedará vacío
+      }
+    }
+    loadCarreras();
+  }, []);
 
   const loadUser = useCallback(() => {
     const raw = getStoredItem("userInfo");
@@ -438,12 +455,16 @@ export default function ModificarPerfil() {
 
               <div className="form-group">
                 <label htmlFor="especialidad">Especialidad</label>
-                <input
-                  type="text"
+                <select
                   id="especialidad"
                   value={studentForm.especialidad}
                   onChange={(e) => setStudentForm(prev => ({ ...prev, especialidad: e.target.value }))}
-                />
+                >
+                  <option value="">Seleccioná tu carrera</option>
+                  {carreras.map((c) => (
+                    <option key={c.id} value={c.nombre}>{c.nombre}</option>
+                  ))}
+                </select>
               </div>
 
               <div className="form-row">
