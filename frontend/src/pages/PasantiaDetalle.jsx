@@ -405,6 +405,13 @@ export default function PasantiaDetalle() {
     }
   }, [user, pasantia, postulacion, id, selectedCv, cvList, cvLoading, pushToast]);
 
+  const getBadgeStyle = (estado) => {
+    if (estado === 'ACEPTADO') return { backgroundColor: '#dcfce7', color: '#166534', padding: '0.25rem 0.5rem', borderRadius: '0.375rem', fontWeight: 600 };
+    if (estado === 'RECHAZADO') return { backgroundColor: '#fee2e2', color: '#991b1b', padding: '0.25rem 0.5rem', borderRadius: '0.375rem', fontWeight: 600 };
+    // default POSTULADO
+    return { backgroundColor: '#fff7ed', color: '#c2410c', padding: '0.25rem 0.5rem', borderRadius: '0.375rem', fontWeight: 600 };
+  };
+
 
   if (loading) {
     return (
@@ -509,6 +516,25 @@ export default function PasantiaDetalle() {
                     style={{ width: "100%" }}
                   >
                     {registering ? "Registrando..." : "Postularse"}
+                  </button>
+                </div>
+              )}
+
+              {user && user.rol === "ESTUDIANTE" && postulacion && (
+                <div className="job-card" style={{ padding: "1.5rem", marginBottom: "1rem" }}>
+                  <h3 style={{ fontSize: "1.1em", marginBottom: "1rem" }}>Tu Postulación:</h3>
+                  <div style={{ marginBottom: "0.5rem", fontSize: "0.95em" }}>
+                    Estado: <span style={getBadgeStyle(postulacion.estado)}>{postulacion.estado === 'POSTULADO' ? 'Ya estás postulado' : (postulacion.estado === 'ACEPTADO' ? 'Aceptado' : (postulacion.estado === 'RECHAZADO' ? 'Rechazado' : postulacion.estado))}</span>
+                  </div>
+                  <div style={{ marginBottom: "1rem", color: "#374151", fontSize: "0.9em" }}>
+                    Fecha de postulación: {postulacion?.fechaPostulacion ? new Date(postulacion.fechaPostulacion).toLocaleDateString() : '-'}
+                  </div>
+                  <button
+                    className="btn"
+                    disabled
+                    style={{ width: "100%", backgroundColor: "#f3f4f6", color: "#6b7280", cursor: "not-allowed", border: "1px solid #e5e7eb" }}
+                  >
+                    Ya te has postulado a esta oferta
                   </button>
                 </div>
               )}
